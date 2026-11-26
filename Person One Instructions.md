@@ -1344,5 +1344,344 @@ Replace with:
       pop(`${ev.op === '÷' ? '/' : ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
 ```
 
+### REQ-014 — Apply and playtest the achievements panel
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-09
+- **What I need:** Create the achievements module and apply the 23 exact replacements below on `p2/P2-09-achievements`. At phone size, verify the BADGES menu button, all 12 cards and their locked/unlocked states, closing back to the menu, and badge notices during normal play. Check that replaying a run does not award duplicate badges, reload preserves timestamps and counters, and old saves open correctly. Complete one full level with no console errors. Tick P2-09 when verified and share the PR and test results.
+- **Why:** All anchors and JavaScript syntax passed. Simulated event sequences unlocked all 12 badges once.
+- **Design choices:** Coin progress counts pickups on the track, separate from payouts and spending. A clean win excludes mass lost to bad gates, junk food, saws, hammers, or walls. Existing level progress, skins, and daily streak can earn their badges on load. Historical actions without a saved counter start at zero.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Create `src/achievements.js`:
+
+```js
+export const BADGES = [
+  { id: 'first-win', name: 'First Gloop', desc: 'Win your first run.' },
+  { id: 'level-5', name: 'Gloop School', desc: 'Reach level 5.' },
+  { id: 'level-10', name: 'Track Regular', desc: 'Reach level 10.' },
+  { id: 'level-20', name: 'Gloop Legend', desc: 'Reach level 20.' },
+  { id: 'finale-10', name: 'Top Step', desc: 'Finish the bonus stairs with a x10 multiplier.' },
+  { id: 'combo-5', name: 'Gate Gravy', desc: 'Pick five good gates in a row.' },
+  { id: 'walls-10', name: 'Brick Snack', desc: 'Smash 10 walls.' },
+  { id: 'pads-25', name: 'Air Gloop', desc: 'Launch from 25 jump pads.' },
+  { id: 'skins-5', name: 'Closet Ooze', desc: 'Own 5 skins.' },
+  { id: 'daily-7', name: 'Week of Goo', desc: 'Reach a seven-day daily streak.' },
+  { id: 'clean-win', name: 'Spotless Slime', desc: 'Win without losing mass to gates, food, or hazards.' },
+  { id: 'coins-1000', name: 'Coin Puddle', desc: 'Pick up 1,000 coins on the track.' },
+];
+
+export function track(save, event) {
+  const stats = save.stats;
+  if (event.type === 'win') {
+    stats.wins = (stats.wins || 0) + 1;
+    stats.bestMultiplier = Math.max(stats.bestMultiplier || 0, event.multiplier);
+    if (event.clean) stats.cleanWin = true;
+  }
+  if (event.type === 'combo') stats.bestCombo = Math.max(stats.bestCombo || 0, event.count);
+  if (event.type === 'wall') stats.walls = (stats.walls || 0) + 1;
+  if (event.type === 'pad') stats.pads = (stats.pads || 0) + 1;
+  if (event.type === 'coin') stats.coins = (stats.coins || 0) + 1;
+
+  const best = Math.max(save.best || 1, save.level || 1);
+  const eligible = [
+    stats.wins >= 1 || save.best >= 2, best >= 5, best >= 10, best >= 20,
+    stats.bestMultiplier >= 10, stats.bestCombo >= 5, stats.walls >= 10,
+    stats.pads >= 25, save.ownedSkins.length >= 5, save.dailyStreak >= 7,
+    stats.cleanWin, stats.coins >= 1000,
+  ];
+  return BADGES.filter((badge, index) => {
+    if (!eligible[index] || Object.hasOwn(save.achievements, badge.id)) return false;
+    save.achievements[badge.id] = Date.now();
+    return true;
+  });
+}
+```
+
+In `src/save.js`, find exactly:
+```
+  dailyStreak: 0,
+```
+Replace with:
+```
+  dailyStreak: 0,
+  achievements: {},
+  stats: {},
+```
+
+In `src/save.js`, find exactly:
+```
+    copy[key] = Array.isArray(value) ? value.slice() : value;
+```
+Replace with:
+```
+    copy[key] = Array.isArray(value) ? value.slice() : value && typeof value === 'object' ? { ...value } : value;
+```
+
+In `src/save.js`, find exactly:
+```
+      const value = parsed[key];
+      base[key] = Array.isArray(value) ? value.slice() : value;
+```
+Replace with:
+```
+      const value = parsed[key];
+      if (key === 'stats' || key === 'achievements') {
+        if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
+      } else {
+        base[key] = Array.isArray(value) ? value.slice() : value;
+      }
+```
+
+In `src/main.js`, find exactly:
+```
+import { claim } from './daily.js';
+```
+Replace with:
+```
+import { claim } from './daily.js';
+import { BADGES, track } from './achievements.js';
+```
+
+In `src/main.js`, find exactly:
+```
+let runCoins = 0;
+```
+Replace with:
+```
+let runCoins = 0;
+let runTookHit = false;
+```
+
+In `src/main.js`, find exactly:
+```
+  onCloseShop: () => { audio.play('click'); showMenu(); },
+```
+Replace with:
+```
+  onCloseShop: () => { audio.play('click'); showMenu(); },
+  onOpenBadges: () => { audio.play('click'); ui.showBadges(save, BADGES); },
+  onCloseBadges: () => { audio.play('click'); showMenu(); },
+```
+
+In `src/main.js`, find exactly:
+```
+      writeSave(save);
+      ui.toast(`Daily reward: +${coins} coins${gems ? ` and +${gems} gems` : ''}`);
+```
+Replace with:
+```
+      const reward = `Daily reward: +${coins} coins${gems ? ` and +${gems} gems` : ''}`;
+      recordBadgeEvent({ type: 'daily' }, reward);
+```
+
+In `src/main.js`, find exactly:
+```
+// ---------- flow ----------
+```
+Replace with:
+```
+function recordBadgeEvent(event, message) {
+  const unlocked = track(save, event);
+  if (event.type !== 'sync' || unlocked.length) writeSave(save);
+  const messages = [message, ...unlocked.map(({ name }) => 'BADGE: ' + name)].filter(Boolean);
+  if (messages.length) ui.toast(messages.join(' · '));
+}
+
+// ---------- flow ----------
+```
+
+In `src/main.js`, find exactly:
+```
+  combo = 0;
+  state = 'playing';
+```
+Replace with:
+```
+  combo = 0;
+  runTookHit = false;
+  state = 'playing';
+```
+
+In `src/main.js`, find exactly:
+```
+    save.best = Math.max(save.best, save.level);
+```
+Replace with:
+```
+    save.best = Math.max(save.best, save.level);
+    recordBadgeEvent({ type: 'win', multiplier: mult, clean: !runTookHit });
+```
+
+In `src/main.js`, find exactly:
+```
+  ui.toast(`${skin.name} unlocked`);
+```
+Replace with:
+```
+  recordBadgeEvent({ type: 'skin' }, `${skin.name} unlocked`);
+```
+
+In `src/main.js`, find exactly:
+```
+      if (state === 'playing' && jumpElapsed === null) jumpElapsed = 0;
+```
+Replace with:
+```
+      if (state === 'playing' && jumpElapsed === null) {
+        jumpElapsed = 0;
+        recordBadgeEvent({ type: 'pad' });
+      }
+```
+
+In `src/main.js`, find exactly:
+```
+      player.setMass(applyOp(before, ev.op, ev.value));
+```
+Replace with:
+```
+      player.setMass(applyOp(before, ev.op, ev.value));
+      if (player.mass < before) runTookHit = true;
+```
+
+In `src/main.js`, find exactly:
+```
+        if (combo === 3 || combo === 5) audio.play('gem');
+```
+Replace with:
+```
+        if (combo === 3 || combo === 5) audio.play('gem');
+        if (combo === 5) recordBadgeEvent({ type: 'combo', count: combo });
+```
+
+In `src/main.js`, find exactly:
+```
+    case 'food':
+      player.setMass(player.mass + (ev.good ? ev.value : -ev.value));
+```
+Replace with:
+```
+    case 'food':
+      if (!ev.good) runTookHit = true;
+      player.setMass(player.mass + (ev.good ? ev.value : -ev.value));
+```
+
+In `src/main.js`, find exactly:
+```
+      runCoins += 1;
+```
+Replace with:
+```
+      runCoins += 1;
+      recordBadgeEvent({ type: 'coin' });
+```
+
+In `src/main.js`, find exactly:
+```
+    case 'saw':
+      player.setMass(player.mass - ev.damage);
+```
+Replace with:
+```
+    case 'saw':
+      runTookHit = true;
+      player.setMass(player.mass - ev.damage);
+```
+
+In `src/main.js`, find exactly:
+```
+    case 'wall':
+      if (player.mass > ev.value) {
+```
+Replace with:
+```
+    case 'wall':
+      runTookHit = true;
+      if (player.mass > ev.value) {
+        recordBadgeEvent({ type: 'wall' });
+```
+
+In `src/main.js`, find exactly:
+```
+loadLevel();
+showMenu();
+requestAnimationFrame(frame);
+```
+Replace with:
+```
+loadLevel();
+showMenu();
+recordBadgeEvent({ type: 'sync' });
+requestAnimationFrame(frame);
+```
+
+In `src/ui.js`, find exactly:
+```
+        <button class="btn btn-shop btn-md">SKINS</button>
+```
+Replace with:
+```
+        <div class="menu-secondary">
+          <button class="btn btn-shop btn-md">SKINS</button>
+          <button class="btn btn-md btn-badges">BADGES</button>
+        </div>
+```
+
+In `src/ui.js`, find exactly:
+```
+    this._on(el, '.btn-shop', () => this._call('onOpenShop'));
+```
+Replace with:
+```
+    this._on(el, '.btn-shop', () => this._call('onOpenShop'));
+    this._on(el, '.btn-badges', () => this._call('onOpenBadges'));
+```
+
+In `src/ui.js`, find exactly:
+```
+  // ---------- misc ----------
+```
+Replace with:
+```
+  showBadges(save, badges) {
+    const cards = badges.map((badge) => {
+      const unlocked = Object.hasOwn(save.achievements, badge.id);
+      return `<div class="badge-card${unlocked ? ' is-unlocked' : ''}">
+        <div class="badge-name">${esc(badge.name)}</div>
+        <div>${esc(badge.desc)}</div>
+        <span class="badge-status">${unlocked ? 'UNLOCKED' : 'LOCKED'}</span>
+      </div>`;
+    }).join('');
+    const el = this._mount('panel-layer shop', `
+      <div class="card card-shop">
+        <button class="btn btn-close" aria-label="Close badges">${I.closeX()}</button>
+        <div class="shop-head"><span class="shop-title">BADGES</span></div>
+        <div class="skin-grid badge-grid">${cards}</div>
+      </div>`);
+    this._on(el, '.btn-close', () => this._call('onCloseBadges'));
+  }
+
+  // ---------- misc ----------
+```
+
+In `style.css`, find exactly:
+```
+.btn-shop { background: var(--cream); }
+```
+Replace with:
+```
+.btn-shop { background: var(--cream); }
+.menu-secondary { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.menu-secondary .btn { font-size: 16px; padding-inline: 14px; }
+.badge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.badge-card {
+  color: var(--ink); background: var(--cream); border: 3px solid var(--ink); border-radius: 6px;
+  padding: 10px; font: 12px/1.35 system-ui, sans-serif; overflow-wrap: anywhere;
+}
+.badge-card.is-unlocked { background: var(--yellow); box-shadow: 0 4px 0 var(--ink); }
+.badge-name, .badge-status { font-family: var(--font); }
+.badge-status { display: block; margin-top: 6px; font-size: 10px; }
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
