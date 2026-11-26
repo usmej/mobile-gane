@@ -373,5 +373,33 @@ Replace with:
       }
 ```
 
+### REQ-007 — Prevent vibration before the first interaction
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-002
+- **What I need:** Replace `src/haptics.js` with the full file below on `p2/BUG-002-haptics-gesture`. Check that a fresh page does not call vibration before user activation, vibration works after tapping on a supported browser, and mute still suppresses it. Play a full level with no console errors and submit the fix for lead review.
+- **Why:** Simulated browser checks passed for inactive, active, unsupported activation API, and muted states.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+```js
+export const haptics = {
+  enabled: true,
+
+  buzz(pattern) {
+    if (!this.enabled) return;
+
+    try {
+      if (globalThis.navigator?.userActivation?.hasBeenActive === false) return;
+
+      if (typeof globalThis.navigator?.vibrate === 'function') {
+        globalThis.navigator.vibrate(pattern);
+      }
+    } catch {
+      // Vibration can be unavailable or blocked by the browser.
+    }
+  },
+};
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
