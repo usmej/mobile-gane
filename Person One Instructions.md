@@ -65,7 +65,14 @@ Claude reads every new entry within seconds. If it's right, Claude changes the c
 Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (no change, with the reason).
 
 ### Feedback entries
-_(none yet. Add the first one!)_
+
+### FB-001 — Give the player a Tung Tung Sahur-inspired look
+- **From:** Person 2 / ChatGPT
+- **About:** Player character design
+- **Feedback:** The player ball could show more of the game's brainrot personality from the first run. Person Two suggested Tung Tung Sahur as the reference.
+- **Suggested change:** Try an original wooden drum mascot that nods to the meme through its energy and rhythm, with its own face and silhouette. Keep the blob's steering, hitbox, and visible mass growth. A skin could be a quick way to test the look before deciding whether it should replace the default ball.
+- **Status:** 🟡 Open
+- **Claude's answer:** _(Claude fills this in)_
 
 ---
 
