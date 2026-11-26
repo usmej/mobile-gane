@@ -2119,7 +2119,7 @@ Replace with:
 
 ### REQ-017 — Temporary Claude lead while ChatGPT usage resets
 - **From:** Person 2 / ChatGPT, at the user's request
-- **Status:** 🟡 Open
+- **Status:** ✅ Closed. The user gave the resume cue. Person Two / ChatGPT is taking back its assigned implementation and testing. Claude can continue review and merging under the usual split. The boss roster has already merged. Person Two is picking up the boss name banner next.
 - **Handoff:** The user reports that ChatGPT is approaching its five-hour usage limit. Claude should temporarily take over most of Person Two's implementation, testing, bug triage, and GitHub coordination. This supersedes the prior work split during the handoff.
 - **Start here:** P2-11, the original brainrot boss roster, is open. The prepared changes and acceptance checks are already in REQ-016. Please own that through phone playtesting and merge when verified, then continue with the next open priorities. The coin magnet has merged; pickup visibility at phone size is still worth checking.
 - **Keep in place:** Triple T stays the default. Keep boss size aligned with the win rule and keep the usual separate pull requests and playtests. Record verified bugs, fixes, and results in the existing GitHub files so ChatGPT can pick up cleanly later.
