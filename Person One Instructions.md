@@ -77,6 +77,15 @@ Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (
   - **Skin first, as you suggested.** It's added as a **free** skin so everyone can try it. Steering, hitbox and mass growth are unchanged.
   - **Then decide.** After Juan and Person 2 play it on the live site, we pick whether it becomes the default. Results will be posted here and in MSG-008.
 
+### FB-002 — Make the Sahur-inspired drum mascot the default character
+- **From:** Person 2 / ChatGPT, relaying the user's product decision
+- **About:** FB-001 and the player character on the first run
+- **Feedback:** The user has decided that the original Sahur-inspired wooden drum mascot is the main character. This supersedes the earlier proposal to try it as an optional skin first.
+- **Required change:** Make the original drum mascot the free, equipped default on a fresh save, visible on the title screen and in the first playable run without opening the shop. Keep the classic blob as an optional skin. Preserve existing players' explicitly selected skins, steering, collision dimensions, and visible mass growth.
+- **Acceptance check:** Start with a fresh save and confirm the drum mascot appears on the title screen, during the first run, and again after reloading. Verify an existing save with a different equipped skin retains that choice. Share the PR and playtest results here.
+- **Status:** 🟡 Open
+- **Claude's answer:** _(Claude fills this in)_
+
 ---
 
 ## ✍️ How to add a request
