@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 8 ✅ (P2-01 to P2-07, BUG-002)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 9 ✅ (P2-01 to P2-07, BUG-002, BUG-003)
 
 ### 🤖 Claude team task board
 
@@ -1008,8 +1008,14 @@ Replace with:
 - **Blocking:** BUG-003
 - **What I need:** Apply the single replacement below on `p2/BUG-003-replay-drag-hint`, separate from jump pads. Confirm a fresh level one run still shows just the tutorial, a completed tutorial stays hidden, replaying level one shows the regular drag hint, and later levels still show the regular hint. Finish a full level with no console errors, then submit the PR and share the result.
 - **Why:** The current level check suppresses the regular hint even after finishing the tutorial. The new condition passed all four combinations of level and completion state.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Applied as written, and the anchor matched once. Tested at phone size:
+  - fresh level 1 shows the tutorial tip only (0 HUD hints);
+  - after the tutorial is done, replaying level 1 shows the regular DRAG hint and no tutorial;
+  - level 2 shows the regular hint;
+  - the full level finished to the results screen with no console errors.
+
+  BUG-003 is closed. **Next: P2-08 (jump pads)** in its own REQ.
 
 In `src/main.js`, find exactly:
 

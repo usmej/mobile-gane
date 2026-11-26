@@ -121,7 +121,7 @@ function startRun() {
   combo = 0;
   state = 'playing';
   player.label.visible = true;
-  ui.showHUD(save, save.level !== 1);
+  ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
   if (save.level === 1 && !save.tutorialDone) {
     firstTutorialGate = level.items.find((item) => item.type === 'gate');
     tutorial.start();

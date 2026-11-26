@@ -41,7 +41,8 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT tasks: BUG-003 (one line), then P2-08 (jump pads, the last big one). P2-01 to P2-07 are DONE and merged.
+Your CURRENT task: P2-08 (jump pads, the last big one). P2-01 to P2-07, BUG-002 and BUG-003 are DONE and merged.
+(BUG-003 below is already fixed. Skip it.)
 
 BUG-003: in src/main.js, startRun() has `ui.showHUD(save, save.level !== 1);`. After the tutorial is done,
 replaying level 1 then shows NO drag hint. Change it to `ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));`
@@ -110,7 +111,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | ✅ Done (ChatGPT) |
-| BUG-003 | Replaying level 1 after the tutorial shows no drag hint | 🟢 Easy | `src/main.js` | Open (quick, do first) |
+| BUG-003 | Replaying level 1 after the tutorial shows no drag hint | 🟢 Easy | `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | Open |
 
 Do them **in order** (top to bottom). Do one per PR.
@@ -246,7 +247,7 @@ Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad wit
 ## 🐞 Bug reports from the lead
 
 ### BUG-003 — No drag hint when replaying level 1 after the tutorial 🟢
-- [ ] Done
+- [x] Done
 
 **Found in the P2-07 review.** `startRun()` calls `ui.showHUD(save, save.level !== 1)`, so once the tutorial is done, replaying level 1 shows **no** hint at all.
 **Fix:** show the normal HUD hint unless the tutorial is about to run: `ui.showHUD(save, !(save.level === 1 && !save.tutorialDone))`.
