@@ -541,5 +541,184 @@ Replace with:
 .btn-daily .ico { font-size: 24px; flex: none; }
 ```
 
+### REQ-009 — Apply and playtest the swinging hammer
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-06
+- **What I need:** Apply these eight replacements to `p2/P2-06-hammer` and submit a PR into `main`. At phone size, verify the hammer appears on level 3 and swings over both sides. Verify a hit reduces mass through the existing hit effect and respects cooldown, and verify a timed pass avoids it. Check a level reload and finish a full level without console errors. Tick P2-06 after verification and share the result.
+- **Why:** Syntax and exact source anchors passed. The seeded generator preserves levels 1 and 2 exactly, introduces one hammer on level 3, and generates hammers as optional hazards later. The existing disposal traversal handles the obstacle's individually allocated meshes. Collision and rendering still need a browser check.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/config.js`, find exactly:
+```js
+  sawDamageCooldown: 0.6,
+```
+Replace with:
+```js
+  sawDamageCooldown: 0.6,
+
+  // Swinging hammer
+  hammer: {
+    minLevel: 3,
+    introductionRow: 1,
+    hazardShare: 0.35,
+    damageRatio: 0.3,
+    minSpeed: 1.4,
+    maxSpeed: 2.4,
+    speedPerLevel: 0.05,
+    amplitude: 1.2,
+    pivotHeight: 3.55,
+    armLength: 2.75,
+    postWidth: 0.28,
+    handleWidth: 0.18,
+    headWidth: 1.25,
+    headHeight: 0.7,
+    headDepth: 0.9,
+    bandWidth: 0.25,
+    cooldown: 0.6,
+  },
+```
+
+In `src/levels.js`, find exactly:
+```js
+ *  { type:'saw',   d, x, amp, speed, damage }
+```
+Replace with:
+```js
+ *  { type:'saw',   d, x, amp, speed, damage }
+ *  { type:'hammer', d, damage, speed }
+```
+
+In `src/levels.js`, find exactly:
+```js
+    if (rowIndex % 3 === 0 || r < 0.28) {
+```
+Replace with:
+```js
+    const hammer = CONFIG.hammer;
+    if (level === hammer.minLevel && rowIndex === hammer.introductionRow) {
+      const speed = rng.range(hammer.minSpeed, hammer.maxSpeed + level * hammer.speedPerLevel);
+      items.push({ type: 'hammer', d, damage: Math.max(3, Math.floor(best * hammer.damageRatio)), speed });
+    } else if (rowIndex % 3 === 0 || r < 0.28) {
+```
+
+In `src/levels.js`, find exactly:
+```js
+      if (rng() < 0.55) {
+        const amp = rng.range(1.2, W);
+```
+Replace with:
+```js
+      const hazardRoll = rng();
+      if (level >= hammer.minLevel && hazardRoll < hammer.hazardShare) {
+        const speed = rng.range(hammer.minSpeed, hammer.maxSpeed + level * hammer.speedPerLevel);
+        const damage = Math.max(3, Math.floor(best * hammer.damageRatio));
+        items.push({ type: 'hammer', d, damage, speed });
+      } else if (hazardRoll < 0.55) {
+        const amp = rng.range(1.2, W);
+```
+
+In `src/entities.js`, find exactly:
+```js
+        case 'saw': {
+          const g = new THREE.Group();
+```
+Replace with:
+```js
+        case 'hammer':
+          e.obj = this.makeHammer(z, W);
+          break;
+        case 'saw': {
+          const g = new THREE.Group();
+```
+
+In `src/entities.js`, find exactly:
+```js
+  /** Advance animation + collisions. Returns an array of events for main.js to apply. */
+```
+Replace with:
+```js
+  makeHammer(z, trackHalfWidth) {
+    const h = CONFIG.hammer;
+    const gantry = new THREE.Group();
+    gantry.position.z = z;
+    const pivot = new THREE.Group();
+    pivot.position.y = h.pivotHeight;
+    gantry.add(pivot);
+
+    function addBox(parent, width, height, depth, color, x, y) {
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, depth),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.75, flatShading: true })
+      );
+      mesh.position.set(x, y, 0);
+      mesh.castShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    const postX = trackHalfWidth + h.postWidth / 2;
+    for (const x of [-postX, postX]) {
+      addBox(gantry, h.postWidth, h.pivotHeight, h.postWidth, INK, x, h.pivotHeight / 2);
+    }
+    addBox(gantry, 2 * postX + h.postWidth, h.postWidth, h.postWidth, INK, 0, h.pivotHeight);
+    addBox(pivot, h.handleWidth, h.armLength, h.handleWidth, CREAM, 0, -h.armLength / 2);
+    const head = addBox(pivot, h.headWidth, h.headHeight, h.headDepth, '#FFD23F', 0, -h.armLength);
+    addBox(head, h.bandWidth, h.headHeight, h.headDepth + h.handleWidth, INK, 0, 0);
+    gantry.userData.pivot = pivot;
+    gantry.userData.head = head;
+    gantry.userData.headPosition = new THREE.Vector3();
+    return gantry;
+  }
+
+  /** Advance animation + collisions. Returns an array of events for main.js to apply. */
+```
+
+In `src/entities.js`, find exactly:
+```js
+        e.cooldown -= dt;
+      }
+      if (e.type === 'gate'
+```
+Replace with:
+```js
+        e.cooldown -= dt;
+      }
+      if (e.type === 'hammer') {
+        e.obj.userData.pivot.rotation.z = Math.sin(time * e.speed) * CONFIG.hammer.amplitude;
+        e.cooldown -= dt;
+      }
+      if (e.type === 'gate'
+```
+
+In `src/entities.js`, find exactly:
+```js
+        case 'saw':
+          if (e.cooldown
+```
+Replace with:
+```js
+        case 'hammer': {
+          const h = CONFIG.hammer;
+          const { head, headPosition, pivot } = e.obj.userData;
+          head.getWorldPosition(headPosition);
+          const sin = Math.abs(Math.sin(pivot.rotation.z));
+          const cos = Math.abs(Math.cos(pivot.rotation.z));
+          const halfX = (h.headWidth * cos + h.headHeight * sin) / 2;
+          const halfY = (h.headWidth * sin + h.headHeight * cos) / 2;
+          const playerCenterY = player.y + r;
+          if (e.cooldown <= 0 &&
+              dd < r + (h.headDepth + h.handleWidth) / 2 &&
+              Math.abs(headPosition.x - px) < halfX + r &&
+              Math.abs(headPosition.y - playerCenterY) < halfY + r) {
+            e.cooldown = h.cooldown;
+            events.push({ type: 'saw', damage: e.damage, pos: headPosition.clone() });
+          }
+          break;
+        }
+        case 'saw':
+          if (e.cooldown
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
