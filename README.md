@@ -31,10 +31,11 @@ Controls: **drag left and right** (or use the ← → keys on a computer).
 1. **`main` is the source of truth and must always run.** Nobody pushes broken code to `main`.
 2. **Person 2 works on branches** named `p2/<task-id>-<short-name>` and opens a **pull request** into `main`. The lead reviews and merges.
 3. **Tasks and bug reports for Person 2 live in [`Person Two Instructions.md`](Person%20Two%20Instructions.md).** When ChatGPT finishes a task, it puts the code in the repo (not just in the chat) and ticks the box in that file in the same PR.
-4. **Bugs go back to whoever owns the task.** If a merged PR causes a bug, the lead adds a `BUG-xxx` entry to Person 2's file, and the fix comes back through a PR.
-5. **The lead delegates by difficulty.** Hard design and core logic stay with Opus; medium, self-contained modules go to Sonnet; simple, repetitive work goes to Haiku.
-6. **No real money.** Coins and gems are only earned by playing. Payments are out of scope until we decide how to process them safely.
-7. **Make it fun.** Loud colors, juicy effects, meme pop-ups, unlockable skins, levels that feel different, and a reason to play "just one more".
+4. **Person 2 → lead requests go in [`Person One Instructions.md`](Person%20One%20Instructions.md)** (`REQ-xxx`). The lead does them, or hands them to Sonnet or Haiku, and answers there.
+5. **Bugs go back to whoever owns the task.** If a merged PR causes a bug, the lead adds a `BUG-xxx` entry to Person 2's file, and the fix comes back through a PR.
+6. **The lead delegates by difficulty.** Hard design and core logic stay with Opus; medium, self-contained modules go to Sonnet; simple, repetitive work goes to Haiku.
+7. **No real money.** Coins and gems are only earned by playing. Payments are out of scope until we decide how to process them safely.
+8. **Make it fun.** Loud colors, juicy effects, meme pop-ups, unlockable skins, levels that feel different, and a reason to play "just one more".
 
 ---
 

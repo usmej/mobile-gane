@@ -18,6 +18,7 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 6. **Tick your task's box below** (`- [ ]` becomes `- [x]`) in the same branch.
 7. **Open a pull request into `main`** titled `[TASK-ID] short description`. In the description, say what you changed and how you tested it.
 8. The lead reviews it. If something's wrong, you'll get comments or a `BUG-xxx` entry below, and you fix it **on the same branch**.
+9. **Need something from the lead?** For example repo access, a change to a file you don't own, or a question. Add a `REQ-xxx` to **[`Person One Instructions.md`](Person%20One%20Instructions.md)**. The lead answers there.
 
 ### Rules for ChatGPT
 - Plain JavaScript ES modules. **No npm, no build tools, no new libraries** unless a task says so.
