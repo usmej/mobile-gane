@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 | ID | Task | Who | Files | Status |
 |---|---|---|---|---|
 | C-01 | Bonus stairs finale: after the boss, climb x1→x10 steps with leftover mass | Opus | new `src/finale.js`, `src/main.js` hook | ✅ Done |
-| C-02 | Boss variety: 4 boss designs rotating by level | Sonnet | new `src/bosses.js`, `src/entities.js` (`buildBoss` only) | Open |
+| C-02 | Boss variety: 4 boss designs rotating by level | Sonnet | new `src/bosses.js`, `src/entities.js` (`buildBoss` only) | ✅ Done |
 | C-03 | Background music loop (synth, mute-aware) | Sonnet | `src/audio.js` | Open |
 | C-04 | Blob slime trail and splat particles | Sonnet | `src/player.js`, `src/fx.js` | Open |
 | C-05 | Auto-quality for low-end phones (pixel ratio and shadows by FPS) | Haiku | `src/main.js` (renderer setup only) | Open |

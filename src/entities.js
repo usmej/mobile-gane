@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CONFIG } from './config.js';
 import { makeLabel } from './labels.js';
 import { isGoodOp } from './levels.js';
+import { makeBossMesh } from './bosses.js';
 
 const GOOD = '#2fa8ff';
 const BAD = '#ff3b5c';
@@ -147,36 +148,14 @@ export class Entities {
   }
 
   buildBoss(levelData) {
-    const g = new THREE.Group();
     const hp = levelData.boss.hp;
     const size = 1.4 + Math.cbrt(hp) * 0.28;
-    const body = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(size, 1),
-      new THREE.MeshStandardMaterial({ color: 0xe0245e, roughness: 0.4, flatShading: true })
-    );
-    body.position.y = size;
-    body.castShadow = true;
-    // horns
-    const hornMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-    for (const s of [-1, 1]) {
-      const h = new THREE.Mesh(new THREE.ConeGeometry(size * 0.25, size * 0.8, 6), hornMat);
-      h.position.set(s * size * 0.55, size * 1.8, 0);
-      h.rotation.z = -s * 0.4;
-      g.add(h);
-    }
-    // angry eyes
-    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xfff200 });
-    for (const s of [-1, 1]) {
-      const e = new THREE.Mesh(new THREE.SphereGeometry(size * 0.18, 10, 8), eyeMat);
-      e.position.set(s * size * 0.35, size * 1.2, size * 0.85);
-      g.add(e);
-    }
+    const { group: g, body, height } = makeBossMesh(levelData.level || 1, size);
     const lab = makeLabel(hp, { color: '#ff4d6d', bg: 'rgba(0,0,0,0.6)', height: 1.4 });
-    lab.position.set(0, size * 2 + 1.4, 0);
+    lab.position.set(0, (height || size * 2) + 1.4, 0);
     this.labels.push(lab);
-    g.add(body, lab);
+    g.add(lab);
     g.position.set(0, 0, -levelData.boss.d);
-    g.rotation.y = Math.PI; // face the player
     this.group.add(g);
     this.boss = { group: g, body, label: lab, hp, size, d: levelData.boss.d, dead: false };
   }

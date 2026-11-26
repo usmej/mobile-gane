@@ -31,7 +31,6 @@ export class Finale {
       box.receiveShadow = true;
       const lab = makeLabel(`x${i + 1}`, { color: '#ffffff', height: 1.1 });
       lab.position.set(0, h + 0.05, -d - 0.3);
-      lab.material.depthTest = false;
       this.labels.push(lab);
       this.group.add(box, lab);
       this.steps.push({ d, h, color, box });
