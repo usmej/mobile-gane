@@ -11,6 +11,7 @@ import { haptics } from './haptics.js';
 import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave, resetSave } from './save.js';
 import { claim } from './daily.js';
+import { BADGES, track } from './achievements.js';
 import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
 import { AutoQuality } from './quality.js';
@@ -67,6 +68,7 @@ let state = 'menu';   // menu | playing | boss | finale | ending | result
 let finaleMult = 1;
 let level = null;
 let runCoins = 0;
+let runTookHit = false;
 let combo = 0;
 let jumpElapsed = null;
 let runGems = 0;
@@ -80,11 +82,13 @@ const ui = new UI(document.getElementById('ui'), {
   onRetry: () => { audio.play('click'); loadLevel(); startRun(); },
   onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, SKINS); },
   onCloseShop: () => { audio.play('click'); showMenu(); },
+  onOpenBadges: () => { audio.play('click'); ui.showBadges(save, BADGES); },
+  onCloseBadges: () => { audio.play('click'); showMenu(); },
   onClaimDaily: () => {
     const { coins, gems } = claim(save);
     if (coins) {
-      writeSave(save);
-      ui.toast(`Daily reward: +${coins} coins${gems ? ` and +${gems} gems` : ''}`);
+      const reward = `Daily reward: +${coins} coins${gems ? ` and +${gems} gems` : ''}`;
+      recordBadgeEvent({ type: 'daily' }, reward);
     }
     showMenu();
   },
@@ -98,6 +102,13 @@ const ui = new UI(document.getElementById('ui'), {
     writeSave(save);
   },
 });
+
+function recordBadgeEvent(event, message) {
+  const unlocked = track(save, event);
+  if (event.type !== 'sync' || unlocked.length) writeSave(save);
+  const messages = [message, ...unlocked.map(({ name }) => 'BADGE: ' + name)].filter(Boolean);
+  if (messages.length) ui.toast(messages.join(' · '));
+}
 
 // ---------- flow ----------
 function loadLevel() {
@@ -124,6 +135,7 @@ function showMenu() {
 function startRun() {
   if (state === 'result') loadLevel();
   combo = 0;
+  runTookHit = false;
   state = 'playing';
   player.label.visible = true;
   ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
@@ -165,6 +177,7 @@ function finishRun(won) {
     save.gems += gemsEarned;
     save.level += 1;
     save.best = Math.max(save.best, save.level);
+    recordBadgeEvent({ type: 'win', multiplier: mult, clean: !runTookHit });
     fx.burst(player.position.clone().setY(player.y + 2), '#ffd23f', 50);
     audio.play('win');
     haptics.buzz([20, 20, 20, 20, 60]);
@@ -198,7 +211,7 @@ function buySkin(id) {
   save[wallet] -= skin.price;
   save.ownedSkins.push(id);
   audio.play('buy');
-  ui.toast(`${skin.name} unlocked`);
+  recordBadgeEvent({ type: 'skin' }, `${skin.name} unlocked`);
   equipSkin(id);
 }
 
@@ -258,11 +271,15 @@ function pop(numberText, pos, color, memeCat, big = false) {
 function handleEvent(ev) {
   switch (ev.type) {
     case 'pad':
-      if (state === 'playing' && jumpElapsed === null) jumpElapsed = 0;
+      if (state === 'playing' && jumpElapsed === null) {
+        jumpElapsed = 0;
+        recordBadgeEvent({ type: 'pad' });
+      }
       break;
     case 'gate': {
       const before = player.mass;
       player.setMass(applyOp(before, ev.op, ev.value));
+      if (player.mass < before) runTookHit = true;
       pop(`${ev.op === '÷' ? '/' : ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
       fx.burst(ev.pos, ev.good ? '#2fa8ff' : '#ff3b5c', 20);
       audio.play(ev.good ? 'gateGood' : 'gateBad');
@@ -272,6 +289,7 @@ function handleEvent(ev) {
         const comboPos = ev.pos.clone().setY(ev.pos.y + 2);
         fx.popText(`COMBO x${combo}`, comboPos, '#FFD23F', 0.9);
         if (combo === 3 || combo === 5) audio.play('gem');
+        if (combo === 5) recordBadgeEvent({ type: 'combo', count: combo });
       }
       if (!ev.good) fx.shake(0.25);
       if (!ev.good) haptics.buzz(40);
@@ -279,6 +297,7 @@ function handleEvent(ev) {
       break;
     }
     case 'food':
+      if (!ev.good) runTookHit = true;
       player.setMass(player.mass + (ev.good ? ev.value : -ev.value));
       pop(`${ev.good ? '+' : '-'}${ev.value}`, ev.pos, ev.good ? C.green : C.bad, ev.good ? 'foodGood' : 'foodBad');
       fx.burst(ev.pos, ev.good ? '#3fd64f' : '#8a4b1e', 10);
@@ -287,6 +306,7 @@ function handleEvent(ev) {
       break;
     case 'coin':
       runCoins += 1;
+      recordBadgeEvent({ type: 'coin' });
       audio.play('coin');
       fx.burst(ev.pos, '#ffd23f', 6);
       break;
@@ -297,6 +317,7 @@ function handleEvent(ev) {
       pop('+1 GEM', ev.pos, C.gem, 'gem', true);
       break;
     case 'saw':
+      runTookHit = true;
       player.setMass(player.mass - ev.damage);
       pop(`-${ev.damage}`, ev.pos, C.bad, 'hit', ev.damage >= 10);
       fx.burst(ev.pos, getSkin(save.skin).color, 14);
@@ -307,7 +328,9 @@ function handleEvent(ev) {
       if (player.mass <= 0) lose('Sawed in half.');
       break;
     case 'wall':
+      runTookHit = true;
       if (player.mass > ev.value) {
+        recordBadgeEvent({ type: 'wall' });
         player.setMass(player.mass - ev.value);
         entities.smashWall(ev.wall);
         fx.burst(ev.pos, '#8a8fa8', 30);
@@ -457,6 +480,7 @@ function frame(now) {
 
 loadLevel();
 showMenu();
+recordBadgeEvent({ type: 'sync' });
 requestAnimationFrame(frame);
 
 // handy for debugging in the console

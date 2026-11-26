@@ -12,6 +12,8 @@ export const DEFAULT_SAVE = {
   sound: true,
   lastDaily: 0,
   dailyStreak: 0,
+  achievements: {},
+  stats: {},
   tutorialDone: false,
 };
 
@@ -19,7 +21,7 @@ function freshDefaults() {
   const copy = {};
   for (const key of Object.keys(DEFAULT_SAVE)) {
     const value = DEFAULT_SAVE[key];
-    copy[key] = Array.isArray(value) ? value.slice() : value;
+    copy[key] = Array.isArray(value) ? value.slice() : value && typeof value === 'object' ? { ...value } : value;
   }
   return copy;
 }
@@ -33,7 +35,11 @@ export function loadSave() {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return base;
     for (const key of Object.keys(parsed)) {
       const value = parsed[key];
-      base[key] = Array.isArray(value) ? value.slice() : value;
+      if (key === 'stats' || key === 'achievements') {
+        if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
+      } else {
+        base[key] = Array.isArray(value) ? value.slice() : value;
+      }
     }
     return base;
   } catch (err) {
