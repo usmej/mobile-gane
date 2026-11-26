@@ -71,7 +71,7 @@ Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (
 - **About:** Player character design
 - **Feedback:** The player ball could show more of the game's brainrot personality from the first run. Person Two suggested Tung Tung Sahur as the reference.
 - **Suggested change:** Try an original wooden drum mascot that nods to the meme through its energy and rhythm, with its own face and silhouette. Keep the blob's steering, hitbox, and visible mass growth. A skin could be a quick way to test the look before deciding whether it should replace the default ball.
-- **Status:** 🔵 In progress (Claude team is building it)
+- **Status:** ✅ Changed, merged as the **Drumroll** skin (see FB-002 for the default)
 - **Claude's answer:** Agreed, good call. The plain ball undersells the brain-rot vibe. Plan:
   - **Original design only.** A wooden **drum** creature with its own face, two tapping drumsticks for arms, and a bounce on the music's beat. **No** log-man, **no** baseball bat, and nothing named after or traced from the meme. We nod to the *energy*, not the character, because that character belongs to its creator.
   - **Skin first, as you suggested.** It's added as a **free** skin so everyone can try it. Steering, hitbox and mass growth are unchanged.
@@ -83,8 +83,25 @@ Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (
 - **Feedback:** The user has decided that the original Sahur-inspired wooden drum mascot is the main character. This supersedes the earlier proposal to try it as an optional skin first.
 - **Required change:** Make the original drum mascot the free, equipped default on a fresh save, visible on the title screen and in the first playable run without opening the shop. Keep the classic blob as an optional skin. Preserve existing players' explicitly selected skins, steering, collision dimensions, and visible mass growth.
 - **Acceptance check:** Start with a fresh save and confirm the drum mascot appears on the title screen, during the first run, and again after reloading. Verify an existing save with a different equipped skin retains that choice. Share the PR and playtest results here.
-- **Status:** 🟡 Open
-- **Claude's answer:** _(Claude fills this in)_
+- **Status:** ✅ Changed, merged together with FB-001 in [PR #12](https://github.com/usmej/mobile-gane/pull/12)
+- **Claude's answer:** Done. The drum (**Drumroll**) is now the main character.
+  - **Build (Sonnet helper):**
+    - a wooden drum with plank grain, two dark hoops and cream rope lacing;
+    - a cream drumhead;
+    - big googly eyes, ink brows and a grin;
+    - two drumsticks that alternately tap the head about 4 times a second, with a little hop on each tap.
+  - **The face now looks back at the camera.** It was first built on the far side and was invisible from the chase cam. I also flipped the classic blob's googly eyes for the same reason.
+  - **Default:**
+    - fresh saves start with `skin: 'drum'`, owning both drum and classic;
+    - existing saves **keep their equipped skin**, and the drum is added to their owned list for free.
+  - **Unchanged:** steering, hitbox (`player.radius`), mass-based growth, wobble and trail. Only the body geometry and decoration change.
+  - **Tested (phone size):**
+    - a fresh save shows the drum on the title screen, in the first run, and after a reload;
+    - an older save with `sus` equipped kept `sus`, its coins and its level, and gained the drum;
+    - a full level as the drum played to the results screen;
+    - switching back to the classic blob works;
+    - no console errors.
+  - **IP note:** the design is original, a hand drum with drumsticks, with no log-man, no bat and no meme name. It nods to the energy only. Please keep calling it "Drumroll" (not "Sahur") in code and UI.
 
 ---
 

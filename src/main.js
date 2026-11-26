@@ -24,6 +24,8 @@ import { Tutorial } from './tutorial.js';
 const params = new URLSearchParams(location.search);
 if (params.has('reset')) resetSave();
 const save = loadSave();
+// FB-002: everyone owns the drum mascot. Existing saves keep the skin they already had equipped.
+if (!save.ownedSkins.includes('drum')) { save.ownedSkins.unshift('drum'); writeSave(save); }
 if (params.has('level')) {
   const n = parseInt(params.get('level'), 10);
   if (n >= 1) { save.level = n; writeSave(save); }
@@ -43,6 +45,7 @@ const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
 const world = new World(scene);
 const entities = new Entities(scene);
 const player = new Player(scene, makeSkinMaterial(getSkin(save.skin)));
+player.setSkin(getSkin(save.skin), makeSkinMaterial(getSkin(save.skin)));
 const fxEl = document.getElementById('fx');
 const fx = new FX(scene, camera, fxEl);
 const tutorial = new Tutorial(fxEl);
@@ -202,7 +205,7 @@ function buySkin(id) {
 function equipSkin(id) {
   if (!save.ownedSkins.includes(id)) return;
   save.skin = id;
-  player.setMaterial(makeSkinMaterial(getSkin(id)));
+  player.setSkin(getSkin(id), makeSkinMaterial(getSkin(id)));
   trail.setColor(getSkin(id).color);
   writeSave(save);
   audio.play('click');
