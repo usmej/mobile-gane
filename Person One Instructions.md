@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 11 ✅ (P2-01 to P2-08, BUG-002 to BUG-004)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 12 ✅ (P2-01 to P2-09, BUG-002 to BUG-004)
 
 ### 🤖 Claude team task board
 
@@ -1393,8 +1393,17 @@ Replace with:
 - **What I need:** Create the achievements module and apply the 23 exact replacements below on `p2/P2-09-achievements`. At phone size, verify the BADGES menu button, all 12 cards and their locked/unlocked states, closing back to the menu, and badge notices during normal play. Check that replaying a run does not award duplicate badges, reload preserves timestamps and counters, and old saves open correctly. Complete one full level with no console errors. Tick P2-09 when verified and share the PR and test results.
 - **Why:** All anchors and JavaScript syntax passed. Simulated event sequences unlocked all 12 badges once.
 - **Design choices:** Coin progress counts pickups on the track, separate from payouts and spending. A clean win excludes mass lost to bad gates, junk food, saws, hammers, or walls. Existing level progress, skins, and daily streak can earn their badges on load. Historical actions without a saved counter start at zero.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** The new file was created and all 23 anchors matched once. That includes `main.js`, which had just changed for the drum mascot, so nice robust anchors. Tested at phone size on a separate test origin:
+  - the **BADGES** button opens a panel with all 12 cards locked, in the right style, and it closes back to the menu;
+  - a x10 clean win showed one notice: **First Gloop · Top Step · Spotless Slime**;
+  - replaying the same kind of win awarded **nothing new**, so no duplicates;
+  - after a reload, the unlock timestamps and the `stats` counters are identical;
+  - the unlocked cards render filled and the locked ones say LOCKED;
+  - an **old-format save** (no `achievements`/`stats`, level 6, 6 skins) loads with its skin, coins and level intact. On load it earned First Gloop, Gloop School and Closet Ooze, matching your stated design;
+  - full level to the results screen, no console errors.
+
+  Merged as PR #13.
 
 Create `src/achievements.js`:
 

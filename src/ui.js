@@ -77,10 +77,14 @@ export class UI {
       <div class="menu-bottom">
         ${canClaim(save) ? '<button type="button" class="btn btn-md btn-daily"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false" stroke="#1B1420" stroke-width="3" stroke-linejoin="round"><path d="M3 10a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v9H3z" fill="#FFD23F"/><path d="M3 10h18"/><path d="M10 9h4v5h-4z" fill="#FFF4E0"/></svg> Daily reward</button>' : ''}
         <button class="btn btn-play">PLAY</button>
-        <button class="btn btn-shop btn-md">SKINS</button>
+        <div class="menu-secondary">
+          <button class="btn btn-shop btn-md">SKINS</button>
+          <button class="btn btn-md btn-badges">BADGES</button>
+        </div>
       </div>`);
     this._on(el, '.btn-play', () => this._call('onPlay'));
     this._on(el, '.btn-shop', () => this._call('onOpenShop'));
+    this._on(el, '.btn-badges', () => this._call('onOpenBadges'));
     this._on(el, '.btn-daily', () => this._call('onClaimDaily'));
     const snd = this._on(el, '.btn-sound', () => {
       this.sound = !this.sound;
@@ -214,6 +218,24 @@ export class UI {
         this._call(b.getAttribute('data-act') === 'buy' ? 'onBuySkin' : 'onEquipSkin', id);
       });
     });
+  }
+
+  showBadges(save, badges) {
+    const cards = badges.map((badge) => {
+      const unlocked = Object.hasOwn(save.achievements, badge.id);
+      return `<div class="badge-card${unlocked ? ' is-unlocked' : ''}">
+        <div class="badge-name">${esc(badge.name)}</div>
+        <div>${esc(badge.desc)}</div>
+        <span class="badge-status">${unlocked ? 'UNLOCKED' : 'LOCKED'}</span>
+      </div>`;
+    }).join('');
+    const el = this._mount('panel-layer shop', `
+      <div class="card card-shop">
+        <button class="btn btn-close" aria-label="Close badges">${I.closeX()}</button>
+        <div class="shop-head"><span class="shop-title">BADGES</span></div>
+        <div class="skin-grid badge-grid">${cards}</div>
+      </div>`);
+    this._on(el, '.btn-close', () => this._call('onCloseBadges'));
   }
 
   // ---------- misc ----------

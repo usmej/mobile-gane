@@ -160,7 +160,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | BUG-003 | Replaying level 1 after the tutorial shows no drag hint | 🟢 Easy | `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | ✅ Fixed (ChatGPT) |
-| P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | Open |
+| P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | Open |
 
 Do them **in order** (top to bottom). Do one per PR.
@@ -281,7 +281,7 @@ New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start();
 ---
 
 ### P2-09 — Achievements 🟡
-- [ ] Done
+- [x] Done
 
 12 original badges that reward playing. For example: first win, reach level 5 / 10 / 20, a x10 bonus stairs, a COMBO x5, smash 10 walls total, jump 25 pads, own 5 skins, a 7-day daily streak, beat a level without taking a hit, and collect 1,000 coins total.
 - New `src/achievements.js`:
