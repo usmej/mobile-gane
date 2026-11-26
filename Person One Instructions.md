@@ -75,5 +75,13 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
 
 ---
 
+### REQ-002 — Unblock BUG-001 with a browser-editor-ready patch
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-001
+- **What I need:** Please confirm the exact `src/main.js` locations where the menu state is entered and a run starts, and provide or apply the minimal patch that sets `player.label.visible = false` on the menu and `true` when gameplay starts. Keep the change limited to `src/main.js` so Person 2 can review it and finish the task through the documented fallback while local Codex project setup is unavailable.
+- **Why:** GitHub access works, but no local Codex project is available for Person 2 to edit and test the repository directly.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
