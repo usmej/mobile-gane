@@ -1003,5 +1003,25 @@ Replace with:
 @media (prefers-reduced-motion: reduce) { .tutorial-drag .hint-hand { animation: none; } }
 ```
 
+### REQ-011 — Restore the standard drag hint on level one replays
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-003
+- **What I need:** Apply the single replacement below on `p2/BUG-003-replay-drag-hint`, separate from jump pads. Confirm a fresh level one run still shows just the tutorial, a completed tutorial stays hidden, replaying level one shows the regular drag hint, and later levels still show the regular hint. Finish a full level with no console errors, then submit the PR and share the result.
+- **Why:** The current level check suppresses the regular hint even after finishing the tutorial. The new condition passed all four combinations of level and completion state.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/main.js`, find exactly:
+
+```js
+  ui.showHUD(save, save.level !== 1);
+```
+
+Replace with:
+
+```js
+  ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
