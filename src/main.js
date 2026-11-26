@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG, speedForLevel } from './config.js';
-import { generateLevel, applyOp } from './levels.js';
+import { generateLevel, applyOp, isGoodOp } from './levels.js';
 import { World } from './world.js';
 import { Player } from './player.js';
 import { Entities } from './entities.js';
@@ -15,6 +15,7 @@ import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
 import { AutoQuality } from './quality.js';
 import { Trail } from './trail.js';
+import { Tutorial } from './tutorial.js';
 
 // ---------- setup ----------
 // Test links for human playtesters (no console needed on a phone):
@@ -42,7 +43,17 @@ const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
 const world = new World(scene);
 const entities = new Entities(scene);
 const player = new Player(scene, makeSkinMaterial(getSkin(save.skin)));
-const fx = new FX(scene, camera, document.getElementById('fx'));
+const fxEl = document.getElementById('fx');
+const fx = new FX(scene, camera, fxEl);
+const tutorial = new Tutorial(fxEl);
+let firstTutorialGate;
+const tutorialPoint = new THREE.Vector3();
+
+function tutorialScreenPoint(x, y, z) {
+  const p = tutorialPoint.set(x, y, z).project(camera);
+  if (p.z < -1 || p.z > 1) return null;
+  return { x: (p.x + 1) * fxEl.clientWidth / 2, y: (1 - p.y) * fxEl.clientHeight / 2 };
+}
 const finale = new Finale(scene);
 const trail = new Trail(scene);
 trail.setColor(getSkin(save.skin).color);
@@ -99,6 +110,7 @@ function loadLevel() {
 }
 
 function showMenu() {
+  tutorial.stop();
   state = 'menu';
   player.label.visible = false;
   ui.showMenu(save);
@@ -109,7 +121,13 @@ function startRun() {
   combo = 0;
   state = 'playing';
   player.label.visible = true;
-  ui.showHUD(save);
+  ui.showHUD(save, save.level !== 1);
+  if (save.level === 1 && !save.tutorialDone) {
+    firstTutorialGate = level.items.find((item) => item.type === 'gate');
+    tutorial.start();
+  } else {
+    tutorial.stop();
+  }
   audio.startMusic(save.level);
   fx.popText(pickMeme('start') || 'GO', player.position.clone().setY(5), '#FFF4E0', 1.2);
 }
@@ -129,6 +147,7 @@ function defeatBoss() {
 }
 
 function finishRun(won) {
+  tutorial.stop();
   state = 'ending';
   audio.stopMusic();
   endTimer = won ? 1.0 : 1.2;
@@ -196,15 +215,24 @@ window.addEventListener('pointermove', (e) => {
   if (!dragging) return;
   const dx = e.clientX - lastX;
   lastX = e.clientX;
-  if (state === 'playing') player.steer(dx * (390 / Math.max(320, Math.min(window.innerWidth, 700))));
+  if (state === 'playing') {
+    tutorial.addDrag(dx);
+    player.steer(dx * (390 / Math.max(320, Math.min(window.innerWidth, 700))));
+  }
 });
 const endDrag = () => { dragging = false; };
 window.addEventListener('pointerup', endDrag);
 window.addEventListener('pointercancel', endDrag);
 window.addEventListener('keydown', (e) => {
   if (state !== 'playing') return;
-  if (e.key === 'ArrowLeft' || e.key === 'a') player.steer(-40);
-  if (e.key === 'ArrowRight' || e.key === 'd') player.steer(40);
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    tutorial.addDrag(-40);
+    player.steer(-40);
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    tutorial.addDrag(40);
+    player.steer(40);
+  }
 });
 
 // ---------- events from entities ----------
@@ -384,6 +412,20 @@ function frame(now) {
   quality.update(dt);
   world.update(dt, time, pz);
   fx.update(dt);
+  if (state === 'playing' && tutorial.phase !== 'idle') {
+    camera.updateMatrixWorld();
+    const playerPoint = tutorialScreenPoint(player.x, player.y, pz);
+    const gate = firstTutorialGate;
+    const side = gate && isGoodOp(gate.left.op) ? -1 : 1;
+    const nextGate = gate && {
+      passed: player.d >= gate.d,
+      screen: tutorialScreenPoint(side * CONFIG.trackHalfWidth / 2, 2.55, -gate.d),
+    };
+    if (tutorial.update(dt, playerPoint, nextGate)) {
+      save.tutorialDone = true;
+      writeSave(save);
+    }
+  }
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }

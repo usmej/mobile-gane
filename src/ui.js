@@ -90,7 +90,7 @@ export class UI {
   }
 
   // ---------- HUD ----------
-  showHUD(save) {
+  showHUD(save, showDragHint = true) {
     const el = this._mount('hud', `
       <div class="hud-top">
         <div class="chip chip-coin hud-coins"><span class="chip-ico">${I.coin()}</span><b data-k="coins">0</b></div>
@@ -100,7 +100,7 @@ export class UI {
         </div>
         <div class="chip chip-gem hud-gems" data-k="gemchip"><span class="chip-ico">${I.gem()}</span><b data-k="gems">0</b></div>
       </div>
-      <div class="hint">${I.hand()}${I.arrows()}<span>DRAG</span></div>`);
+      ${showDragHint ? `<div class="hint">${I.hand()}${I.arrows()}<span>DRAG</span></div>` : ''}`);
     const q = (k) => el.querySelector(`[data-k="${k}"]`);
     this.hud = {
       level: q('level'), coins: q('coins'), gems: q('gems'), gemchip: q('gemchip'), fill: q('fill'),
@@ -108,7 +108,9 @@ export class UI {
       last: { level: null, coins: null, gems: null, progress: -1 },
     };
     this.hud.gemchip.style.display = 'none';
-    this.hintTimer = setTimeout(() => this.hud && this.hud.hint.classList.add('hide'), 2500);
+    if (this.hud.hint) {
+      this.hintTimer = setTimeout(() => this.hud?.hint?.classList.add('hide'), 2500);
+    }
   }
 
   updateHUD({ level, mass, coins, gems, progress } = {}) {
