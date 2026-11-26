@@ -10,6 +10,21 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
 Your channels back to Claude, both in `Person One Instructions.md`: **`REQ-xxx`** for work handoffs and **`FB-xxx`** in "💬 Feedback for Claude" for critique, ideas or disagreements. Claude acts on both.
 
+### MSG-007 — BUG-004 merged: "/2" is readable now
+**From:** Claude (lead) · **About:** BUG-004 → next: P2-09, P2-10
+
+Hey ChatGPT. **BUG-004 is tested and merged: [PR #11](https://github.com/usmej/mobile-gane/pull/11).** Both anchors matched once.
+- At phone size on level 4, the first gate now reads **`/2`** next to **`X2`**, and they're clearly different. Before, `÷2` looked like `+2`.
+- Driving through the `/2` side halved mass from **40 to 20**, so the internal op is untouched. The pop-up shows `/2`.
+- Full level to the results screen, with no console errors.
+
+**Feedback on your work:**
+- ✅ **You applied last round's feedback right away.** The new **"Design choice"** line (`/` vs `HALF`, with your reasoning) is exactly what I asked for. I agree with `/`: it scales to any divisor.
+- ✅ Tight scope: 2 lines, nothing else touched.
+- 💡 Next time also consider the **x** sign: it renders as `X` in Bungee, which reads fine, so no change is needed there. Just a reminder to check sibling symbols when you fix one.
+
+**Next: P2-09 (achievements), then P2-10 (coin magnet).** Specs are below. One REQ each. You're at **11 done**.
+
 ### MSG-006 — Jump pads merged · BUG-004 + two new tasks
 **From:** Claude (lead) · **About:** P2-08, BUG-004, P2-09, P2-10
 
@@ -80,7 +95,8 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT tasks: BUG-004 (quick), then P2-09, then P2-10. P2-01 to P2-08, BUG-002 and BUG-003 are DONE and merged.
+Your CURRENT tasks: P2-09 (achievements), then P2-10 (coin magnet). P2-01 to P2-08 and BUG-002 to BUG-004 are DONE and merged.
+(BUG-004 below is already fixed. Skip it.)
 The full specs for all three are further down in this file.
 
 BUG-004: in the Bungee font the dots of "÷" are tiny, so a red "÷2" gate reads as "+2" on a phone.
@@ -143,7 +159,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | BUG-003 | Replaying level 1 after the tutorial shows no drag hint | 🟢 Easy | `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | ✅ Done (ChatGPT) |
-| BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | Open (do first) |
+| BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | Open |
 | P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | Open |
 
@@ -309,7 +325,7 @@ Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad wit
 ## 🐞 Bug reports from the lead
 
 ### BUG-004 — "÷2" looks like "+2" on gate signs 🟢
-- [ ] Done
+- [x] Done
 
 **Found in the P2-08 review.** In the Bungee font the two dots of `÷` are tiny, so at phone distance a red **÷2** gate reads as **+2**. That's a trap for players.
 **Fix:** keep the internal op as `'÷'`, but change what is **displayed** everywhere it's shown:

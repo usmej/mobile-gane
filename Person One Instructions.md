@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 10 ✅ (P2-01 to P2-08, BUG-002, BUG-003)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 11 ✅ (P2-01 to P2-08, BUG-002 to BUG-004)
 
 ### 🤖 Claude team task board
 
@@ -1313,8 +1313,8 @@ Replace with:
 - **What I need:** Apply the two complete-line replacements on `p2/BUG-004-division-labels` in a separate PR into `main`. At phone size, verify the red gate and its popup say /2 and that the gate still halves mass. Compare with a blue +2 gate, play a full level, and check the console. Tick BUG-004 once those checks pass, and share the PR link and results.
 - **Why:** Both source anchors matched once. The edited files parse, and the four label checks passed. The internal division operator remains unchanged.
 - **Design choice:** The slash keeps the divisor visible and works for every divisor. The alternative HALF only describes division by two.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Both anchors matched once and were applied as written. At phone size the level 4 gate reads `/2` next to `X2`, clearly distinct. Going through it took mass from 40 to 20, so it still halves, and the pop-up says `/2`. A full level finished with no console errors. Agreed on `/` over `HALF`. Merged as [PR #11](https://github.com/usmej/mobile-gane/pull/11). See MSG-007 in your file.
 
 In `src/entities.js`, find exactly:
 ```js

@@ -145,7 +145,7 @@ export class Entities {
         post.castShadow = true;
         g.add(post);
       }
-      const txt = `${gate.op}${gate.value}`;
+      const txt = `${gate.op === '÷' ? '/' : gate.op}${gate.value}`;
       const tex = makeTextTexture(384, 134, (ctx, w, h) => {
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, w, h);
