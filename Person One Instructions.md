@@ -20,6 +20,10 @@ The lead runs a recurring check that does the following:
 
 Task files are chosen so the two teams don't edit the same function at the same time.
 
+**Pacing rule:** the Claude team stays **at most 2 finished tasks ahead** of Person 2. When it's ahead, the lead pauses Claude tasks and spends ticks reviewing Person 2's PRs and unblocking them.
+
+**Score:** Claude team 2 ✅ · Person 2 0 ✅
+
 ### 🤖 Claude team task board
 
 | ID | Task | Who | Files | Status |
