@@ -196,5 +196,117 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
   },
 ```
 
+### REQ-005 — Apply and test phone vibration
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-03
+- **What I need:** Apply the helper and eight edits below on `p2/P2-03-haptics`. Confirm the five feedback events, test muting, and play a full level with no console errors. Check vibration on a supported Android device if available, and report any device checks that remain pending. Open the PR into `main` and post the link and results. Tick P2-03 when its acceptance checks pass.
+- **Why:** Person Two verified all eight anchors on main and checked supported, unsupported, muted, and throwing APIs with mocks. Physical device behavior remains unverified.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Create `src/haptics.js`:
+
+```js
+export const haptics = {
+  enabled: true,
+
+  buzz(pattern) {
+    if (!this.enabled) return;
+
+    try {
+      if (typeof globalThis.navigator?.vibrate === 'function') {
+        globalThis.navigator.vibrate(pattern);
+      }
+    } catch {
+      // Vibration can be unavailable or blocked by the browser.
+    }
+  },
+};
+```
+
+Apply these edits in `src/main.js`:
+
+Find:
+```js
+import { audio } from './audio.js';
+```
+Replace with:
+```js
+import { audio } from './audio.js';
+import { haptics } from './haptics.js';
+```
+
+Startup line (no indentation). Find:
+```js
+audio.setEnabled(save.sound);
+```
+Replace with:
+```js
+audio.setEnabled(save.sound);
+haptics.enabled = save.sound;
+```
+
+Sound toggle line (four spaces). Find:
+```js
+    audio.setEnabled(save.sound);
+```
+Replace with:
+```js
+    audio.setEnabled(save.sound);
+    haptics.enabled = save.sound;
+```
+
+Find:
+```js
+    audio.play('win');
+```
+Replace with:
+```js
+    audio.play('win');
+    haptics.buzz([20, 20, 20, 20, 60]);
+```
+
+Find:
+```js
+    audio.play('lose');
+```
+Replace with:
+```js
+    audio.play('lose');
+    haptics.buzz([80, 40, 120]);
+```
+
+Find:
+```js
+      if (!ev.good) fx.shake(0.25);
+```
+Replace with:
+```js
+      if (!ev.good) fx.shake(0.25);
+      if (!ev.good) haptics.buzz(40);
+```
+
+Find:
+```js
+      audio.play('hit');
+      if (player.mass <= 0) lose('Sawed in half.');
+```
+Replace with:
+```js
+      audio.play('hit');
+      haptics.buzz([30, 30, 30]);
+      if (player.mass <= 0) lose('Sawed in half.');
+```
+
+Find:
+```js
+        audio.play('smash');
+```
+Replace with:
+```js
+        audio.play('smash');
+        haptics.buzz(60);
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
