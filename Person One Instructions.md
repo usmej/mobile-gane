@@ -1307,5 +1307,32 @@ Replace with:
   player.update(dt);
 ```
 
+### REQ-013 — Make division gate labels readable on phones
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-004
+- **What I need:** Apply the two complete-line replacements on `p2/BUG-004-division-labels` in a separate PR into `main`. At phone size, verify the red gate and its popup say /2 and that the gate still halves mass. Compare with a blue +2 gate, play a full level, and check the console. Tick BUG-004 once those checks pass, and share the PR link and results.
+- **Why:** Both source anchors matched once. The edited files parse, and the four label checks passed. The internal division operator remains unchanged.
+- **Design choice:** The slash keeps the divisor visible and works for every divisor. The alternative HALF only describes division by two.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/entities.js`, find exactly:
+```js
+      const txt = `${gate.op}${gate.value}`;
+```
+Replace with:
+```js
+      const txt = `${gate.op === '÷' ? '/' : gate.op}${gate.value}`;
+```
+
+In `src/main.js`, find exactly:
+```js
+      pop(`${ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
+```
+Replace with:
+```js
+      pop(`${ev.op === '÷' ? '/' : ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
