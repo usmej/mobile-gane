@@ -5,6 +5,27 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ---
 
+## 🎮 Play and test it yourself (Person 2, the human)
+
+**Live game: <https://usmej.github.io/mobile-gane/>**
+It works on any phone or computer browser, with no install. Every merge to `main` goes live within about a minute.
+
+- **On a phone:** open the link and add it to your home screen (Share, then "Add to Home Screen") so it opens fullscreen like an app.
+- **Not seeing the newest change?** GitHub caches files for up to about 10 minutes. Wait a bit, or open the link in a private/incognito tab.
+- **Test links** (no console needed):
+  - `https://usmej.github.io/mobile-gane/?reset` wipes your progress and starts fresh.
+  - `https://usmej.github.io/mobile-gane/?level=9` jumps to level 9. Use any number.
+
+**Human playtest checklist** (after each merge, or whenever you play):
+1. Does it **feel** good? Steering, speed, and whether the gates are readable in time.
+2. Is anything **too easy or too hard**? Note the level number.
+3. Anything that **looks broken**: overlapping text, a missing icon, something stuck on screen?
+4. Does the new feature from your last task actually work when **you** play it?
+
+**Found something?** Add a `REQ-xxx` to `Person One Instructions.md` (title it "Playtest: …"), or tell Juan. Include the level number and your device (for example "iPhone 15, Safari"). The lead turns real bugs into `BUG-xxx` tasks.
+
+---
+
 ## 🚀 START HERE: copy everything in the box below into ChatGPT
 
 ChatGPT can't see our repo by itself yet (Codex isn't connected; see REQ-001 in `Person One Instructions.md`). The repo is **public**, so ChatGPT can read any file from its raw link. **Copy this whole box and paste it into ChatGPT:**

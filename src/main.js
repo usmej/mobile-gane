@@ -9,7 +9,7 @@ import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { haptics } from './haptics.js';
 import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
-import { loadSave, writeSave } from './save.js';
+import { loadSave, writeSave, resetSave } from './save.js';
 import { claim } from './daily.js';
 import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
@@ -17,7 +17,17 @@ import { AutoQuality } from './quality.js';
 import { Trail } from './trail.js';
 
 // ---------- setup ----------
+// Test links for human playtesters (no console needed on a phone):
+//   ?reset      → wipe progress and start fresh
+//   ?level=12   → jump straight to level 12
+const params = new URLSearchParams(location.search);
+if (params.has('reset')) resetSave();
 const save = loadSave();
+if (params.has('level')) {
+  const n = parseInt(params.get('level'), 10);
+  if (n >= 1) { save.level = n; writeSave(save); }
+}
+if (params.has('reset') || params.has('level')) history.replaceState(null, '', location.pathname);
 const host = document.getElementById('game');
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
