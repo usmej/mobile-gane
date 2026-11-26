@@ -66,7 +66,7 @@ Add **6 skins** to the end of the `SKINS` array in `src/skins.js`. Follow the ex
 - Use at least 3 different patterns (`solid`, `stripes`, `dots`, `checker`, `rainbow`, `glow`).
 - Each `id` must be unique and lowercase. Names should be funny, original brain-rot ("Mid Mochi", "Lowkey Lava"...).
 
-**Done when:** all 6 show in the Shop with the right swatch, and can be bought and equipped. To test, give yourself money in the console with `__gloop.save.coins = 5000; __gloop.save.gems = 100`.
+**Done when:** all 6 show in the Shop with the right swatch, and can be bought and equipped. To test, give yourself money in the console with `__gloop.save.coins = 5000; __gloop.save.gems = 100; __gloop.persist()`, then open the Shop.
 
 ---
 
@@ -77,7 +77,7 @@ Add **4 themes** to `THEMES` in `src/themes.js`, using the same keys as the exis
 - Each should look clearly different from the existing 8. Ideas: "Midnight Arcade", "Cotton Candy Storm", "Pickle Planet", "Sunset Drip".
 - `track` and `trackAlt` need enough contrast that the pattern is visible.
 
-**Done when:** you can see each new theme by running `__gloop.save.level = 9` (then 10, 11, 12), reloading, and checking that the gate numbers are still readable on every one.
+**Done when:** you can see each new theme by running `__gloop.goto(9)` in the browser console (then 10, 11, 12), and the gate numbers are still readable on every one.
 
 ---
 
@@ -88,7 +88,7 @@ Create `src/haptics.js`:
 ```js
 export const haptics = { enabled: true, buzz(pattern) { /* navigator.vibrate if supported; never throw */ } };
 ```
-In `src/main.js` → `handleEvent()`, call it for these events:
+In `src/main.js`, call it for these events (gates, saws and walls are in `handleEvent()`; losing and boss win are in `finishRun()`):
 - bad gate: `buzz(40)`
 - saw: `buzz([30, 30, 30])`
 - wall smash: `buzz(60)`
@@ -125,7 +125,7 @@ Reward picking good gates in a row.
 **Done when:**
 - You can claim once per day.
 - The button is hidden after claiming.
-- Faking yesterday with `__gloop.save.lastDaily -= 86400000` makes it claimable again with streak 2.
+- Faking yesterday with `__gloop.save.lastDaily -= 86400000; __gloop.persist(); location.reload()` makes it claimable again with streak 2.
 
 ---
 

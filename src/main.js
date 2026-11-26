@@ -289,7 +289,7 @@ function frame(now) {
     camPos.set(Math.sin(time * 0.4) * 2.5, 3.2 + s, pz + 7 + s);
     camLook.set(0, 1 + s * 0.5, pz);
   } else {
-    camPos.lerp(new THREE.Vector3(player.x * 0.45, 5.2 + s * 1.5, pz + 8.5 + s * 2.2), 1 - Math.exp(-6 * dt));
+    camPos.lerp(new THREE.Vector3(player.x * 0.45, 4.6 + s * 2.4, pz + 7.5 + s * 3.4), 1 - Math.exp(-6 * dt));
     camLook.set(player.x * 0.3, 1 + s * 0.4, pz - 9);
   }
   camera.position.copy(camPos).add(fx.shakeOffset);
@@ -306,4 +306,10 @@ showMenu();
 requestAnimationFrame(frame);
 
 // handy for debugging in the console
-window.__gloop = { save, player, get level() { return level; }, get state() { return state; } };
+window.__gloop = {
+  save, player,
+  get level() { return level; },
+  get state() { return state; },
+  persist() { writeSave(save); },                                   // save after editing __gloop.save
+  goto(n) { save.level = Math.max(1, n | 0); writeSave(save); loadLevel(); showMenu(); }, // jump to a level
+};

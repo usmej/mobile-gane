@@ -15,7 +15,7 @@ export const CONFIG = {
   startMass: 10,
   minScale: 0.55,
   scalePerCbrt: 0.22,       // scale = minScale + cbrt(mass) * scalePerCbrt
-  maxScale: 3.2,
+  maxScale: 2.4,
 
   // Levels
   levelLengthBase: 230,

@@ -73,5 +73,5 @@ src/save.js         localStorage progress
 ```
 
 ## 🧪 Debugging
-Open the browser console. `__gloop` exposes `save`, `player`, `level` and `state`.
+Open the browser console. `__gloop` exposes `save`, `player`, `level` and `state`, plus `__gloop.goto(n)` to jump to level n and `__gloop.persist()` to save after you edit `__gloop.save`.
 To reset progress, run `localStorage.clear()` and reload.

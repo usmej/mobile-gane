@@ -102,7 +102,7 @@ export function generateLevel(level) {
     rowIndex++;
   }
 
-  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.25, level * 0.015))));
+  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
   return {
     level,
     theme,
