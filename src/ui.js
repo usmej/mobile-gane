@@ -1,6 +1,7 @@
 // DOM UI: menu, HUD, shop, win/lose screens, toasts.
 import { skinSwatchCSS } from './skins.js';
 import { pickMeme } from './memes.js';
+import * as I from './icons.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
@@ -53,8 +54,8 @@ export class UI {
 
   _currencyBar(save) {
     return `<div class="cur-bar">
-      <div class="chip chip-coin"><span class="chip-ico">🪙</span><b data-k="coins">${fmt(save.coins)}</b></div>
-      <div class="chip chip-gem"><span class="chip-ico">💎</span><b data-k="gems">${fmt(save.gems)}</b></div>
+      <div class="chip chip-coin"><span class="chip-ico">${I.coin()}</span><b data-k="coins">${fmt(save.coins)}</b></div>
+      <div class="chip chip-gem"><span class="chip-ico">${I.gem()}</span><b data-k="gems">${fmt(save.gems)}</b></div>
     </div>`;
   }
 
@@ -63,24 +64,24 @@ export class UI {
     this.sound = save.sound !== false;
     const el = this._mount('panel-layer menu', `
       <div class="menu-top">${this._currencyBar(save)}
-        <button class="btn btn-round btn-sound" aria-label="Toggle sound">${this.sound ? '🔊' : '🔇'}</button>
+        <button class="btn btn-sq btn-sound" aria-label="Toggle sound">${this.sound ? I.speakerOn() : I.speakerOff()}</button>
       </div>
       <div class="menu-mid">
         <h1 class="title" aria-label="Gloop Rush">
-          <span class="t-line t1">${[...'GLOOP'].map((c, i) => `<i style="--i:${i}">${c}</i>`).join('')}</span>
-          <span class="t-line t2">${[...'RUSH'].map((c, i) => `<i style="--i:${i + 5}">${c}</i>`).join('')}</span>
+          <span class="t-line t1">${[...'GLOOP'].map((c, i) => `<i style="--r:${[-3, 2, -1, 3, -2][i]}deg">${c}${i === 3 ? `<span class="drip-wrap">${I.drip()}</span>` : ''}</i>`).join('')}</span>
+          <span class="t-line t2">${[...'RUSH'].map((c, i) => `<i style="--r:${[2, -3, 1, -2][i]}deg">${c}</i>`).join('')}</span>
         </h1>
-        <div class="level-badge">LEVEL ${save.level}</div>
+        <div class="level-tag">LV ${save.level}</div>
       </div>
       <div class="menu-bottom">
-        <button class="btn btn-play">TAP TO PLAY</button>
-        <button class="btn btn-shop btn-md">🛍️ SHOP</button>
+        <button class="btn btn-play">PLAY</button>
+        <button class="btn btn-shop btn-md">SKINS</button>
       </div>`);
     this._on(el, '.btn-play', () => this._call('onPlay'));
     this._on(el, '.btn-shop', () => this._call('onOpenShop'));
     const snd = this._on(el, '.btn-sound', () => {
       this.sound = !this.sound;
-      snd.textContent = this.sound ? '🔊' : '🔇';
+      snd.innerHTML = this.sound ? I.speakerOn() : I.speakerOff();
       this._call('onToggleSound', this.sound);
     });
   }
@@ -89,14 +90,14 @@ export class UI {
   showHUD(save) {
     const el = this._mount('hud', `
       <div class="hud-top">
-        <div class="chip chip-coin hud-coins"><span class="chip-ico">🪙</span><b data-k="coins">0</b></div>
+        <div class="chip chip-coin hud-coins"><span class="chip-ico">${I.coin()}</span><b data-k="coins">0</b></div>
         <div class="hud-mid">
-          <div class="level-pill">LEVEL <b data-k="level">${save.level}</b></div>
-          <div class="prog"><div class="prog-fill" data-k="fill"></div><span class="prog-boss">👹</span></div>
+          <div class="level-tag hud-level">LV <b data-k="level">${save.level}</b></div>
+          <div class="prog"><div class="prog-fill" data-k="fill"></div><span class="prog-boss">${I.bossFace()}</span></div>
         </div>
-        <div class="chip chip-gem hud-gems" data-k="gemchip"><span class="chip-ico">💎</span><b data-k="gems">0</b></div>
+        <div class="chip chip-gem hud-gems" data-k="gemchip"><span class="chip-ico">${I.gem()}</span><b data-k="gems">0</b></div>
       </div>
-      <div class="hint">👆 drag to steer</div>`);
+      <div class="hint">${I.hand()}${I.arrows()}<span>DRAG</span></div>`);
     const q = (k) => el.querySelector(`[data-k="${k}"]`);
     this.hud = {
       level: q('level'), coins: q('coins'), gems: q('gems'), gemchip: q('gemchip'), fill: q('fill'),
@@ -104,7 +105,7 @@ export class UI {
       last: { level: null, coins: null, gems: null, progress: -1 },
     };
     this.hud.gemchip.style.display = 'none';
-    this.hintTimer = setTimeout(() => this.hud && this.hud.hint.classList.add('hide'), 3000);
+    this.hintTimer = setTimeout(() => this.hud && this.hud.hint.classList.add('hide'), 2500);
   }
 
   updateHUD({ level, mass, coins, gems, progress } = {}) {
@@ -131,14 +132,14 @@ export class UI {
   showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1 } = {}) {
     const el = this._mount('panel-layer result win', `
       <div class="card card-win">
-        <div class="res-head">LEVEL ${level} CLEARED</div>
+        <div class="res-head">LEVEL ${level}</div>
         <div class="meme meme-win">${esc(pickMeme('win'))}</div>
         <div class="earn-row">
-          <div class="earn-coins"><span class="chip-ico big">🪙</span><b class="count" data-k="coins">0</b></div>
-          <div class="mult-badge">x${multiplier}</div>
+          <div class="earn-coins"><span class="chip-ico big">${I.coin()}</span><b class="count" data-k="coins">0</b></div>
+          <div class="mult-tag">x${multiplier}</div>
         </div>
-        ${gemsEarned > 0 ? `<div class="earn-gems"><span class="chip-ico">💎</span><b class="count" data-k="gems">0</b></div>` : ''}
-        <button class="btn btn-next">NEXT ▶</button>
+        ${gemsEarned > 0 ? `<div class="earn-gems"><span class="chip-ico">${I.gem()}</span><b class="count" data-k="gems">0</b></div>` : ''}
+        <button class="btn btn-next">NEXT</button>
       </div>`);
     this._on(el, '.btn-next', () => this._call('onNext'));
     const cEl = el.querySelector('[data-k="coins"]');
@@ -159,10 +160,11 @@ export class UI {
   showLose({ level, reason = '' } = {}) {
     const el = this._mount('panel-layer result lose', `
       <div class="card card-lose">
-        <div class="res-head lose-head">LEVEL ${level} FAILED</div>
+        <div class="res-head">LEVEL ${level}</div>
+        <div class="stamp">FAILED</div>
         <div class="meme meme-lose">${esc(pickMeme('lose'))}</div>
         ${reason ? `<div class="reason">${esc(reason)}</div>` : ''}
-        <button class="btn btn-retry">RETRY ↻</button>
+        <button class="btn btn-retry">RETRY</button>
       </div>`);
     this._on(el, '.btn-retry', () => this._call('onRetry'));
   }
@@ -176,25 +178,28 @@ export class UI {
       const gem = s.currency === 'gems';
       const have = gem ? save.gems : save.coins;
       const can = have >= s.price;
+      const ico = gem ? I.gem() : I.coin();
       let btn;
       if (equipped) btn = `<button class="btn btn-sm btn-equipped" disabled>EQUIPPED</button>`;
       else if (isOwned) btn = `<button class="btn btn-sm btn-equip" data-act="equip" data-id="${esc(s.id)}">EQUIP</button>`;
-      else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">BUY</button>`;
-      else btn = `<button class="btn btn-sm btn-locked" disabled>🔒 LOCKED</button>`;
-      const price = isOwned ? '' : `<div class="skin-price ${can ? '' : 'poor'}">${gem ? '💎' : '🪙'} ${fmt(s.price)}</div>`;
+      else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
+      else btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>NEED ${fmt(s.price)}</span></button>`;
       return `<div class="skin-card${equipped ? ' is-eq' : ''}${!isOwned && !can ? ' is-locked' : ''}">
-        <div class="swatch" style="background:${skinSwatchCSS(s)}"></div>
+        ${equipped ? '<span class="on-tag">ON</span>' : ''}
+        <div class="swatch" style="background:${skinSwatchCSS(s)}"><i class="spec"></i></div>
         <div class="skin-name">${esc(s.name)}</div>
-        ${price}${btn}
+        ${btn}
       </div>`;
     }).join('');
     const prevGrid = this.screen.querySelector('.skin-grid');
     const prevScroll = prevGrid ? prevGrid.scrollTop : 0;
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
-        <div class="shop-head"><span class="shop-title">SKIN SHOP</span>${this._currencyBar(save)}</div>
+        <button class="btn btn-close" aria-label="Close">${I.closeX()}</button>
+        <div class="shop-head"><span class="shop-title">SKINS</span></div>
+        ${this._currencyBar(save)}
         <div class="skin-grid">${cards}</div>
-        <button class="btn btn-close btn-md">CLOSE ✖</button>
+        
       </div>`);
     if (prevScroll) { el.querySelector('.skin-grid').scrollTop = prevScroll; el.classList.add('no-anim'); }
     this._on(el, '.btn-close', () => this._call('onCloseShop'));

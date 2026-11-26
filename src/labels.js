@@ -1,7 +1,28 @@
 import * as THREE from 'three';
 
+export const FONT = '"Bungee", "Arial Black", sans-serif';
+
+// Canvas texture whose draw(ctx, w, h) is re-run once webfonts have loaded.
+export function makeTextTexture(w, h, draw) {
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const paint = () => { ctx.clearRect(0, 0, w, h); draw(ctx, w, h); tex.needsUpdate = true; };
+  paint();
+  try {
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load('40px "Bungee"').then(() => { paint(); }).catch(() => {});
+    }
+  } catch (e) { /* ignore */ }
+  return tex;
+}
+
 // A camera-facing text sprite drawn on a canvas. Call .setText() to update.
-export function makeLabel(text, { color = '#ffffff', stroke = '#1a1030', bg = null, height = 1 } = {}) {
+export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = null, height = 1 } = {}) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 128;
@@ -14,29 +35,38 @@ export function makeLabel(text, { color = '#ffffff', stroke = '#1a1030', bg = nu
   sprite.renderOrder = 10;
 
   let current = null;
-  sprite.setText = (t) => {
-    t = String(t);
-    if (t === current) return;
-    current = t;
+  const draw = () => {
     ctx.clearRect(0, 0, 256, 128);
     if (bg) {
       ctx.fillStyle = bg;
-      roundRect(ctx, 8, 14, 240, 100, 30);
+      roundRect(ctx, 8, 14, 240, 100, 3);
       ctx.fill();
     }
+    const t = current;
     const size = t.length > 4 ? 64 : 84;
-    ctx.font = `900 ${size}px "Lilita One", "Arial Black", Impact, sans-serif`;
+    ctx.font = `${size}px ${FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 14;
-    ctx.strokeStyle = stroke;
-    ctx.strokeText(t, 128, 68);
+    if (!bg) {
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = stroke;
+      ctx.strokeText(t, 128, 68);
+    }
     ctx.fillStyle = color;
     ctx.fillText(t, 128, 68);
     tex.needsUpdate = true;
   };
+  sprite.setText = (t) => {
+    t = String(t);
+    if (t === current) return;
+    current = t;
+    draw();
+  };
   sprite.setText(text);
+  try {
+    if (document.fonts && document.fonts.load) document.fonts.load('40px "Bungee"').then(() => { if (current !== null) draw(); }).catch(() => {});
+  } catch (e) { /* ignore */ }
   sprite.disposeLabel = () => { tex.dispose(); mat.dispose(); };
   return sprite;
 }

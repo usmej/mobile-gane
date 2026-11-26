@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const MAX_PARTICLES = 250;
 const PARTICLE_LIFE = 0.7;
-const MAX_TEXTS = 8;
+const MAX_TEXTS = 3;
 const TEXT_LIFE = 0.9;
 const TEXT_RISE_PX = 60;
 const SHAKE_TIME = 0.3;
@@ -80,12 +80,11 @@ export class FX {
     s.top = '0';
     s.pointerEvents = 'none';
     s.whiteSpace = 'nowrap';
-    s.font = `900 ${px}px 'Impact', 'Arial Black', sans-serif`;
+    s.font = `400 ${px}px 'Bungee', 'Arial Black', sans-serif`;
     s.color = color;
-    s.letterSpacing = '1px';
-    s.webkitTextStroke = `${Math.max(3, px * 0.14)}px #1a1020`;
+    s.webkitTextStroke = `${Math.max(4, px * 0.16)}px #1B1420`;
     s.paintOrder = 'stroke fill';
-    s.textShadow = '0 3px 0 #1a1020, 0 0 8px rgba(0,0,0,0.6)';
+    s.textShadow = '0 3px 0 #1B1420';
     s.willChange = 'transform, opacity';
     s.opacity = '0';
     this.overlayEl.appendChild(el);
@@ -94,7 +93,7 @@ export class FX {
       el,
       anchor: position.clone(),
       age: 0,
-      rot: (Math.random() * 20 - 10),
+      rot: (this._tilt = -(this._tilt || 4)), // alternate -4 / +4, not random
       x: -9999,
       y: -9999,
       visible: false,
@@ -125,12 +124,10 @@ export class FX {
     const k = Math.min(t.age / TEXT_LIFE, 1);
     const rise = TEXT_RISE_PX * (1 - Math.pow(1 - k, 2));
     let scale;
+    // single stamp-in: 1.4 -> 1 with ease-out, no overshoot
     if (k < 0.2) {
       const u = k / 0.2;
-      scale = 0.4 + 0.8 * u; // 0.4 -> 1.2
-    } else if (k < 0.35) {
-      const u = (k - 0.2) / 0.15;
-      scale = 1.2 - 0.2 * u; // 1.2 -> 1
+      scale = 1.4 - 0.4 * (1 - Math.pow(1 - u, 3));
     } else {
       scale = 1;
     }

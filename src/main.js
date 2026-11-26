@@ -12,6 +12,7 @@ import { loadSave, writeSave } from './save.js';
 import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
 import { AutoQuality } from './quality.js';
+import { Trail } from './trail.js';
 
 // ---------- setup ----------
 const save = loadSave();
@@ -31,6 +32,8 @@ const entities = new Entities(scene);
 const player = new Player(scene, makeSkinMaterial(getSkin(save.skin)));
 const fx = new FX(scene, camera, document.getElementById('fx'));
 const finale = new Finale(scene);
+const trail = new Trail(scene);
+trail.setColor(getSkin(save.skin).color);
 audio.setEnabled(save.sound);
 
 let state = 'menu';   // menu | playing | boss | finale | ending | result
@@ -67,6 +70,7 @@ function loadLevel() {
   player.reset();
   player.group.visible = true;
   fx.clear();
+  trail.clear();
   runCoins = 0;
   runGems = 0;
 }
@@ -83,7 +87,7 @@ function startRun() {
   player.label.visible = true;
   ui.showHUD(save);
   audio.startMusic(save.level);
-  fx.popText(pickMeme('start') || 'GO!', player.position.clone().setY(3), '#fff', 1.3);
+  fx.popText(pickMeme('start') || 'GO', player.position.clone().setY(5), '#FFF4E0', 1.2);
 }
 
 // Boss beaten: blow it up, then climb the bonus stairs.
@@ -93,7 +97,7 @@ function defeatBoss() {
   b.group.visible = false;
   fx.burst(b.group.position.clone().setY(b.size), '#e0245e', 60);
   fx.burst(b.group.position.clone().setY(b.size * 1.5), '#ffd23f', 40);
-  fx.popText(pickMeme('win') || 'W', b.group.position.clone().setY(b.size * 2), '#7CFF6B', 1.8);
+  fx.popText(pickMeme('win') || 'W', b.group.position.clone().setY(b.size * 2), '#4EE06A', 1.6);
   fx.shake(0.6);
   audio.play('smash');
   finaleMult = finale.start(player, b.hp);
@@ -122,7 +126,7 @@ function finishRun(won) {
     endResult = { won, level: save.level, reason: lossReason };
     player.group.visible = false;
     fx.burst(player.position.clone().setY(1), getSkin(save.skin).color, 50);
-    fx.popText(pickMeme('lose') || 'L', player.position.clone().setY(2.5), '#ff4d6d', 1.8);
+    fx.popText(pickMeme('lose') || 'L', player.position.clone().setY(2.5), '#FF3B5C', 1.6);
     fx.shake(0.5);
     audio.play('lose');
   }
@@ -140,11 +144,11 @@ function buySkin(id) {
   const skin = getSkin(id);
   if (save.ownedSkins.includes(id)) return equipSkin(id);
   const wallet = skin.currency === 'gems' ? 'gems' : 'coins';
-  if (save[wallet] < skin.price) { ui.toast('Not enough ' + wallet + ' 💀'); return; }
+  if (save[wallet] < skin.price) { ui.toast('Not enough ' + wallet); return; }
   save[wallet] -= skin.price;
   save.ownedSkins.push(id);
   audio.play('buy');
-  ui.toast(`${skin.name} unlocked! SHEESH`);
+  ui.toast(`${skin.name} unlocked`);
   equipSkin(id);
 }
 
@@ -152,6 +156,7 @@ function equipSkin(id) {
   if (!save.ownedSkins.includes(id)) return;
   save.skin = id;
   player.setMaterial(makeSkinMaterial(getSkin(id)));
+  trail.setColor(getSkin(id).color);
   writeSave(save);
   audio.play('click');
   ui.showShop(save, SKINS);
@@ -177,24 +182,38 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ---------- events from entities ----------
+// The number pops big; a meme word follows separately, but only now and then
+// (every 3rd event, or always on a big swing) so it doesn't spam the screen.
+const C = { good: '#1FA2FF', bad: '#FF3B5C', green: '#4EE06A', coin: '#FFD23F', gem: '#B04BFF', cream: '#FFF4E0' };
+let memeTick = 0;
+function pop(numberText, pos, color, memeCat, big = false) {
+  fx.popText(numberText, pos, color, 1.1);
+  memeTick++;
+  if (!memeCat || !(big || memeTick % 3 === 0)) return;
+  const word = pickMeme(memeCat);
+  if (!word) return;
+  const p = pos.clone(); p.y += 1.3;
+  setTimeout(() => fx.popText(word, p, color, 0.7), 120);
+}
+
 function handleEvent(ev) {
   switch (ev.type) {
     case 'gate': {
       const before = player.mass;
       player.setMass(applyOp(before, ev.op, ev.value));
-      fx.popText(`${ev.op}${ev.value}  ${pickMeme(ev.good ? 'gateGood' : 'gateBad')}`, ev.pos, ev.good ? '#5be3ff' : '#ff4d6d', 1.1);
+      pop(`${ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
       fx.burst(ev.pos, ev.good ? '#2fa8ff' : '#ff3b5c', 20);
       audio.play(ev.good ? 'gateGood' : 'gateBad');
       if (!ev.good) fx.shake(0.25);
-      if (player.mass <= 0) lose('Divided into nothing 💀');
+      if (player.mass <= 0) lose('Divided into nothing.');
       break;
     }
     case 'food':
       player.setMass(player.mass + (ev.good ? ev.value : -ev.value));
-      fx.popText(`${ev.good ? '+' : '-'}${ev.value} ${pickMeme(ev.good ? 'foodGood' : 'foodBad')}`, ev.pos, ev.good ? '#7CFF6B' : '#ff9f43', 0.8);
+      pop(`${ev.good ? '+' : '-'}${ev.value}`, ev.pos, ev.good ? C.green : C.bad, ev.good ? 'foodGood' : 'foodBad');
       fx.burst(ev.pos, ev.good ? '#3fd64f' : '#8a4b1e', 10);
       audio.play(ev.good ? 'foodGood' : 'foodBad');
-      if (player.mass <= 0) lose('Ate too much junk 🍔');
+      if (player.mass <= 0) lose('Ate too much junk.');
       break;
     case 'coin':
       runCoins += 1;
@@ -205,28 +224,29 @@ function handleEvent(ev) {
       runGems += 1;
       audio.play('gem');
       fx.burst(ev.pos, '#b04bff', 18);
-      fx.popText('💎 ' + (pickMeme('coin') || 'GEM'), ev.pos, '#e3b3ff', 1);
+      pop('+1 GEM', ev.pos, C.gem, 'gem', true);
       break;
     case 'saw':
       player.setMass(player.mass - ev.damage);
-      fx.popText(`-${ev.damage} ${pickMeme('hit')}`, ev.pos, '#ff4d6d', 1);
+      pop(`-${ev.damage}`, ev.pos, C.bad, 'hit', ev.damage >= 10);
       fx.burst(ev.pos, getSkin(save.skin).color, 14);
+      trail.splat(player.position, getSkin(save.skin).color, player.scale);
       fx.shake(0.35);
       audio.play('hit');
-      if (player.mass <= 0) lose('Got sawed 🪚');
+      if (player.mass <= 0) lose('Sawed in half.');
       break;
     case 'wall':
       if (player.mass > ev.value) {
         player.setMass(player.mass - ev.value);
         entities.smashWall(ev.wall);
         fx.burst(ev.pos, '#8a8fa8', 30);
-        fx.popText(`SMASH -${ev.value}`, ev.pos, '#ffe14d', 1.2);
+        pop(`SMASH -${ev.value}`, ev.pos, C.coin);
         fx.shake(0.45);
         audio.play('smash');
       } else {
         player.setMass(0);
         audio.play('hit');
-        lose(`Too small for the ${ev.value} wall 🧱`);
+        lose(`Too small for the ${ev.value} wall.`);
       }
       break;
   }
@@ -261,7 +281,7 @@ function frame(now) {
       state = 'boss';
       player.targetX = 0;
       audio.play('boss');
-      fx.popText(pickMeme('boss') || 'BOSS', entities.boss.group.position.clone().setY(entities.boss.size * 2.6), '#ff4d6d', 1.5);
+      fx.popText(pickMeme('boss') || 'BOSS', entities.boss.group.position.clone().setY(entities.boss.size * 2.6), '#FF3B5C', 1.3);
     }
     if (state === 'boss') {
       player.targetX = 0;
@@ -269,7 +289,7 @@ function frame(now) {
       if (player.d >= b.d - b.size - player.radius * 0.6) {
         player.d = b.d - b.size - player.radius * 0.6;
         if (player.mass >= b.hp) defeatBoss();
-        else lose(`Boss had ${b.hp}, you had ${player.mass} 😭`);
+        else lose(`Boss had ${b.hp}. You had ${player.mass}.`);
       }
     }
   }
@@ -278,7 +298,7 @@ function frame(now) {
     const { stepped, done } = finale.update(dt);
     if (stepped) {
       const pos = finale.stepPosition(stepped);
-      fx.popText(`x${stepped}`, pos, stepped >= 7 ? '#ffd23f' : '#ffffff', 1 + stepped * 0.06);
+      fx.popText(`x${stepped}`, pos, stepped >= 8 ? '#FFD23F' : '#FFF4E0', 1 + stepped * 0.05);
       fx.burst(pos, finale.steps[stepped - 1].color, 12);
       audio.play(stepped === finaleMult ? 'gem' : 'coin');
     }
@@ -286,6 +306,7 @@ function frame(now) {
   }
 
   player.update(dt);
+  trail.update(dt, player, (state === 'playing' || state === 'boss') && player.y < 0.05);
   const events = entities.update(dt, time, player, prevD);
   if (state === 'playing' || state === 'boss') {
     for (const ev of events) {

@@ -25,7 +25,7 @@ export class Player {
     }
     this.body.add(this.eyes);
 
-    this.label = makeLabel('10', { bg: 'rgba(20,10,40,0.55)', height: 0.9 });
+    this.label = makeLabel('10', { color: '#ffffff', height: 0.9 });
     this.group.add(this.body, this.label);
     scene.add(this.group);
 

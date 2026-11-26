@@ -2,20 +2,20 @@ import * as THREE from 'three';
 
 // pattern: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'
 export const SKINS = [
-  { id: 'classic',  name: 'Classic Gloop', price: 0,   currency: 'coins', color: '#5be37a', color2: '#2fae4f', pattern: 'solid' },
-  { id: 'bubble',   name: 'Bubblegum Blob', price: 50,  currency: 'coins', color: '#ff8ad8', color2: '#ff4fb8', pattern: 'solid' },
-  { id: 'sus',      name: 'Sus Slime',      price: 90,  currency: 'coins', color: '#ff4d4d', color2: '#a81f2d', pattern: 'stripes' },
-  { id: 'drip',     name: 'Drip Lord',      price: 150, currency: 'coins', color: '#3aa7ff', color2: '#0b3d91', pattern: 'dots' },
-  { id: 'rizz',     name: 'Rizz Jelly',     price: 220, currency: 'coins', color: '#b86bff', color2: '#ffd6f6', pattern: 'stripes' },
-  { id: 'ohio',     name: 'Ohio Ooze',      price: 300, currency: 'coins', color: '#9bd12b', color2: '#3b2a14', pattern: 'checker' },
-  { id: 'sigma',    name: 'Sigma Sludge',   price: 400, currency: 'coins', color: '#2b2f3a', color2: '#7be0ff', pattern: 'checker' },
-  { id: 'mango',    name: 'Mango Mush',     price: 520, currency: 'coins', color: '#ffb02e', color2: '#ff6a1a', pattern: 'dots' },
-  { id: 'splat',    name: 'Rainbow Splat',  price: 650, currency: 'coins', color: '#ffe14a', color2: '#ff3d81', pattern: 'rainbow' },
-  { id: 'cap',      name: 'No Cap Neon',    price: 800, currency: 'coins', color: '#39ffb0', color2: '#00ffd0', pattern: 'glow' },
-  { id: 'mewing',   name: 'Mewing Mint',    price: 5,   currency: 'gems',  color: '#7ff5e0', color2: '#1fb8a6', pattern: 'glow' },
-  { id: 'grape',    name: 'Glitch Grape',   price: 12,  currency: 'gems',  color: '#7a3cff', color2: '#ff6bf0', pattern: 'rainbow' },
+  { id: 'classic',  name: 'Gloop', price: 0,   currency: 'coins', color: '#5be37a', color2: '#2fae4f', pattern: 'solid' },
+  { id: 'bubble',   name: 'Bubblegum', price: 50,  currency: 'coins', color: '#ff8ad8', color2: '#ff4fb8', pattern: 'solid' },
+  { id: 'sus',      name: 'Traffic Cone',      price: 90,  currency: 'coins', color: '#ff4d4d', color2: '#a81f2d', pattern: 'stripes' },
+  { id: 'drip',     name: 'Pool Noodle',      price: 150, currency: 'coins', color: '#3aa7ff', color2: '#0b3d91', pattern: 'dots' },
+  { id: 'rizz',     name: 'Grandma\'s Jello',     price: 220, currency: 'coins', color: '#b86bff', color2: '#ffd6f6', pattern: 'stripes' },
+  { id: 'ohio',     name: 'Ohio',      price: 300, currency: 'coins', color: '#9bd12b', color2: '#3b2a14', pattern: 'checker' },
+  { id: 'sigma',    name: 'Sigma',   price: 400, currency: 'coins', color: '#2b2f3a', color2: '#7be0ff', pattern: 'checker' },
+  { id: 'mango',    name: 'Mango',     price: 520, currency: 'coins', color: '#ffb02e', color2: '#ff6a1a', pattern: 'dots' },
+  { id: 'splat',    name: 'Sticker Sheet',  price: 650, currency: 'coins', color: '#ffe14a', color2: '#ff3d81', pattern: 'rainbow' },
+  { id: 'cap',      name: 'Highlighter',    price: 800, currency: 'coins', color: '#39ffb0', color2: '#00ffd0', pattern: 'glow' },
+  { id: 'mewing',   name: 'Mewing',    price: 5,   currency: 'gems',  color: '#7ff5e0', color2: '#1fb8a6', pattern: 'glow' },
+  { id: 'grape',    name: 'Grape Soda',   price: 12,  currency: 'gems',  color: '#7a3cff', color2: '#ff6bf0', pattern: 'rainbow' },
   { id: 'aura',     name: 'Aura Farmer',    price: 20,  currency: 'gems',  color: '#ffd23f', color2: '#ff9d00', pattern: 'glow' },
-  { id: 'goated',   name: 'Goated Galaxy',  price: 30,  currency: 'gems',  color: '#1a1245', color2: '#c58cff', pattern: 'dots' },
+  { id: 'goated',   name: '3AM',  price: 30,  currency: 'gems',  color: '#1a1245', color2: '#c58cff', pattern: 'dots' },
 ];
 
 export function getSkin(id) {
@@ -94,21 +94,22 @@ export function makeSkinMaterial(skin) {
   return new THREE.MeshStandardMaterial(opts);
 }
 
+const swatchCache = new Map();
+
 export function skinSwatchCSS(skin) {
   skin = skin || SKINS[0];
-  const a = skin.color, b = skin.color2;
-  switch (skin.pattern) {
-    case 'stripes':
-      return `repeating-linear-gradient(45deg, ${a} 0 8px, ${b} 8px 16px)`;
-    case 'dots':
-      return `radial-gradient(circle, ${b} 0 28%, transparent 30%) 0 0 / 14px 14px, ${a}`;
-    case 'checker':
-      return `conic-gradient(${a} 25%, ${b} 0 50%, ${a} 0 75%, ${b} 0) 0 0 / 16px 16px`;
-    case 'rainbow':
-      return 'conic-gradient(#ff3b3b, #ffb02e, #ffe14a, #5be37a, #3aa7ff, #b86bff, #ff3b3b)';
-    case 'glow':
-      return `radial-gradient(circle, ${b} 0%, ${a} 65%, ${a} 100%)`;
-    default:
-      return `linear-gradient(135deg, ${a}, ${b})`;
-  }
+  if (swatchCache.has(skin.id)) return swatchCache.get(skin.id);
+  let css = skin.color;
+  try {
+    const c = drawPattern(skin);
+    if (skin.pattern === 'glow') {
+      const g = c.getContext('2d');
+      g.strokeStyle = skin.color2;
+      g.lineWidth = 36;
+      g.strokeRect(0, 0, c.width, c.height);
+    }
+    css = `url(${c.toDataURL('image/png')}) center / cover`;
+  } catch (e) { /* no canvas: flat color */ }
+  swatchCache.set(skin.id, css);
+  return css;
 }

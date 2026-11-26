@@ -1,20 +1,22 @@
 import * as THREE from 'three';
 import { CONFIG } from './config.js';
-import { makeLabel } from './labels.js';
+import { makeLabel, makeTextTexture, FONT } from './labels.js';
 import { isGoodOp } from './levels.js';
 import { makeBossMesh } from './bosses.js';
 
-const GOOD = '#2fa8ff';
-const BAD = '#ff3b5c';
+const GOOD = '#1FA2FF';
+const BAD = '#FF3B5C';
+const INK = '#1B1420';
+const CREAM = '#FFF4E0';
 
 // Shared geometries/materials (created once, reused across levels)
 const G = {};
 function shared() {
   if (G.ready) return G;
   G.coin = new THREE.CylinderGeometry(0.42, 0.42, 0.12, 20);
-  G.coinMat = new THREE.MeshStandardMaterial({ color: 0xffd23f, metalness: 0.6, roughness: 0.25, emissive: 0x553300, emissiveIntensity: 0.4 });
+  G.coinMat = new THREE.MeshStandardMaterial({ color: 0xffd23f, metalness: 0.1, roughness: 0.5 });
   G.gem = new THREE.OctahedronGeometry(0.5, 0);
-  G.gemMat = new THREE.MeshStandardMaterial({ color: 0xb04bff, metalness: 0.3, roughness: 0.1, emissive: 0x5a00aa, emissiveIntensity: 0.7, flatShading: true });
+  G.gemMat = new THREE.MeshStandardMaterial({ color: 0xb04bff, metalness: 0.1, roughness: 0.5, flatShading: true });
   G.broc = new THREE.IcosahedronGeometry(0.42, 1);
   G.brocMat = new THREE.MeshStandardMaterial({ color: 0x3fd64f, roughness: 0.6, flatShading: true });
   G.stem = new THREE.CylinderGeometry(0.12, 0.16, 0.5, 8);
@@ -38,6 +40,7 @@ export class Entities {
     scene.add(this.group);
     this.items = [];
     this.labels = [];
+    this.textures = [];
     this.boss = null;
   }
 
@@ -83,14 +86,31 @@ export class Entities {
         }
         case 'wall': {
           const g = new THREE.Group();
-          const box = new THREE.Mesh(new THREE.BoxGeometry(it.width, 2.4, 0.6), G.wallMat);
-          box.position.y = 1.2;
+          const WH = 2.4;
+          const wallTex = makeTextTexture(512, Math.max(64, Math.round(512 * WH / it.width)), (ctx, w, h) => {
+            ctx.fillStyle = '#8a8fa8';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = INK;
+            ctx.fillRect(0, 0, w, 8); ctx.fillRect(0, h - 8, w, 8); ctx.fillRect(0, 0, 8, h); ctx.fillRect(w - 8, 0, 8, h);
+            const ph = h * 0.62;
+            const pw = Math.min(w * 0.8, ph * 2.4);
+            ctx.fillStyle = INK;
+            ctx.fillRect((w - pw) / 2 - 6, (h - ph) / 2 - 6, pw + 12, ph + 12);
+            ctx.fillStyle = '#FFD23F';
+            ctx.fillRect((w - pw) / 2, (h - ph) / 2, pw, ph);
+            ctx.fillStyle = INK;
+            ctx.font = `${Math.floor(ph * 0.72)}px ${FONT}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(it.value), w / 2, h / 2 + ph * 0.04);
+          });
+          this.textures.push(wallTex);
+          const side = new THREE.MeshStandardMaterial({ color: 0x8a8fa8, roughness: 0.8, flatShading: true });
+          const face = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.8 });
+          const box = new THREE.Mesh(new THREE.BoxGeometry(it.width, WH, 0.6), [side, side, side, side, face, side]);
+          box.position.y = WH / 2;
           box.castShadow = true;
           g.add(box);
-          const lab = makeLabel(it.value, { color: '#ffe14d', height: 1.1 });
-          lab.position.set(0, 1.3, 0.4);
-          g.add(lab);
-          this.labels.push(lab);
           g.position.set(it.x, 0, z);
           e.obj = g; break;
         }
@@ -103,21 +123,46 @@ export class Entities {
 
   makeGatePair(it, z, W) {
     const g = new THREE.Group();
+    const postW = 0.3, headH = 1.05, H = 3.1; // tall header so the number reads on a phone
     for (const [side, gate] of [[-1, it.left], [1, it.right]]) {
       const good = isGoodOp(gate.op);
       const color = good ? GOOD : BAD;
+      const solid = new THREE.MeshStandardMaterial({ color, roughness: 0.6, flatShading: true });
+      const cx = side * W / 2;
       const panel = new THREE.Mesh(
-        new THREE.BoxGeometry(W - 0.15, 2.6, 0.15),
-        new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.45, emissive: color, emissiveIntensity: 0.35 })
+        new THREE.BoxGeometry(W - postW, H - headH, 0.1),
+        new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.18, depthWrite: false })
       );
-      panel.position.set(side * W / 2, 1.3, 0);
-      const frame = new THREE.Mesh(new THREE.BoxGeometry(W, 0.25, 0.3), new THREE.MeshStandardMaterial({ color }));
-      frame.position.set(side * W / 2, 2.7, 0);
-      const lab = makeLabel(`${gate.op}${gate.value}`, { height: 1.2 });
-      lab.position.set(side * W / 2, 1.5, 0.2);
-      this.labels.push(lab);
+      panel.position.set(cx, (H - headH) / 2, 0);
       panel.userData.side = side;
-      g.add(panel, frame, lab);
+      for (const px of [cx - W / 2 + postW / 2, cx + W / 2 - postW / 2]) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(postW, H, 0.3), solid);
+        post.position.set(px, H / 2, 0);
+        post.castShadow = true;
+        g.add(post);
+      }
+      const txt = `${gate.op}${gate.value}`;
+      const tex = makeTextTexture(384, 134, (ctx, w, h) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = INK;
+        ctx.fillRect(0, h - 8, w, 8);
+        ctx.fillStyle = CREAM;
+        ctx.font = `${txt.length > 3 ? 92 : 112}px ${FONT}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = INK;
+        ctx.strokeText(txt, w / 2, h / 2 - 3);
+        ctx.fillText(txt, w / 2, h / 2 - 3);
+      });
+      this.textures.push(tex);
+      const face = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 });
+      const header = new THREE.Mesh(new THREE.BoxGeometry(W, headH, 0.4), [solid, solid, solid, solid, face, solid]);
+      header.position.set(cx, H - headH / 2, 0);
+      header.castShadow = true;
+      g.add(panel, header);
     }
     g.position.z = z;
     return g;
@@ -151,7 +196,7 @@ export class Entities {
     const hp = levelData.boss.hp;
     const size = 1.4 + Math.cbrt(hp) * 0.28;
     const { group: g, body, height } = makeBossMesh(levelData.level || 1, size);
-    const lab = makeLabel(hp, { color: '#ff4d6d', bg: 'rgba(0,0,0,0.6)', height: 1.4 });
+    const lab = makeLabel(hp, { color: CREAM, bg: '#FF3B5C', height: 1.4 });
     lab.position.set(0, (height || size * 2) + 1.4, 0);
     this.labels.push(lab);
     g.add(lab);
@@ -234,10 +279,13 @@ export class Entities {
   dispose() {
     this.labels.forEach((l) => l.disposeLabel());
     this.labels = [];
+    (this.textures || []).forEach((t) => t.dispose());
+    this.textures = [];
     this.group.traverse((o) => {
       if (o.isMesh && !Object.values(G).includes(o.geometry)) {
         o.geometry.dispose();
-        if (!Object.values(G).includes(o.material)) o.material.dispose();
+        const ms = Array.isArray(o.material) ? o.material : [o.material];
+        ms.forEach((m) => { if (!Object.values(G).includes(m)) m.dispose(); });
       }
     });
     this.group.clear();

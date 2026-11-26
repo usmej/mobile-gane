@@ -1,38 +1,55 @@
 import * as THREE from 'three';
 import { CONFIG } from './config.js';
-import { makeLabel } from './labels.js';
+import { makeTextTexture, FONT } from './labels.js';
 
-// Bonus stairs after the boss: x1 → x10. Leftover mass pays for each step.
-const STEP_COLORS = ['#ff4d6d', '#ff8a3d', '#ffd23f', '#9be15d', '#2fd4a7', '#2fa8ff', '#6c63ff', '#b04bff', '#ff5ec4', '#ffffff'];
+// Bonus stairs after the boss: x1 -> x10. Leftover mass pays for each step.
+const INK = '#1B1420';
 
 export class Finale {
   constructor(scene) {
     this.scene = scene;
     this.group = new THREE.Group();
     scene.add(this.group);
-    this.labels = [];
     this.active = false;
   }
 
   build(levelData) {
     this.dispose();
     const W = CONFIG.trackHalfWidth;
+    const theme = levelData.theme || {};
+    const cols = [theme.track || '#8a8fa8', theme.trackAlt || '#b9bdd0'];
     this.startD = levelData.boss.d + CONFIG.finaleGap;
     this.steps = [];
+    const rise = CONFIG.finaleStepRise;
+    const depth = CONFIG.finaleStepDepth;
     for (let i = 0; i < CONFIG.finaleSteps; i++) {
-      const h = (i + 1) * CONFIG.finaleStepRise;
-      const color = STEP_COLORS[i % STEP_COLORS.length];
+      const h = (i + 1) * rise;
+      const color = i >= 7 ? '#FFD23F' : cols[i % 2];
       const box = new THREE.Mesh(
-        new THREE.BoxGeometry(W * 2, h, CONFIG.finaleStepDepth),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.45, emissive: color, emissiveIntensity: 0.12 })
+        new THREE.BoxGeometry(W * 2, h, depth),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true })
       );
-      const d = this.startD + i * CONFIG.finaleStepDepth;
-      box.position.set(0, h / 2, -d - CONFIG.finaleStepDepth / 2);
+      const d = this.startD + i * depth;
+      box.position.set(0, h / 2, -d - depth / 2);
       box.receiveShadow = true;
-      const lab = makeLabel(`x${i + 1}`, { color: '#ffffff', height: 1.1 });
-      lab.position.set(0, h + 0.05, -d - 0.3);
-      this.labels.push(lab);
-      this.group.add(box, lab);
+      // number painted on the exposed riser (+Z face)
+      const label = `x${i + 1}`;
+      const tex = makeTextTexture(1024, 96, (ctx, w, hh) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, w, hh);
+        ctx.fillStyle = INK;
+        ctx.fillRect(0, hh - 6, w, 6);
+        ctx.font = `76px ${FONT}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, w / 2, hh / 2 - 2);
+      });
+      const riser = new THREE.Mesh(
+        new THREE.PlaneGeometry(W * 2, rise),
+        new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 })
+      );
+      riser.position.set(0, h - rise / 2, -d + 0.01);
+      this.group.add(box, riser);
       this.steps.push({ d, h, color, box });
     }
   }
@@ -85,9 +102,7 @@ export class Finale {
 
   dispose() {
     this.active = false;
-    this.labels.forEach((l) => l.disposeLabel());
-    this.labels = [];
-    this.group.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
+    this.group.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.map?.dispose(); o.material.dispose(); } });
     this.group.clear();
     this.steps = [];
   }
