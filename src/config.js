@@ -27,6 +27,7 @@ export const CONFIG = {
 
   // Hit boxes
   pickupRadius: 0.9,
+  magnet: { minLevel: 5, duration: 6, radius: 4, pullSpeed: 32, collectDistance: 0.5, lead: 4, pickupHeight: 1.1 },
   sawDamageCooldown: 0.6,
   jumpPad: {
     minLevel: 4,

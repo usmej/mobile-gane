@@ -125,6 +125,14 @@ export function generateLevel(level) {
     }
   }
 
+  if (level >= CONFIG.magnet.minLevel) {
+    const lead = CONFIG.magnet.lead;
+    const coin = items.find((item) => item.type === 'coin' &&
+      item.d > CONFIG.firstItemAt + lead &&
+      items.every((other) => Math.abs(other.d - (item.d - lead)) > CONFIG.pickupRadius));
+    items.push({ type: 'magnet', d: coin ? coin.d - lead : CONFIG.firstItemAt - lead, x: coin ? coin.x : 0 });
+  }
+
   const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
   return {
     level,
