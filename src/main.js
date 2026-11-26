@@ -260,7 +260,7 @@ function handleEvent(ev) {
     case 'gate': {
       const before = player.mass;
       player.setMass(applyOp(before, ev.op, ev.value));
-      pop(`${ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
+      pop(`${ev.op === '÷' ? '/' : ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
       fx.burst(ev.pos, ev.good ? '#2fa8ff' : '#ff3b5c', 20);
       audio.play(ev.good ? 'gateGood' : 'gateBad');
       combo = ev.good ? combo + 1 : 0;
