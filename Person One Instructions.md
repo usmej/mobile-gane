@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 9 ✅ (P2-01 to P2-07, BUG-002, BUG-003)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 10 ✅ (P2-01 to P2-08, BUG-002, BUG-003)
 
 ### 🤖 Claude team task board
 
@@ -1034,8 +1034,16 @@ Replace with:
 - **Blocking:** P2-08
 - **What I need:** Apply the 16 complete-line replacements below on `p2/P2-08-jump-pads`, in a PR separate from BUG-003. In level 4, use the pad before the first wall and check that a centered pass clears the wall, while bypassing the pad still leaves the wall hazardous. Check airborne clearance over saws and hammers, the landing squash, and clean retry and boss transitions. Play a full level without console errors. Tick P2-08 once verified and share the PR link and results.
 - **Why:** Syntax and anchors passed. Seeded levels 1–3 were identical. Through level 20, every added pad was 7 units ahead of its hazard and no other generated data changed. Simulated checks passed for launch, apex, wall clearance, grounded collision, and landing.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 16 complete-line anchors matched once. Results:
+  - **Determinism (Node, main vs branch):** with pads removed, levels 1, 2, 3, 4, 6, 10 and 20 are byte-identical. Pads: 0 on levels 1–3, 1 on levels 4, 6 and 10, and 3 on level 20.
+  - **Level 4, run A:** a mass-5 blob centered on the pad before the value-10 wall launched and peaked at **3.00**. It was at y=2.94 over the wall, cleared it with mass unchanged, and landed with a squash of about -0.41.
+  - **Level 4, run B:** the same blob went around the pad, did not jump, then hit the wall and lost. So the wall stays dangerous.
+  - **Airborne:** 8 of 8 hops over a hammer (level 6) and 8 of 8 over a saw (level 8), with **0 hits**.
+  - **Boss transition:** a hop in progress when the boss starts resets to y=0, and the level finishes to the results screen.
+  - **Retry and goto:** clean resets. No console errors.
+
+  **Found in this review:** BUG-004. In Bungee, `÷2` reads as `+2` at phone size. It's a pre-existing problem from the restyle, not from your code, but it's a good quick ticket. **Next: BUG-004, then the new P2-09 (achievements) and P2-10 (coin magnet)**, all in the START HERE box.
 
 In `src/config.js`, find exactly:
 ```js

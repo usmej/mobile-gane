@@ -53,6 +53,7 @@ export class Entities {
       const z = -it.d;
       switch (it.type) {
         case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+        case 'pad': e.obj = this.makeJumpPad(it.x, z); break;
         case 'coin': {
           const m = new THREE.Mesh(G.coin, G.coinMat);
           m.rotation.x = Math.PI / 2;
@@ -208,6 +209,35 @@ export class Entities {
     this.boss = { group: g, body, label: lab, hp, size, d: levelData.boss.d, dead: false };
   }
 
+  makeJumpPad(x, z) {
+    const { width, depth, thickness } = CONFIG.jumpPad;
+    const pad = new THREE.Group();
+    pad.position.set(x, 0, z);
+    const base = new THREE.Mesh(
+      new THREE.BoxGeometry(width, thickness, depth),
+      new THREE.MeshStandardMaterial({ color: '#FFD23F', roughness: 0.8 })
+    );
+    base.position.y = thickness / 2;
+    pad.add(base);
+
+    const arrow = new THREE.Shape();
+    arrow.moveTo(-0.32, -0.23);
+    arrow.lineTo(0, 0.27);
+    arrow.lineTo(0.32, -0.23);
+    arrow.lineTo(0.16, -0.23);
+    arrow.lineTo(0, 0.02);
+    arrow.lineTo(-0.16, -0.23);
+    arrow.closePath();
+    const mark = new THREE.Mesh(
+      new THREE.ShapeGeometry(arrow),
+      new THREE.MeshStandardMaterial({ color: INK, roughness: 0.8 })
+    );
+    mark.rotation.x = -Math.PI / 2;
+    mark.position.y = thickness + 0.002;
+    pad.add(mark);
+    return pad;
+  }
+
   makeHammer(z, trackHalfWidth) {
     const h = CONFIG.hammer;
     const gantry = new THREE.Group();
@@ -247,11 +277,12 @@ export class Entities {
     const r = player.radius;
     const px = player.x;
     const pd = player.d;
+    const aboveHazards = player.y > CONFIG.jumpPad.clearance;
 
     for (const e of this.items) {
       if (!e.obj) continue;
       const near = Math.abs(e.d - pd) < 60;
-      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'wall';
+      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'wall' || e.type === 'pad';
 
       if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
       if (e.type === 'gem' && !e.used) { e.obj.rotation.y = time * 2; e.obj.position.y = 1.1 + Math.sin(time * 3) * 0.2; }
@@ -274,6 +305,15 @@ export class Entities {
       const pos = player.position.clone().setY(r * 2);
 
       switch (e.type) {
+        case 'pad': {
+          const { width, depth } = CONFIG.jumpPad;
+          const front = e.d - depth / 2;
+          if (player.y === 0 && prevD < front && pd >= front && dx <= width / 2 + r * 0.5) {
+            e.used = true;
+            events.push({ type: 'pad', pos });
+          }
+          break;
+        }
         case 'gate':
           if (prevD < e.d && pd >= e.d) {
             e.used = true;
@@ -290,6 +330,7 @@ export class Entities {
           }
           break;
         case 'hammer': {
+          if (aboveHazards) break;
           const h = CONFIG.hammer;
           const { head, headPosition, pivot } = e.obj.userData;
           head.getWorldPosition(headPosition);
@@ -308,13 +349,13 @@ export class Entities {
           break;
         }
         case 'saw':
-          if (e.cooldown <= 0 && dd < r * 0.7 + 0.5 && dx < r * 0.8 + 0.8) {
+          if (!aboveHazards && e.cooldown <= 0 && dd < r * 0.7 + 0.5 && dx < r * 0.8 + 0.8) {
             e.cooldown = CONFIG.sawDamageCooldown;
             events.push({ type: 'saw', damage: e.damage, pos });
           }
           break;
         case 'wall':
-          if (prevD < e.d - r * 0.5 && pd >= e.d - r * 0.5 && dx < e.width / 2 + r * 0.6) {
+          if (!aboveHazards && prevD < e.d - r * 0.5 && pd >= e.d - r * 0.5 && dx < e.width / 2 + r * 0.6) {
             e.used = true;
             events.push({ type: 'wall', value: e.value, pos, wall: e });
           }

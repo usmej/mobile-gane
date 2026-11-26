@@ -28,6 +28,17 @@ export const CONFIG = {
   // Hit boxes
   pickupRadius: 0.9,
   sawDamageCooldown: 0.6,
+  jumpPad: {
+    minLevel: 4,
+    lead: 7,
+    width: 1.7,
+    depth: 1.35,
+    thickness: 0.12,
+    duration: 1.2,
+    peak: 3,
+    clearance: 0.5,
+    landingSquash: -0.45,
+  },
 
   // Swinging hammer
   hammer: {
