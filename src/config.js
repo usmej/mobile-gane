@@ -30,6 +30,7 @@ export const CONFIG = {
   sawDamageCooldown: 0.6,
 
   // Economy (earned by playing only — no real money)
+  comboBonusMass: 2,
   winBaseCoins: 10,
   winCoinsPerLevel: 3,
   gemEveryNLevels: 5,
