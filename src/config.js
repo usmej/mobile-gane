@@ -2,7 +2,7 @@
 export const CONFIG = {
   // Track
   trackHalfWidth: 3,
-  bossArena: 40,            // extra track after the finish line
+  bossArena: 55,            // extra track after the finish line (boss + bonus stairs)
 
   // Movement
   runSpeed: 13,             // units / second at level 1
@@ -34,6 +34,15 @@ export const CONFIG = {
   winCoinsPerLevel: 3,
   gemEveryNLevels: 5,
   maxMultiplier: 10,
+
+  // Bonus stairs finale (x1 → x10 after the boss)
+  finaleSteps: 10,
+  finaleGap: 5,             // distance from the boss to the first step
+  finaleStepDepth: 3,
+  finaleStepRise: 0.55,
+  finaleSpeed: 9,
+  finaleStepCostRatio: 0.3, // each step costs this fraction of boss HP...
+  finaleMinStepCost: 4,     // ...but at least this much mass
 };
 
 export function massToScale(mass) {

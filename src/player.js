@@ -37,6 +37,7 @@ export class Player {
     this.x = 0;
     this.targetX = 0;
     this.d = 0;
+    this.y = 0;               // raised by the bonus stairs
     this.scale = massToScale(this.mass);
     this.squash = 0;      // impulse for wobble
     this.time = 0;
@@ -76,7 +77,7 @@ export class Player {
     this.body.position.y = s * (1 - wob);
     this.body.rotation.z = THREE.MathUtils.clamp(-vx * 0.03, -0.35, 0.35);
 
-    this.group.position.set(this.x, 0, -this.d);
+    this.group.position.set(this.x, this.y, -this.d);
     this.label.position.set(0, s * 2 + 0.9, 0);
     const ls = 0.9 + s * 0.25;
     this.label.scale.set(ls * 2, ls, 1);

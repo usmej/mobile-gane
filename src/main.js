@@ -10,6 +10,7 @@ import { audio } from './audio.js';
 import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave } from './save.js';
 import { pickMeme } from './memes.js';
+import { Finale } from './finale.js';
 
 // ---------- setup ----------
 const save = loadSave();
@@ -27,9 +28,11 @@ const world = new World(scene);
 const entities = new Entities(scene);
 const player = new Player(scene, makeSkinMaterial(getSkin(save.skin)));
 const fx = new FX(scene, camera, document.getElementById('fx'));
+const finale = new Finale(scene);
 audio.setEnabled(save.sound);
 
-let state = 'menu';   // menu | playing | boss | ending | result
+let state = 'menu';   // menu | playing | boss | finale | ending | result
+let finaleMult = 1;
 let level = null;
 let runCoins = 0;
 let runGems = 0;
@@ -58,6 +61,7 @@ function loadLevel() {
   level = generateLevel(save.level);
   world.build(level);
   entities.build(level);
+  finale.build(level);
   player.reset();
   player.group.visible = true;
   fx.clear();
@@ -77,12 +81,25 @@ function startRun() {
   fx.popText(pickMeme('start') || 'GO!', player.position.clone().setY(3), '#fff', 1.3);
 }
 
+// Boss beaten: blow it up, then climb the bonus stairs.
+function defeatBoss() {
+  const b = entities.boss;
+  b.dead = true;
+  b.group.visible = false;
+  fx.burst(b.group.position.clone().setY(b.size), '#e0245e', 60);
+  fx.burst(b.group.position.clone().setY(b.size * 1.5), '#ffd23f', 40);
+  fx.popText(pickMeme('win') || 'W', b.group.position.clone().setY(b.size * 2), '#7CFF6B', 1.8);
+  fx.shake(0.6);
+  audio.play('smash');
+  finaleMult = finale.start(player, b.hp);
+  state = 'finale';
+}
+
 function finishRun(won) {
   state = 'ending';
-  endTimer = won ? 1.4 : 1.2;
-  const b = entities.boss;
+  endTimer = won ? 1.0 : 1.2;
   if (won) {
-    const mult = Math.min(CONFIG.maxMultiplier, 1 + Math.floor((player.mass - b.hp) / Math.max(4, b.hp * 0.3)));
+    const mult = Math.min(CONFIG.maxMultiplier, finaleMult);
     const coinsEarned = (runCoins + CONFIG.winBaseCoins + save.level * CONFIG.winCoinsPerLevel) * mult;
     const gemsEarned = runGems + (save.level % CONFIG.gemEveryNLevels === 0 ? 2 : 0);
     endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult };
@@ -90,14 +107,8 @@ function finishRun(won) {
     save.gems += gemsEarned;
     save.level += 1;
     save.best = Math.max(save.best, save.level);
-    b.dead = true;
-    b.group.visible = false;
-    fx.burst(b.group.position.clone().setY(b.size), '#e0245e', 60);
-    fx.burst(b.group.position.clone().setY(b.size * 1.5), '#ffd23f', 40);
-    fx.popText(pickMeme('win') || 'W', b.group.position.clone().setY(b.size * 2), '#7CFF6B', 1.8);
-    fx.shake(0.6);
-    audio.play('smash');
-    setTimeout(() => audio.play('win'), 250);
+    fx.burst(player.position.clone().setY(player.y + 2), '#ffd23f', 50);
+    audio.play('win');
   } else {
     // keep what you picked up — losing shouldn't feel like a total L
     save.coins += runCoins;
@@ -251,10 +262,21 @@ function frame(now) {
       const b = entities.boss;
       if (player.d >= b.d - b.size - player.radius * 0.6) {
         player.d = b.d - b.size - player.radius * 0.6;
-        if (player.mass >= b.hp) finishRun(true);
+        if (player.mass >= b.hp) defeatBoss();
         else lose(`Boss had ${b.hp}, you had ${player.mass} 😭`);
       }
     }
+  }
+
+  if (state === 'finale') {
+    const { stepped, done } = finale.update(dt);
+    if (stepped) {
+      const pos = finale.stepPosition(stepped);
+      fx.popText(`x${stepped}`, pos, stepped >= 7 ? '#ffd23f' : '#ffffff', 1 + stepped * 0.06);
+      fx.burst(pos, finale.steps[stepped - 1].color, 12);
+      audio.play(stepped === finaleMult ? 'gem' : 'coin');
+    }
+    if (done) finishRun(true);
   }
 
   player.update(dt);
@@ -289,8 +311,9 @@ function frame(now) {
     camPos.set(Math.sin(time * 0.4) * 2.5, 3.2 + s, pz + 7 + s);
     camLook.set(0, 1 + s * 0.5, pz);
   } else {
-    camPos.lerp(new THREE.Vector3(player.x * 0.45, 4.6 + s * 2.4, pz + 7.5 + s * 3.4), 1 - Math.exp(-6 * dt));
-    camLook.set(player.x * 0.3, 1 + s * 0.4, pz - 9);
+    const py = player.y;
+    camPos.lerp(new THREE.Vector3(player.x * 0.45, 4.6 + s * 2.4 + py, pz + 7.5 + s * 3.4), 1 - Math.exp(-6 * dt));
+    camLook.set(player.x * 0.3, 1 + s * 0.4 + py, pz - 9);
   }
   camera.position.copy(camPos).add(fx.shakeOffset);
   camera.lookAt(camLook);
