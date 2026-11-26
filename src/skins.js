@@ -24,7 +24,7 @@ export const SKINS = [
   { id: 'crumbclout', name: 'Crumb Clout', price: 1950, currency: 'coins', color: '#ffc67d', color2: '#632c13', pattern: 'dots' },
   { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
   { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
-  { id: 'drum', name: 'Drumroll', price: 0, currency: 'coins', color: '#C8843E', color2: '#8E5426', pattern: 'solid', shape: 'drum' },
+  { id: 'drum', name: 'Triple T', price: 0, currency: 'coins', color: '#C8843E', color2: '#8E5426', pattern: 'solid', shape: 'drum' },
 ];
 
 export function getSkin(id) {
@@ -87,8 +87,13 @@ function getTexture(skin) {
   return tex;
 }
 
+// FB-004: materials are cached per skin id, so switching skins reuses instances
+// instead of leaking a new WebGL material on every equip.
+const materialCache = new Map();
+
 export function makeSkinMaterial(skin) {
   skin = skin || SKINS[0];
+  if (materialCache.has(skin.id)) return materialCache.get(skin.id);
   const opts = { color: new THREE.Color(skin.color), roughness: 0.35, metalness: 0.05 };
   if (skin.pattern === 'glow') {
     opts.emissive = new THREE.Color(skin.color2);
@@ -100,7 +105,9 @@ export function makeSkinMaterial(skin) {
       opts.color = new THREE.Color('#ffffff');
     }
   }
-  return new THREE.MeshStandardMaterial(opts);
+  const mat = new THREE.MeshStandardMaterial(opts);
+  materialCache.set(skin.id, mat);
+  return mat;
 }
 
 const swatchCache = new Map();

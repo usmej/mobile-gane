@@ -163,5 +163,9 @@ export class Player {
   }
 
   get radius() { return this.scale; }
+
+  // Core body size (largest of width/height, no accessories) at the settled scale.
+  // Blob sphere: diameter 2. Drum: 1.9 wide x 1.5 tall -> 1.9. Used to size the boss fairly.
+  get coreSize() { return this.scale * (this.isDrum ? 1.9 : 2); }
   get position() { return this.group.position; }
 }

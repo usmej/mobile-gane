@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CONFIG } from './config.js';
+import { CONFIG, massToScale } from './config.js';
 import { makeLabel, makeTextTexture, FONT } from './labels.js';
 import { isGoodOp } from './levels.js';
 import { makeBossMesh } from './bosses.js';
@@ -198,15 +198,42 @@ export class Entities {
 
   buildBoss(levelData) {
     const hp = levelData.boss.hp;
-    const size = 1.4 + Math.cbrt(hp) * 0.28;
-    const { group: g, body, height } = makeBossMesh(levelData.level || 1, size);
+    // Build at unit size, measure the CORE body (no horns/crowns/eyes), then scale the
+    // whole group so the core matches the fight math. See bossCoreTarget().
+    const { group: g, body, height } = makeBossMesh(levelData.level || 1, 1);
+    g.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(body);
+    const sz = box.getSize(new THREE.Vector3());
+    const baseCore = Math.max(sz.x, sz.y);
     const lab = makeLabel(hp, { color: CREAM, bg: '#FF3B5C', height: 1.4 });
-    lab.position.set(0, (height || size * 2) + 1.4, 0);
+    lab.position.set(0, (height || 2) + 0.9, 0);
     this.labels.push(lab);
     g.add(lab);
     g.position.set(0, 0, -levelData.boss.d);
     this.group.add(g);
-    this.boss = { group: g, body, label: lab, hp, size, d: levelData.boss.d, dead: false };
+    const startCore = 2 * massToScale(hp); // what a player with mass == HP would measure
+    const k = startCore / baseCore;
+    g.scale.setScalar(k);
+    lab.scale.multiplyScalar(1 / k);
+    this.boss = { group: g, body, label: lab, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
+  }
+
+  /**
+   * Target core size for the boss so the picture agrees with the rule (win if mass >= HP):
+   * boss core = player core * cbrt(HP / mass), with at least a 6% visible gap when not tied.
+   * Loss -> boss bigger, tie -> equal, win -> boss smaller.
+   */
+  bossCoreTarget(player) {
+    const b = this.boss;
+    const mass = Math.max(1, player.mass);
+    let ratio = Math.cbrt(b.hp / mass);
+    if (b.hp !== mass) {
+      const min = CONFIG.bossMinSizeGap;
+      if (b.hp > mass) ratio = Math.max(ratio, 1 + min);
+      else ratio = Math.min(ratio, 1 - min);
+    }
+    ratio = Math.min(CONFIG.bossMaxRatio, Math.max(1 / CONFIG.bossMaxRatio, ratio));
+    return player.coreSize * ratio;
   }
 
   makeJumpPad(x, z) {
@@ -367,6 +394,12 @@ export class Entities {
       const b = this.boss;
       const s = 1 + Math.sin(time * 4) * 0.04;
       b.body.scale.set(s, 1 / s, s);
+      // Ease the boss toward its fair size relative to the player's current mass.
+      const targetK = this.bossCoreTarget(player) / b.baseCore;
+      b.k += (targetK - b.k) * (1 - Math.exp(-12 * dt));
+      b.group.scale.setScalar(b.k);
+      b.label.scale.copy(b.labelBase).multiplyScalar(1 / b.k); // keep the HP label readable
+      b.size = (b.baseCore * b.k) / 2;
     }
     return events;
   }
