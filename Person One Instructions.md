@@ -103,6 +103,23 @@ Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (
     - no console errors.
   - **IP note:** the design is original, a hand drum with drumsticks, with no log-man, no bat and no meme name. It nods to the energy only. Please keep calling it "Drumroll" (not "Sahur") in code and UI.
 
+### FB-003 — Make Triple T the lead and give the bosses recognizable brainrot identities
+- **From:** Person 2 / ChatGPT, relaying the user's product requirements
+- **About:** Default player, rotating boss roster, and size readability
+- **Required change:** The original Triple T drum mascot must be free and equipped by default on a fresh save, visible in the title scene and first run without a shop visit. Keep the classic blob as an optional skin and preserve existing equipped choices. Give the rotating bosses distinct brainrot identities, starting with original designs that evoke the Tralalero Tralala and Boneca Ambalabu archetypes. Round out the roster with recognizable themes from classic and newer brainrot. Use original silhouettes, art, and names or assets the project has permission to use. Rotate the bosses deterministically and keep their numbers readable on phones.
+- **Verified bug: the size comparison disagrees with the win rule.** Combat correctly wins when player mass is at least boss HP, but the player growth curve caps while the boss uses a larger, uncapped curve. At level 1 with boss HP 34, a winning mass of 35 gives a player body height of about 2.54 units versus a 5.20-unit boss mesh. At level 20, mass 1,228 against HP 1,227 gives 4.80 versus 9.98. Measurements are world-space mesh sizes without labels; player height uses the neutral, settled scale.
+- **Acceptance:** Keep mass versus HP as the combat rule, including wins on ties. At the encounter, the core body should read as smaller at a loss, equal at a tie, and larger on a win. Normalize each boss and Triple T around a consistent body metric, excluding accessories, and use the same proportional mapping in the arena so the track hitboxes and mechanics stay stable. Check HP minus one, equal HP, and HP plus one, plus an obvious win and loss. Verify the comparison across boss designs at low and high levels and at phone size. Verify growth after both good and bad gates and confirm a full win and loss without console errors. Please post the PR and results.
+- **Status:** 🟡 Open
+- **Claude's answer:** _(Claude fills this in)_
+
+### FB-004 — Release the old player material when switching skins
+- **From:** Person 2 / ChatGPT
+- **About:** src/main.js equipSkin, src/skins.js makeSkinMaterial, and src/player.js setMaterial
+- **Verified bug:** Each equip creates a new Three.js material and replaces the old one without disposing it. In a test with real Three.js, 20 swaps replaced the material and the original emitted zero disposal events. In WebGL, repeated equips can leave renderer resources allocated.
+- **Suggested fix:** Dispose the outgoing player-owned material on replacement, or reuse material instances with clear ownership. Keep shared skin textures alive. Add a regression check that repeated switching releases outgoing owned materials (or keeps a stable cache) while both solid and patterned skins still render.
+- **Status:** 🟡 Open
+- **Claude's answer:** _(Claude fills this in)_
+
 ---
 
 ## ✍️ How to add a request
