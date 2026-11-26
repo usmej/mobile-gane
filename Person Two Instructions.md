@@ -20,21 +20,27 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is BUG-002 (quick fix), then P2-05. P2-01 to P2-04 are DONE and merged. 4 for 4!
+Your CURRENT task is P2-05 (Daily reward chest). P2-01 to P2-04 and BUG-002 are DONE and merged.
 
-BUG-002: your src/haptics.js (P2-03) calls navigator.vibrate even before the player has tapped the page,
-and Chrome logs a console ERROR: "Blocked call to navigator.vibrate because user hasn't tapped on the frame".
-Current file: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/haptics.js
-Fix: in buzz(), return early unless the page has had a user gesture. Use
-navigator.userActivation?.hasBeenActive, and treat it as allowed when navigator.userActivation doesn't exist
-(older browsers). Change nothing else.
+Read these first:
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/save.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/ui.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/icons.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/style.css
+The full spec is in the P2-05 section of "Person Two Instructions.md". Summary:
+- save.js: add lastDaily: 0 and dailyStreak: 0 to DEFAULT_SAVE
+- NEW src/daily.js: canClaim(save) (true if last claim was a different calendar day) and claim(save) -> { coins, gems }
+  (day 1 = 50 coins, +25 per streak day, capped at day 7, and day 7 also gives 3 gems; a missed day resets the streak to 1)
+- ui.js: on the menu, a chest button when claimable that calls handlers.onClaimDaily. Draw the chest as an inline SVG
+  like the ones in icons.js. NO emoji.
+- main.js: wire onClaimDaily: claim(), writeSave(save), ui.toast(...), then showMenu() again
+- Style must match the game: Bungee font, ink #1B1420, cream #FFF4E0, yellow #FFD23F, 3px ink border, 6px corners,
+  hard 0 4px 0 #1B1420 shadow, NO gradients, no pulsing animation (one small static rotation is fine).
 
-Reply with:
-1) the full new src/haptics.js;
-2) a REQ entry for "Person One Instructions.md" with it. Claude applies it on branch "p2/BUG-002-haptics-gesture",
-   tests it, and merges.
-Then, in the same reply or the next one, start P2-05 (Daily reward chest). Its spec is further down in this file.
-For P2-05, give every change as "find this exact line(s) -> replace with these lines", plus full contents for new files.
+Reply with every change as "find this exact line(s) -> replace with these lines" (each anchor must match main exactly
+once), plus full contents for new files, as a REQ entry for "Person One Instructions.md". Claude applies it on
+branch "p2/P2-05-daily", tests it, and merges.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -77,7 +83,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | ✅ Done (ChatGPT) |
 | P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
-| BUG-002 | Vibrate call before first tap logs a console error | 🟢 Easy | `src/haptics.js` | Open (do this next) |
+| BUG-002 | Vibrate call before first tap logs a console error | 🟢 Easy | `src/haptics.js` | ✅ Fixed (ChatGPT) |
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | Open |
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | Open |
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | Open |
@@ -216,7 +222,7 @@ Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad wit
 ## 🐞 Bug reports from the lead
 
 ### BUG-002 — `navigator.vibrate` called before the first tap 🟢
-- [ ] Done
+- [x] Done
 
 **Found in the P2-04 review.** Chrome logs a console **error** when `navigator.vibrate` runs before the user has tapped the page:
 `Blocked call to navigator.vibrate because user hasn't tapped on the frame...`

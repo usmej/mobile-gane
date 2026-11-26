@@ -5,6 +5,8 @@ export const haptics = {
     if (!this.enabled) return;
 
     try {
+      if (globalThis.navigator?.userActivation?.hasBeenActive === false) return;
+
       if (typeof globalThis.navigator?.vibrate === 'function') {
         globalThis.navigator.vibrate(pattern);
       }
