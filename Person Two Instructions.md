@@ -83,6 +83,8 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | Open |
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | Open |
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | Open |
+| P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | Open |
+| P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | Open (do after P2-06) |
 
 Do them **in order** (top to bottom). Do one per PR.
 
@@ -184,6 +186,33 @@ Add a new level item `{ type: 'hammer', d, damage, speed }`: a giant cartoon mal
 - Keep the sizes readable on a phone.
 
 **Done when:** hammers appear from level 3, hitting one removes mass with a hit effect, and timing a pass gets you through untouched.
+
+---
+
+### P2-07 — Level 1 tutorial 🟡
+- [ ] Done
+
+New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start(); update(dt, player, nextGate); stop(); }`.
+- **Only on level 1, only the first time.** Save `tutorialDone: true` in the save (see `src/save.js` `DEFAULT_SAVE`).
+- **Step 1:** a hand SVG slides left and right under the blob with the word "DRAG" until the player has dragged at least 60px in total.
+- **Step 2:** before the first gate, show a small label "BLUE = GROW" pointing at the blue gate, then fade it out after the gate is passed.
+- **Style:** match the game's look. Use the `Bungee` font, ink `#1B1420`, cream `#FFF4E0`, 3px ink border, 6px corners, a hard `0 4px 0` shadow, and **no gradients**. Reuse the `hand` icon from `src/icons.js`.
+- **Wiring:** in `main.js`, call `tutorial.start()` in `startRun()` when `save.level === 1 && !save.tutorialDone`, and call `update` every frame.
+
+**Done when:** a fresh save (`localStorage.clear()`, then reload) shows the tutorial on level 1, and it never shows again after that.
+
+---
+
+### P2-08 — Jump pads 🔴
+- [ ] Done
+
+Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad with an ink chevron painted on it.
+- **Jump:** driving over a pad launches the blob into a hop about 1.2 seconds long that peaks around 3 units high. Use `player.y`, which already exists and is used by the bonus stairs. While airborne, the blob passes **over** saws and walls without hitting them.
+- `src/levels.js`: place a pad 6–8 units before some walls and saws, from level 4 on.
+- `src/entities.js`: draw the pad, and emit a `{ type: 'pad' }` event when the blob drives onto it.
+- `src/main.js`: start the hop, and skip saw and wall collisions while `player.y > 0.5`.
+
+**Done when:** a pad lets you jump a wall you'd otherwise crash into, and landing gives a small squash.
 
 ---
 
