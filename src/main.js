@@ -24,6 +24,8 @@ import { Tutorial } from './tutorial.js';
 const params = new URLSearchParams(location.search);
 if (params.has('reset')) resetSave();
 const save = loadSave();
+// FB-002: everyone owns the drum mascot. Existing saves keep the skin they already had equipped.
+if (!save.ownedSkins.includes('drum')) { save.ownedSkins.unshift('drum'); writeSave(save); }
 if (params.has('level')) {
   const n = parseInt(params.get('level'), 10);
   if (n >= 1) { save.level = n; writeSave(save); }

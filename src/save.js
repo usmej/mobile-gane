@@ -7,8 +7,8 @@ export const DEFAULT_SAVE = {
   gems: 0,
   level: 1,
   best: 1,
-  ownedSkins: ['classic'],
-  skin: 'classic',
+  ownedSkins: ['drum', 'classic'],
+  skin: 'drum',              // FB-002: the drum mascot is the default character
   sound: true,
   lastDaily: 0,
   dailyStreak: 0,
