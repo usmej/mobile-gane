@@ -41,30 +41,21 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task: P2-08 (jump pads, the last big one). P2-01 to P2-07, BUG-002 and BUG-003 are DONE and merged.
-(BUG-003 below is already fixed. Skip it.)
+Your CURRENT tasks: BUG-004 (quick), then P2-09, then P2-10. P2-01 to P2-08, BUG-002 and BUG-003 are DONE and merged.
+The full specs for all three are further down in this file.
 
-BUG-003: in src/main.js, startRun() has `ui.showHUD(save, save.level !== 1);`. After the tutorial is done,
-replaying level 1 then shows NO drag hint. Change it to `ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));`
-
-P2-08 (jump pads). Read these first:
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/levels.js
+BUG-004: in the Bungee font the dots of "÷" are tiny, so a red "÷2" gate reads as "+2" on a phone.
+Keep the internal op '÷' but DISPLAY something clearly different (for example "/2" or "HALF") in BOTH places:
+  - src/entities.js makeGatePair (the gate header texture text)
+  - src/main.js the gate pop-up: pop(`${ev.op}${ev.value}`, ...)
   https://raw.githubusercontent.com/usmej/mobile-gane/main/src/entities.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/player.js
   https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/config.js
-Full spec: the P2-08 section in "Person Two Instructions.md". Summary:
-- level item { type: 'pad', d, x }: a flat yellow #FFD23F pad with an ink chevron painted on it
-- driving over it launches a hop (~1.2 s, peak ~3 units) using player.y (already used by the bonus stairs)
-- while airborne (player.y > 0.5) the blob passes OVER saws, walls and hammers without hitting them
-- levels.js: place a pad 6-8 units before some walls/saws/hammers, from level 4 on. Levels 1-3 must stay byte-identical
-  (consume the RNG the same way on those levels, like you did for the hammer)
-- landing gives a small squash (player.squash already exists)
-- tuning numbers in config.js; no glow/emissive; matches the art style
 
-Send BUG-003 and P2-08 as TWO separate REQ entries for "Person One Instructions.md" (so they get separate PRs),
-with every change as "find these complete line(s) -> replace with these lines" (each anchor matches main exactly
-once), plus full contents for any new file. Claude applies, tests and merges each one.
+Then P2-09 (achievements) and P2-10 (coin magnet). Read the current files from main before writing anchors.
+
+Send EACH task as its own REQ entry for "Person One Instructions.md" (separate PRs), with every change as
+"find these complete line(s) -> replace with these lines" (each anchor matches main exactly once), plus full
+contents for any new file. Claude applies, tests and merges each one.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -112,7 +103,10 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | BUG-003 | Replaying level 1 after the tutorial shows no drag hint | 🟢 Easy | `src/main.js` | ✅ Fixed (ChatGPT) |
-| P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | Open |
+| P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | ✅ Done (ChatGPT) |
+| BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | Open (do first) |
+| P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | Open |
+| P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | Open |
 
 Do them **in order** (top to bottom). Do one per PR.
 
@@ -231,8 +225,37 @@ New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start();
 
 ---
 
-### P2-08 — Jump pads 🔴
+### P2-09 — Achievements 🟡
 - [ ] Done
+
+12 original badges that reward playing. For example: first win, reach level 5 / 10 / 20, a x10 bonus stairs, a COMBO x5, smash 10 walls total, jump 25 pads, own 5 skins, a 7-day daily streak, beat a level without taking a hit, and collect 1,000 coins total.
+- New `src/achievements.js`:
+  - holds the list as `{ id, name, desc }`;
+  - exports `track(save, event)`, which updates counters stored in the save and returns any newly unlocked badges.
+- `src/save.js`: add `achievements: {}` (unlocked ids, with timestamps) and `stats: {}` (counters).
+- `src/main.js`: call `track()` at the right moments, and show `ui.toast('BADGE: <name>')` on unlock.
+- `src/ui.js` + `style.css`: a "BADGES" button on the menu that opens a panel like the shop. Locked badges are shown as ink outlines; unlocked ones are filled. Match the art style (no gradients, no emoji).
+
+**Done when:** badges unlock at the right moment, survive a reload, and the panel shows locked vs unlocked.
+
+---
+
+### P2-10 — Coin magnet power-up 🔴
+- [ ] Done
+
+A rare pickup `{ type: 'magnet', d, x }`, from level 5 on. For 6 seconds after you grab it, coins within ~4 units fly into the blob.
+- `src/levels.js`: spawn rarely (about 1 per level from level 5 on). **Earlier levels must stay byte-identical**, so add it *after* generation like the jump pads, without using the RNG.
+- `src/entities.js`:
+  - draw it as a chunky horseshoe magnet: red `#FF3B5C`, cream tips, ink outline;
+  - while the magnet is active, coins move toward the player and get collected.
+- `src/main.js`: a small timer bar or a "MAGNET" tag in the HUD while active. Tuning numbers go in `src/config.js`.
+
+**Done when:** grabbing it pulls nearby coins in for 6 s, and it never appears before level 5.
+
+---
+
+### P2-08 — Jump pads 🔴
+- [x] Done
 
 Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad with an ink chevron painted on it.
 - **Jump:** driving over a pad launches the blob into a hop about 1.2 seconds long that peaks around 3 units high. Use `player.y`, which already exists and is used by the bonus stairs. While airborne, the blob passes **over** saws and walls without hitting them.
@@ -245,6 +268,17 @@ Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad wit
 ---
 
 ## 🐞 Bug reports from the lead
+
+### BUG-004 — "÷2" looks like "+2" on gate signs 🟢
+- [ ] Done
+
+**Found in the P2-08 review.** In the Bungee font the two dots of `÷` are tiny, so at phone distance a red **÷2** gate reads as **+2**. That's a trap for players.
+**Fix:** keep the internal op as `'÷'`, but change what is **displayed** everywhere it's shown:
+- the gate header texture in `src/entities.js` `makeGatePair`
+- the gate pop-up in `src/main.js` (`pop(\`${ev.op}${ev.value}\`...)`)
+
+Use a clearly different symbol, for example `/2`, or the word `HALF`. Pick whatever reads best at phone size, and keep it consistent in both places.
+**Done when:** on a phone-size screen a ÷ gate can't be mistaken for a + gate, and nothing else changes.
 
 ### BUG-003 — No drag hint when replaying level 1 after the tutorial 🟢
 - [x] Done

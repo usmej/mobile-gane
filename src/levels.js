@@ -46,6 +46,7 @@ function badGate(rng, level, mass) {
  *  { type:'gem',   d, x }
  *  { type:'saw',   d, x, amp, speed, damage }
  *  { type:'hammer', d, damage, speed }
+ *  { type:'pad',    d, x }
  *  { type:'wall',  d, x, width, value }
  */
 export function generateLevel(level) {
@@ -110,6 +111,18 @@ export function generateLevel(level) {
     if (rng() < 0.08) items.push({ type: 'gem', d: d + 10, x: rng.range(-W, W) });
     d += rng.range(CONFIG.rowSpacingMin, CONFIG.rowSpacingMax);
     rowIndex++;
+  }
+
+  if (level >= CONFIG.jumpPad.minLevel) {
+    const hazards = items.filter(({ type }) => ['wall', 'saw', 'hammer'].includes(type));
+    for (let i = 0; i < hazards.length; i += 2) {
+      const hazard = hazards[i];
+      items.push({
+        type: 'pad',
+        d: hazard.d - CONFIG.jumpPad.lead,
+        x: hazard.type === 'wall' ? hazard.x : 0,
+      });
+    }
   }
 
   const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));

@@ -65,6 +65,7 @@ let finaleMult = 1;
 let level = null;
 let runCoins = 0;
 let combo = 0;
+let jumpElapsed = null;
 let runGems = 0;
 let endTimer = 0;
 let endResult = null;
@@ -102,6 +103,7 @@ function loadLevel() {
   entities.build(level);
   finale.build(level);
   player.reset();
+  jumpElapsed = null;
   player.group.visible = true;
   fx.clear();
   trail.clear();
@@ -252,6 +254,9 @@ function pop(numberText, pos, color, memeCat, big = false) {
 
 function handleEvent(ev) {
   switch (ev.type) {
+    case 'pad':
+      if (state === 'playing' && jumpElapsed === null) jumpElapsed = 0;
+      break;
     case 'gate': {
       const before = player.mass;
       player.setMass(applyOp(before, ev.op, ev.value));
@@ -343,6 +348,10 @@ function frame(now) {
     player.d += speed * dt * (state === 'boss' ? 0.75 : 1);
     if (state === 'playing' && player.d >= level.length) {
       state = 'boss';
+      if (jumpElapsed !== null) {
+        jumpElapsed = null;
+        player.y = 0;
+      }
       player.targetX = 0;
       audio.play('boss');
       fx.popText(pickMeme('boss') || 'BOSS', entities.boss.group.position.clone().setY(entities.boss.size * 2.6), '#FF3B5C', 1.3);
@@ -367,6 +376,19 @@ function frame(now) {
       audio.play(stepped === finaleMult ? 'gem' : 'coin');
     }
     if (done) finishRun(true);
+  }
+
+  if (jumpElapsed !== null) {
+    const jump = CONFIG.jumpPad;
+    jumpElapsed += dt;
+    if (state !== 'playing' || jumpElapsed >= jump.duration) {
+      jumpElapsed = null;
+      player.y = 0;
+      if (state === 'playing') player.squash = jump.landingSquash;
+    } else {
+      const progress = jumpElapsed / jump.duration;
+      player.y = 4 * jump.peak * progress * (1 - progress);
+    }
   }
 
   player.update(dt);
