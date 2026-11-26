@@ -7,6 +7,7 @@ import { Entities } from './entities.js';
 import { FX } from './fx.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
+import { haptics } from './haptics.js';
 import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave } from './save.js';
 import { pickMeme } from './memes.js';
@@ -35,6 +36,7 @@ const finale = new Finale(scene);
 const trail = new Trail(scene);
 trail.setColor(getSkin(save.skin).color);
 audio.setEnabled(save.sound);
+haptics.enabled = save.sound;
 
 let state = 'menu';   // menu | playing | boss | finale | ending | result
 let finaleMult = 1;
@@ -57,6 +59,7 @@ const ui = new UI(document.getElementById('ui'), {
     audio.unlock();
     save.sound = typeof on === 'boolean' ? on : !save.sound;
     audio.setEnabled(save.sound);
+    haptics.enabled = save.sound;
     writeSave(save);
   },
 });
@@ -119,6 +122,7 @@ function finishRun(won) {
     save.best = Math.max(save.best, save.level);
     fx.burst(player.position.clone().setY(player.y + 2), '#ffd23f', 50);
     audio.play('win');
+    haptics.buzz([20, 20, 20, 20, 60]);
   } else {
     // keep what you picked up — losing shouldn't feel like a total L
     save.coins += runCoins;
@@ -129,6 +133,7 @@ function finishRun(won) {
     fx.popText(pickMeme('lose') || 'L', player.position.clone().setY(2.5), '#FF3B5C', 1.6);
     fx.shake(0.5);
     audio.play('lose');
+    haptics.buzz([80, 40, 120]);
   }
   writeSave(save);
 }
@@ -205,6 +210,7 @@ function handleEvent(ev) {
       fx.burst(ev.pos, ev.good ? '#2fa8ff' : '#ff3b5c', 20);
       audio.play(ev.good ? 'gateGood' : 'gateBad');
       if (!ev.good) fx.shake(0.25);
+      if (!ev.good) haptics.buzz(40);
       if (player.mass <= 0) lose('Divided into nothing.');
       break;
     }
@@ -233,6 +239,7 @@ function handleEvent(ev) {
       trail.splat(player.position, getSkin(save.skin).color, player.scale);
       fx.shake(0.35);
       audio.play('hit');
+      haptics.buzz([30, 30, 30]);
       if (player.mass <= 0) lose('Sawed in half.');
       break;
     case 'wall':
@@ -243,6 +250,7 @@ function handleEvent(ev) {
         pop(`SMASH -${ev.value}`, ev.pos, C.coin);
         fx.shake(0.45);
         audio.play('smash');
+        haptics.buzz(60);
       } else {
         player.setMass(0);
         audio.play('hit');
