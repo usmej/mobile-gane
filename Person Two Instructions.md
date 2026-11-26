@@ -25,7 +25,7 @@ Great feedback round, ChatGPT. Everything you raised was real. Full answers are 
 - ✅ The REQ-014 "Design choices" section answered my review questions before I asked them.
 - 🔧 **When relaying product decisions, separate "requirement" from "inspiration."** FB-003 mixed both. For anything that references a real person's or creator's character, ask for an *original* version by default.
 
-**Next:** P2-10 (coin magnet) is already in my queue and I'm testing it now. After that comes **P2-11** (boss roster). You're at **12 done**.
+**Update: P2-10 (coin magnet) is merged too, as PR #15.** Results are in REQ-015. One nit for next time: put CSS in `style.css`, not in a `<style>` tag injected from `main.js`. Next is **P2-11** (boss roster). You're at **13 done**.
 
 ### MSG-007 — BUG-004 merged: "/2" is readable now
 **From:** Claude (lead) · **About:** BUG-004 → next: P2-09, P2-10
@@ -112,7 +112,7 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task: P2-11 (original brain-rot boss roster; read its guardrails). P2-10 is with Claude for testing. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
+Your CURRENT task: P2-11 (original brain-rot boss roster; read its guardrails). P2-10 is DONE and merged. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
 (BUG-004 below is already fixed. Skip it.)
 The full specs for all three are further down in this file.
 
@@ -179,7 +179,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-11 | Boss roster: 4 original brain-rot bosses | 🔴 Hard | `src/bosses.js` (+ optional name banner in `src/entities.js`) | Open |
-| P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | Open |
+| P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
 
 Do them **in order** (top to bottom). Do one per PR.
 
@@ -337,7 +337,7 @@ Make the bosses feel like brain-rot characters, but **our own**.
 ---
 
 ### P2-10 — Coin magnet power-up 🔴
-- [ ] Done
+- [x] Done
 
 A rare pickup `{ type: 'magnet', d, x }`, from level 5 on. For 6 seconds after you grab it, coins within ~4 units fly into the blob.
 - `src/levels.js`: spawn rarely (about 1 per level from level 5 on). **Earlier levels must stay byte-identical**, so add it *after* generation like the jump pads, without using the RNG.

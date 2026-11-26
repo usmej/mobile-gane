@@ -53,6 +53,7 @@ export class Entities {
       const z = -it.d;
       switch (it.type) {
         case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+        case 'magnet': e.obj = this.makeMagnet(it.x, z); break;
         case 'pad': e.obj = this.makeJumpPad(it.x, z); break;
         case 'coin': {
           const m = new THREE.Mesh(G.coin, G.coinMat);
@@ -236,6 +237,48 @@ export class Entities {
     return player.coreSize * ratio;
   }
 
+  makeMagnet(x, z) {
+    const group = new THREE.Group();
+    group.position.set(x, CONFIG.magnet.pickupHeight, z);
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.48, 0.42);
+    shape.lineTo(-0.48, -0.02);
+    shape.quadraticCurveTo(-0.48, -0.55, 0, -0.55);
+    shape.quadraticCurveTo(0.48, -0.55, 0.48, -0.02);
+    shape.lineTo(0.48, 0.42);
+    shape.lineTo(0.24, 0.42);
+    shape.lineTo(0.24, -0.02);
+    shape.quadraticCurveTo(0.24, -0.31, 0, -0.31);
+    shape.quadraticCurveTo(-0.24, -0.31, -0.24, -0.02);
+    shape.lineTo(-0.24, 0.42);
+    shape.closePath();
+
+    const body = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(shape, { depth: 0.2, bevelEnabled: false }),
+      new THREE.MeshStandardMaterial({ color: BAD, roughness: 0.8 })
+    );
+    body.position.z = -0.1;
+    const outline = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(shape.getPoints()),
+      new THREE.LineBasicMaterial({ color: INK })
+    );
+    const back = outline.clone();
+    back.geometry = outline.geometry.clone();
+    back.material = outline.material.clone();
+    outline.position.z = 0.202;
+    back.position.z = -0.002;
+    body.add(outline, back);
+    group.add(body);
+
+    for (const tipX of [-0.36, 0.36]) {
+      const tip = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.21),
+        new THREE.MeshStandardMaterial({ color: CREAM, roughness: 0.8 }));
+      tip.position.set(tipX, 0.35, 0);
+      group.add(tip);
+    }
+    return group;
+  }
+
   makeJumpPad(x, z) {
     const { width, depth, thickness } = CONFIG.jumpPad;
     const pad = new THREE.Group();
@@ -299,7 +342,7 @@ export class Entities {
   }
 
   /** Advance animation + collisions. Returns an array of events for main.js to apply. */
-  update(dt, time, player, prevD) {
+  update(dt, time, player, prevD, magnetActive = false) {
     const events = [];
     const r = player.radius;
     const px = player.x;
@@ -327,6 +370,29 @@ export class Entities {
       }
       if (!near || e.used) continue;
 
+      if (e.type === 'coin' && (magnetActive || e.magnetPulled)) {
+        const cfg = CONFIG.magnet;
+        const target = player.position.clone().setY(player.y + r);
+        const delta = target.sub(e.obj.position);
+        const distance = delta.length();
+        if (magnetActive && (e.magnetPulled || distance <= cfg.radius)) {
+          const step = cfg.pullSpeed * dt;
+          if (distance <= step + cfg.collectDistance) {
+            e.used = true;
+            e.obj.visible = false;
+            events.push({ type: 'coin', pos: e.obj.position.clone() });
+          } else {
+            e.magnetPulled = true;
+            e.obj.position.addScaledVector(delta, step / distance);
+          }
+          continue;
+        }
+        if (e.magnetPulled) {
+          e.magnetPulled = false;
+          e.obj.position.set(e.x, 0.9, -e.d);
+        }
+      }
+
       const dx = Math.abs((e.type === 'saw' ? e.obj.position.x : e.x ?? 0) - px);
       const dd = Math.abs(e.d - pd);
       const pos = player.position.clone().setY(r * 2);
@@ -348,6 +414,7 @@ export class Entities {
             events.push({ type: 'gate', op: gate.op, value: gate.value, good: isGoodOp(gate.op), pos });
           }
           break;
+        case 'magnet':
         case 'coin':
         case 'gem':
         case 'food':
@@ -414,7 +481,7 @@ export class Entities {
     (this.textures || []).forEach((t) => t.dispose());
     this.textures = [];
     this.group.traverse((o) => {
-      if (o.isMesh && !Object.values(G).includes(o.geometry)) {
+      if ((o.isMesh || o.isLine) && !Object.values(G).includes(o.geometry)) {
         o.geometry.dispose();
         const ms = Array.isArray(o.material) ? o.material : [o.material];
         ms.forEach((m) => { if (!Object.values(G).includes(m)) m.dispose(); });

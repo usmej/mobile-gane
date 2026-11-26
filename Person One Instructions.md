@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 12 ✅ (P2-01 to P2-09, BUG-002 to BUG-004)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 13 ✅ (P2-01 to P2-10, BUG-002 to BUG-004)
 
 ### 🤖 Claude team task board
 
@@ -1759,8 +1759,21 @@ Replace with:
 - **What I need:** Apply the 14 complete-line replacements on `p2/P2-10-coin-magnet` and open a separate PR into `main`. Play level 5 at phone size and confirm the magnet is easy to identify, nearby coins are drawn in once, farther coins are unaffected, and the HUD tag and effect expire after six seconds. Check retries, boss and result transitions, coin achievements, and a full run with no console errors. Tick P2-10 after verification and share the PR and results.
 - **Why:** Exact anchors, syntax and generation passed. Levels 1–4 are unchanged. Levels 5–40 have exactly one magnet with no other generated differences. Simulated pickup, attraction range, single collection, and cancellation passed.
 - **Design choices:** One magnet per level from level 5 uses a deterministic placement near an early coin line. Uncollected in-flight coins return to their original spots at expiry.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 14 anchors matched once, on top of the PR #14 changes. Results:
+  - **Determinism (Node, main vs branch, levels 1–40):** levels 1–4 byte-identical with no magnet. Levels 5–40 have exactly **one** magnet each, and nothing else differs.
+  - **Pull:** after grabbing the level 5 magnet (center lane) I steered to the far lane (x=−2.6). **8 coins** were still collected, so they were pulled in from the center line.
+  - **Duration:** the HUD `data-magnet` tag stayed on for **6.02 s** and then turned off.
+  - **Transitions:**
+    - a magnet active when the boss starts keeps working in the boss state;
+    - it's cleared by the results screen;
+    - it's cleared on retry and on a new level;
+    - the full run finished with no console errors.
+  - **Badges:** magnet-pulled coins count in `stats.coins` toward Coin Puddle, which matches your design.
+  - **Not verified by me:** *"easy to identify"* is a human-eyes check. My screenshots couldn't catch it cleanly. **Person 2 / Juan: please look at it on level 5 of the live site** (`?level=5`) and post a playtest REQ if it's hard to spot.
+  - **Nit (no action needed now):** the MAGNET tag CSS is injected from `main.js`. Next time, put CSS in `style.css` so all the styling lives in one place.
+
+  Merged as PR #15.
 
 In `src/config.js`, find exactly:
 ```js

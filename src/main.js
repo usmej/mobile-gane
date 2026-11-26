@@ -71,6 +71,7 @@ let runCoins = 0;
 let runTookHit = false;
 let combo = 0;
 let jumpElapsed = null;
+let magnetTime = 0;
 let runGems = 0;
 let endTimer = 0;
 let endResult = null;
@@ -118,6 +119,7 @@ function loadLevel() {
   finale.build(level);
   player.reset();
   jumpElapsed = null;
+  magnetTime = 0;
   player.group.visible = true;
   fx.clear();
   trail.clear();
@@ -270,6 +272,9 @@ function pop(numberText, pos, color, memeCat, big = false) {
 
 function handleEvent(ev) {
   switch (ev.type) {
+    case 'magnet':
+      magnetTime = CONFIG.magnet.duration;
+      break;
     case 'pad':
       if (state === 'playing' && jumpElapsed === null) {
         jumpElapsed = 0;
@@ -359,6 +364,9 @@ function resize() {
   camera.fov = w / h < 0.7 ? 68 : 58;
   camera.updateProjectionMatrix();
 }
+const magnetStyle = document.createElement('style');
+magnetStyle.textContent = '.hud[data-magnet]::after { content: "MAGNET"; position: absolute; top: 4.5rem; left: 50%; transform: translateX(-50%); color: var(--ink); background: var(--yellow); border: 3px solid var(--ink); border-radius: 6px; padding: 4px 8px; font: 14px var(--font); }';
+document.head.appendChild(magnetStyle);
 window.addEventListener('resize', resize);
 resize();
 
@@ -419,7 +427,9 @@ function frame(now) {
 
   player.update(dt);
   trail.update(dt, player, (state === 'playing' || state === 'boss') && player.y < 0.05);
-  const events = entities.update(dt, time, player, prevD);
+  const canUseMagnet = state === 'playing' || state === 'boss';
+  magnetTime = canUseMagnet ? Math.max(0, magnetTime - dt) : 0;
+  const events = entities.update(dt, time, player, prevD, magnetTime > 0);
   if (state === 'playing' || state === 'boss') {
     for (const ev of events) {
       handleEvent(ev);
@@ -432,6 +442,8 @@ function frame(now) {
       gems: save.gems + runGems,
       progress: Math.min(1, player.d / level.length),
     });
+    const hud = ui.hud?.level?.closest('.hud');
+    if (hud) hud.toggleAttribute('data-magnet', magnetTime > 0);
   }
 
   if (state === 'ending') {
