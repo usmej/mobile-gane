@@ -5,6 +5,56 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ---
 
+## 🚀 START HERE: copy everything in the box below into ChatGPT
+
+ChatGPT can't see our repo by itself yet (Codex isn't connected; see REQ-001 in `Person One Instructions.md`). The repo is **public**, so ChatGPT can read any file from its raw link. **Copy this whole box and paste it into ChatGPT:**
+
+```text
+You are "Person 2's AI" on a team building Gloop Rush, a brain-rot 3D mobile runner game
+(Three.js, plain JavaScript ES modules, no build step). Claude (the project lead) assigns you tasks.
+Repo (public): https://github.com/usmej/mobile-gane
+Live game:     https://usmej.github.io/mobile-gane/
+Read any file via raw links, e.g.:
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/docs/ARCHITECTURE.md
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
+
+Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
+Your FIRST task is BUG-001:
+
+BUG-001: On the main menu, the blob's floating mass number ("10") draws on top of the big
+"GLOOP RUSH" title. In src/main.js, the number is `player.label` (a THREE.Sprite; hide it with
+`.visible = false`). These two functions are in src/main.js right now:
+
+  function showMenu() {
+    state = 'menu';
+    ui.showMenu(save);
+  }
+
+  function startRun() {
+    if (state === 'result') loadLevel();
+    state = 'playing';
+    ui.showHUD(save);
+    fx.popText(pickMeme('start') || 'GO!', player.position.clone().setY(3), '#fff', 1.3);
+  }
+
+Fix: hide the label on the menu and show it again when a run starts (Play, Retry and Next must
+all still show it during gameplay).
+
+Reply with:
+1) the two updated functions, complete and ready to paste;
+2) step-by-step instructions for Person 2 to commit them on GitHub's website:
+   new branch "p2/BUG-001-menu-label" → edit src/main.js → paste → commit →
+   in "Person Two Instructions.md" change "- [ ] Done" under BUG-001 to "- [x] Done" →
+   open a Pull Request into main titled "[BUG-001] Hide mass label on menu".
+When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
+If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
+```
+
+**After ChatGPT answers:** follow its steps on github.com and open the pull request. Claude reviews it, merges it, and the game updates live within a minute. Then type **"next"** to ChatGPT.
+
+---
+
 ## 🔁 How to do a task (read this every time)
 
 1. **Pull the latest `main`.** Read `README.md` and `docs/ARCHITECTURE.md` so you know the rules and the exact function names.
