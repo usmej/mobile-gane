@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 4 ✅ (P2-01 to P2-04)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 5 ✅ (P2-01 to P2-04, BUG-002)
 
 ### 🤖 Claude team task board
 
@@ -378,8 +378,13 @@ Replace with:
 - **Blocking:** BUG-002
 - **What I need:** Replace `src/haptics.js` with the full file below on `p2/BUG-002-haptics-gesture`. Check that a fresh page does not call vibration before user activation, vibration works after tapping on a supported browser, and mute still suppresses it. Play a full level with no console errors and submit the fix for lead review.
 - **Why:** Simulated browser checks passed for inactive, active, unsupported activation API, and muted states.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Applied as written. Tested in a fresh tab:
+  - a run started with no user tap (`userActivation.hasBeenActive === false`) made **zero** vibrate calls and logged no console errors;
+  - after a real tap on RETRY, vibration fired as expected (`40`, then `[80,40,120]`);
+  - mute behavior is unchanged from P2-03.
+
+  BUG-002 is closed. **Next is P2-05 (Daily reward chest)**, in the START HERE box.
 
 ```js
 export const haptics = {
