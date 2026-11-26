@@ -20,28 +20,24 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is P2-03 (phone vibration). P2-01 and P2-02 are DONE and merged. Great work!
+Your CURRENT task is P2-04 (gate combo streak). P2-01, P2-02 and P2-03 are DONE and merged. You're on a roll!
 
-1) Create a NEW file src/haptics.js:
-     export const haptics = {
-       enabled: true,
-       buzz(pattern) { /* call navigator.vibrate(pattern) only if it exists and enabled; wrap in try/catch; never throw */ }
-     };
-2) Wire it into src/main.js. Read it first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
-   - add `import { haptics } from './haptics.js';` next to the other imports
-   - inside handleEvent():
-       bad gate (in case 'gate', when !ev.good)  -> haptics.buzz(40)
-       case 'saw'                                -> haptics.buzz([30, 30, 30])
-       wall smash (case 'wall', the smash branch)-> haptics.buzz(60)
-   - inside finishRun(won): lose branch -> haptics.buzz([80, 40, 120]); win branch -> haptics.buzz([20, 20, 20, 20, 60])
-   - mute must also silence vibration: set `haptics.enabled = save.sound` at startup (next to audio.setEnabled(save.sound))
-     and inside onToggleSound (next to audio.setEnabled(save.sound)).
+Reward picking GOOD gates in a row. Read src/main.js first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
+and src/config.js: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/config.js
+- src/config.js: add `comboBonusMass: 2,` to CONFIG (put it in the Economy section).
+- src/main.js:
+  - a module-level `let combo = 0;`, reset to 0 in startRun()
+  - in handleEvent() case 'gate': a good gate does combo += 1, a bad gate sets combo = 0
+  - when combo >= 2 after a good gate: add bonus mass `combo * CONFIG.comboBonusMass` via player.setMass(...),
+    and show it with fx.popText(`COMBO x${combo}`, <position a bit above ev.pos>, '#FFD23F', 0.9)
+  - audio.play('gem') when combo reaches exactly 3 and exactly 5
+  - keep the existing gate popup (the pop(...) call) as it is
+  - style rule: no emoji in any text
 
 Reply with:
-1) the full src/haptics.js file;
-2) for main.js: each change as "find this exact line -> replace with these lines" (so Claude can apply it exactly);
-3) the same handoff as before: write a REQ entry for "Person One Instructions.md" with the code. Claude will apply it
-   on branch "p2/P2-03-haptics", test it, and merge.
+1) each change as "find this exact line(s) -> replace with these lines" (anchors must match main exactly, one match each);
+2) the same handoff as before: a REQ entry for "Person One Instructions.md" with the code. Claude applies it on
+   branch "p2/P2-04-combo", tests it, and merges.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -82,7 +78,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | BUG-001 | Mass number overlaps the title on the menu | 🟢 Easy | `src/main.js` | ✅ Fixed by lead (it was blocking; see REQ-002) |
 | P2-01 | 6 new skins | 🟢 Easy | `src/skins.js` | ✅ Done (ChatGPT) |
 | P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | ✅ Done (ChatGPT) |
-| P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | Open |
+| P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | Open |
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | Open |
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | Open |
@@ -130,7 +126,7 @@ Add **4 themes** to `THEMES` in `src/themes.js`, using the same keys as the exis
 ---
 
 ### P2-03 — Phone vibration 🟢
-- [ ] Done
+- [x] Done
 
 Create `src/haptics.js`:
 ```js

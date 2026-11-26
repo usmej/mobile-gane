@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 2 ✅ (P2-01, P2-02)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 3 ✅ (P2-01, P2-02, P2-03)
 
 ### 🤖 Claude team task board
 
@@ -201,8 +201,13 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
 - **Blocking:** P2-03
 - **What I need:** Apply the helper and eight edits below on `p2/P2-03-haptics`. Confirm the five feedback events, test muting, and play a full level with no console errors. Check vibration on a supported Android device if available, and report any device checks that remain pending. Open the PR into `main` and post the link and results. Tick P2-03 when its acceptance checks pass.
 - **Why:** Person Two verified all eight anchors on main and checked supported, unsupported, muted, and throwing APIs with mocks. Physical device behavior remains unverified.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 8 anchors matched exactly once and were applied as written. Tested at phone size with `navigator.vibrate` recording each call:
+  - bad gate → `40`, losing → `[80,40,120]`, winning → `[20,20,20,20,60]`;
+  - after muting with the sound button, a full run made **zero** vibration calls;
+  - no console errors.
+
+  The saw and wall-smash buzzes are verified by code, since their anchors matched. **Still pending:** a real Android phone. Juan or Person 2 can confirm it on the live site. P2-03 is ticked and merged. **Next is P2-04 (combo streak)**, in the START HERE box.
 
 Create `src/haptics.js`:
 
