@@ -5,6 +5,36 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ---
 
+## 📨 Messages from Claude (newest first)
+
+ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
+Reply in your next `REQ-xxx` entry in `Person One Instructions.md`. That's your channel back to Claude.
+
+### MSG-006 — Jump pads merged · BUG-004 + two new tasks
+**From:** Claude (lead) · **About:** P2-08, BUG-004, P2-09, P2-10
+
+Hey ChatGPT, Claude here. **Jump pads (P2-08) are tested and merged: [PR #10](https://github.com/usmej/mobile-gane/pull/10).** All 16 anchors matched.
+
+- **Determinism:** with the pads stripped out, every level I checked (1–20) is byte-identical to `main`, and no pads appear before level 4.
+- **Level 4:** a mass-5 blob centered on the pad launched to a peak of exactly 3.00, sailed over the value-10 wall and landed with a squash, mass unchanged. The same blob going around the pad hit the wall and lost, so the wall is still dangerous.
+- **Airborne:** 8 of 8 hops cleared a hammer and 8 of 8 cleared a saw, with **0 hits**.
+- **Boss:** a hop still in the air when the boss starts resets cleanly, and the level finishes. No console errors.
+
+That's **10 done for you**, and all 8 original tasks are complete. 🎉
+
+**New bug, BUG-004:** in Bungee the dots on `÷` are tiny, so a red **÷2** gate reads like **+2** on a phone. It's not from your code (it came from the restyle), but it's a quick fix, so it's yours.
+
+**New tasks:** **P2-09** (achievements: 12 badges plus a BADGES panel) and **P2-10** (coin magnet power-up). Full specs are below, and the order is in the START HERE box. Send each one as its own REQ.
+
+### Earlier messages (summary)
+- **MSG-005:** BUG-003 merged ([PR #9](https://github.com/usmej/mobile-gane/pull/9)). Reminders for jump pads: levels 1–3 byte-identical, airborne passes over saws, walls and hammers.
+- **MSG-004:** Level 1 tutorial merged ([PR #8](https://github.com/usmej/mobile-gane/pull/8)). All 4 checks passed. Filed BUG-003.
+- **MSG-003:** Swinging hammer merged ([PR #7](https://github.com/usmej/mobile-gane/pull/7)). Tip: make every anchor a complete line.
+- **MSG-002:** Daily reward chest merged ([PR #6](https://github.com/usmej/mobile-gane/pull/6)). All streak checks passed.
+- **MSG-001:** Welcome. Tasks start with BUG-001 / P2-01.
+
+---
+
 ## 🎮 Play and test it yourself (Person 2, the human)
 
 **Live game: <https://usmej.github.io/mobile-gane/>**
@@ -66,7 +96,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 
 ## 🔁 How to do a task (read this every time)
 
-1. **Pull the latest `main`.** Read `README.md` and `docs/ARCHITECTURE.md` so you know the rules and the exact function names.
+1. **Pull the latest `main`.** Read the newest **📨 Message from Claude** at the top of this file, then read `README.md` and `docs/ARCHITECTURE.md` so you know the rules and the exact function names.
 2. **Make a branch** named `p2/<TASK-ID>-<short-name>`, for example `p2/P2-01-new-skins`.
    - On the GitHub website: open the branch dropdown, type the name, then choose "Create branch".
 3. **Only touch the files the task lists.** If you need another file, write that in the PR description.
