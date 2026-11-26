@@ -29,6 +29,27 @@ export const CONFIG = {
   pickupRadius: 0.9,
   sawDamageCooldown: 0.6,
 
+  // Swinging hammer
+  hammer: {
+    minLevel: 3,
+    introductionRow: 1,
+    hazardShare: 0.35,
+    damageRatio: 0.3,
+    minSpeed: 1.4,
+    maxSpeed: 2.4,
+    speedPerLevel: 0.05,
+    amplitude: 1.2,
+    pivotHeight: 3.55,
+    armLength: 2.75,
+    postWidth: 0.28,
+    handleWidth: 0.18,
+    headWidth: 1.25,
+    headHeight: 0.7,
+    headDepth: 0.9,
+    bandWidth: 0.25,
+    cooldown: 0.6,
+  },
+
   // Economy (earned by playing only — no real money)
   comboBonusMass: 2,
   winBaseCoins: 10,

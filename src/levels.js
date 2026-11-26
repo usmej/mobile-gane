@@ -45,6 +45,7 @@ function badGate(rng, level, mass) {
  *  { type:'coin',  d, x }
  *  { type:'gem',   d, x }
  *  { type:'saw',   d, x, amp, speed, damage }
+ *  { type:'hammer', d, damage, speed }
  *  { type:'wall',  d, x, width, value }
  */
 export function generateLevel(level) {
@@ -62,7 +63,11 @@ export function generateLevel(level) {
 
   while (d < length - 25) {
     const r = rng();
-    if (rowIndex % 3 === 0 || r < 0.28) {
+    const hammer = CONFIG.hammer;
+    if (level === hammer.minLevel && rowIndex === hammer.introductionRow) {
+      const speed = rng.range(hammer.minSpeed, hammer.maxSpeed + level * hammer.speedPerLevel);
+      items.push({ type: 'hammer', d, damage: Math.max(3, Math.floor(best * hammer.damageRatio)), speed });
+    } else if (rowIndex % 3 === 0 || r < 0.28) {
       // Gate pair — mostly one good + one bad, sometimes two goods (pick the better one).
       const g = goodGate(rng, level, best);
       const other = rng() < 0.25 ? goodGate(rng, level, best) : badGate(rng, level, best);
@@ -72,7 +77,12 @@ export function generateLevel(level) {
       const b = isGoodOp(other.op) ? applyOp(best, other.op, other.value) : 0;
       best = Math.min(9999, Math.max(a, b));
     } else if (r < 0.28 + hazardChance) {
-      if (rng() < 0.55) {
+      const hazardRoll = rng();
+      if (level >= hammer.minLevel && hazardRoll < hammer.hazardShare) {
+        const speed = rng.range(hammer.minSpeed, hammer.maxSpeed + level * hammer.speedPerLevel);
+        const damage = Math.max(3, Math.floor(best * hammer.damageRatio));
+        items.push({ type: 'hammer', d, damage, speed });
+      } else if (hazardRoll < 0.55) {
         const amp = rng.range(1.2, W);
         items.push({ type: 'saw', d, x: 0, amp, speed: rng.range(1.4, 2.4 + level * 0.05), damage: Math.max(3, Math.floor(best * 0.2)) });
         // reward coins around it

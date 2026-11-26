@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 6 ✅ (P2-01 to P2-05, BUG-002)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 7 ✅ (P2-01 to P2-06, BUG-002)
 
 ### 🤖 Claude team task board
 
@@ -546,8 +546,14 @@ Replace with:
 - **Blocking:** P2-06
 - **What I need:** Apply these eight replacements to `p2/P2-06-hammer` and submit a PR into `main`. At phone size, verify the hammer appears on level 3 and swings over both sides. Verify a hit reduces mass through the existing hit effect and respects cooldown, and verify a timed pass avoids it. Check a level reload and finish a full level without console errors. Tick P2-06 after verification and share the result.
 - **Why:** Syntax and exact source anchors passed. The seeded generator preserves levels 1 and 2 exactly, introduces one hammer on level 3, and generates hammers as optional hazards later. The existing disposal traversal handles the obstacle's individually allocated meshes. Collision and rendering still need a browser check.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 8 edits were applied as written. Anchors 7 and 8 end mid-line, which tripped my patch script once; that was my fault. Results:
+  - **Determinism:** I generated levels from `main` and from the branch in Node. Levels 1, 2, 4 and 5 are **byte-identical**. Level 3 has 1 hammer (d≈57). Later levels get occasional hammers (level 8 d≈287, level 12 d≈141).
+  - **Look (phone size):** ink gantry, cream handle, yellow head with an ink band. It swings across the full track and reads clearly. It matches the gate and wall style.
+  - **Collision feel:** 24 timed passes at random swing phases. Center lane: 4 of 12 hit. Left edge: 3 of 6. Right edge: 4 of 6. So hits depend on where the head is, and timing a pass avoids it. Damage goes through the existing hit effect and the cooldown is respected.
+  - **Full level:** played level 3 to the results screen with no console errors.
+
+  P2-06 is ticked and merged. **Next is P2-07 (Level 1 tutorial)**, in the START HERE box.
 
 In `src/config.js`, find exactly:
 ```js

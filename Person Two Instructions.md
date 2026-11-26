@@ -41,26 +41,30 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is P2-06 (swinging hammer obstacle). This is the HARD one. P2-01 to P2-05 and BUG-002 are DONE and merged.
+Your CURRENT task is P2-07 (Level 1 tutorial). P2-01 to P2-06 and BUG-002 are DONE and merged. The hammer was great.
 
-Read these first (they were restyled recently, so use the current versions):
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/levels.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/entities.js
+Read these first:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/config.js
-Full spec: the P2-06 section in "Person Two Instructions.md". Summary:
-- level item { type: 'hammer', d, damage, speed }, spawned as a hazard option only from level 3 on,
-  damage ~30% of expected mass (like saws)
-- entities.js: build it (a post above the track + handle + mallet head pivoting like a pendulum),
-  angle = sin(time * speed) * 1.2, collision using the head's world X with a cooldown like saws,
-  and emit { type: 'saw', damage, pos } so main.js already handles it (or add a 'hammer' event)
-- dispose its geometries/materials in Entities.dispose() like the other items
-- style: flat colors, ink #1B1420 details, no glow/emissive, readable on a phone, matches the gates/walls look
-- tuning numbers (swing amplitude, size, cooldown) go in src/config.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/save.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/icons.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/ui.js   (note: the HUD already shows a one-time "DRAG" hint. Replace or reuse it; don't show two)
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/style.css
+Full spec: the P2-07 section in "Person Two Instructions.md". Summary:
+- NEW src/tutorial.js: class Tutorial { constructor(overlayEl); start(); update(dt, player, nextGate); stop(); }
+- only on level 1 and only the first time: save.tutorialDone (add tutorialDone: false to DEFAULT_SAVE in save.js)
+- step 1: the hand icon (I.hand from icons.js) slides left and right under the blob with "DRAG" until the player
+  has dragged at least 60px in total
+- step 2: before the first gate, a small label "BLUE = GROW" near the blue gate; fade it out after the gate is passed
+- style: Bungee, ink #1B1420, cream #FFF4E0, 3px ink border, 6px corners, hard 0 4px 0 shadow, NO gradients, no emoji
+- main.js: create it, start() in startRun() when save.level === 1 && !save.tutorialDone, call update every frame,
+  and set save.tutorialDone = true + writeSave(save) when it finishes
 
-Reply with every change as "find this exact line(s) -> replace with these lines" (each anchor must match main
-exactly once), as a REQ entry for "Person One Instructions.md". Claude applies it on branch "p2/P2-06-hammer",
-tests it on levels 3+, and merges.
+Tip from the lead: make every "find" anchor end on a COMPLETE line (not halfway through a line). It makes applying
+your edits 100% reliable.
+
+Reply with every change as "find this exact line(s) -> replace with these lines" (each anchor must match main exactly
+once), plus full contents for new files, as a REQ entry for "Person One Instructions.md". Claude applies it on
+branch "p2/P2-07-tutorial", tests it with ?reset, and merges.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -105,9 +109,9 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
 | BUG-002 | Vibrate call before first tap logs a console error | 🟢 Easy | `src/haptics.js` | ✅ Fixed (ChatGPT) |
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
-| P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | Open |
+| P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | Open |
-| P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | Open (do after P2-06) |
+| P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | Open |
 
 Do them **in order** (top to bottom). Do one per PR.
 
@@ -198,7 +202,7 @@ Reward picking good gates in a row.
 ---
 
 ### P2-06 — New obstacle: swinging hammer 🔴
-- [ ] Done
+- [x] Done
 
 Add a new level item `{ type: 'hammer', d, damage, speed }`: a giant cartoon mallet that swings like a pendulum across the whole track.
 - `src/levels.js`: spawn it as one of the hazard options, but only from **level 3 on**. Damage is about 30% of expected mass, like saws.
