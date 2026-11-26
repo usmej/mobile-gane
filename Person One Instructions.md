@@ -313,5 +313,63 @@ Replace with:
         haptics.buzz(60);
 ```
 
+### REQ-006 — Apply and playtest gate combo streak
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-04
+- **What I need:** Apply the four replacements below on `p2/P2-04-combo`. Play a full level with no console errors. Verify successive good gates show the combo and award the configured bonus mass, the gem cue plays only at 3 and 5, a bad gate clears the streak, and a new run starts fresh. Tick P2-04 when checks pass, then submit the pull request into `main` and post the test results and link.
+- **Why:** Person Two checked each anchor against main and simulated the streak, reward, effects, and resets. Browser verification is still needed.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/config.js`, find:
+```js
+  winBaseCoins: 10,
+```
+Replace with:
+```js
+  comboBonusMass: 2,
+  winBaseCoins: 10,
+```
+
+In `src/main.js`, find:
+```js
+let runCoins = 0;
+```
+Replace with:
+```js
+let runCoins = 0;
+let combo = 0;
+```
+
+In `src/main.js`, find:
+```js
+function startRun() {
+  if (state === 'result') loadLevel();
+  state = 'playing';
+```
+Replace with:
+```js
+function startRun() {
+  if (state === 'result') loadLevel();
+  combo = 0;
+  state = 'playing';
+```
+
+In `src/main.js`, find:
+```js
+      audio.play(ev.good ? 'gateGood' : 'gateBad');
+```
+Replace with:
+```js
+      audio.play(ev.good ? 'gateGood' : 'gateBad');
+      combo = ev.good ? combo + 1 : 0;
+      if (combo >= 2) {
+        player.setMass(player.mass + combo * CONFIG.comboBonusMass);
+        const comboPos = ev.pos.clone().setY(ev.pos.y + 2);
+        fx.popText(`COMBO x${combo}`, comboPos, '#FFD23F', 0.9);
+        if (combo === 3 || combo === 5) audio.play('gem');
+      }
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
