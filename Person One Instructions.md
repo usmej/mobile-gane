@@ -1023,5 +1023,248 @@ Replace with:
   ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
 ```
 
+### REQ-012 — Apply and playtest jump pads
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-08
+- **What I need:** Apply the 16 complete-line replacements below on `p2/P2-08-jump-pads`, in a PR separate from BUG-003. In level 4, use the pad before the first wall and check that a centered pass clears the wall, while bypassing the pad still leaves the wall hazardous. Check airborne clearance over saws and hammers, the landing squash, and clean retry and boss transitions. Play a full level without console errors. Tick P2-08 once verified and share the PR link and results.
+- **Why:** Syntax and anchors passed. Seeded levels 1–3 were identical. Through level 20, every added pad was 7 units ahead of its hazard and no other generated data changed. Simulated checks passed for launch, apex, wall clearance, grounded collision, and landing.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/config.js`, find exactly:
+```js
+  sawDamageCooldown: 0.6,
+```
+Replace with:
+```js
+  sawDamageCooldown: 0.6,
+  jumpPad: {
+    minLevel: 4,
+    lead: 7,
+    width: 1.7,
+    depth: 1.35,
+    thickness: 0.12,
+    duration: 1.2,
+    peak: 3,
+    clearance: 0.5,
+    landingSquash: -0.45,
+  },
+```
+
+In `src/levels.js`, find exactly:
+```js
+ *  { type:'hammer', d, damage, speed }
+```
+Replace with:
+```js
+ *  { type:'hammer', d, damage, speed }
+ *  { type:'pad',    d, x }
+```
+
+In `src/levels.js`, find exactly:
+```js
+  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```
+Replace with:
+```js
+  if (level >= CONFIG.jumpPad.minLevel) {
+    const hazards = items.filter(({ type }) => ['wall', 'saw', 'hammer'].includes(type));
+    for (let i = 0; i < hazards.length; i += 2) {
+      const hazard = hazards[i];
+      items.push({
+        type: 'pad',
+        d: hazard.d - CONFIG.jumpPad.lead,
+        x: hazard.type === 'wall' ? hazard.x : 0,
+      });
+    }
+  }
+
+  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```
+
+In `src/entities.js`, find exactly:
+```js
+        case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+```
+Replace with:
+```js
+        case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+        case 'pad': e.obj = this.makeJumpPad(it.x, z); break;
+```
+
+In `src/entities.js`, find exactly:
+```js
+  makeHammer(z, trackHalfWidth) {
+```
+Replace with:
+```js
+  makeJumpPad(x, z) {
+    const { width, depth, thickness } = CONFIG.jumpPad;
+    const pad = new THREE.Group();
+    pad.position.set(x, 0, z);
+    const base = new THREE.Mesh(
+      new THREE.BoxGeometry(width, thickness, depth),
+      new THREE.MeshStandardMaterial({ color: '#FFD23F', roughness: 0.8 })
+    );
+    base.position.y = thickness / 2;
+    pad.add(base);
+
+    const arrow = new THREE.Shape();
+    arrow.moveTo(-0.32, -0.23);
+    arrow.lineTo(0, 0.27);
+    arrow.lineTo(0.32, -0.23);
+    arrow.lineTo(0.16, -0.23);
+    arrow.lineTo(0, 0.02);
+    arrow.lineTo(-0.16, -0.23);
+    arrow.closePath();
+    const mark = new THREE.Mesh(
+      new THREE.ShapeGeometry(arrow),
+      new THREE.MeshStandardMaterial({ color: INK, roughness: 0.8 })
+    );
+    mark.rotation.x = -Math.PI / 2;
+    mark.position.y = thickness + 0.002;
+    pad.add(mark);
+    return pad;
+  }
+
+  makeHammer(z, trackHalfWidth) {
+```
+
+In `src/entities.js`, find exactly:
+```js
+    const pd = player.d;
+```
+Replace with:
+```js
+    const pd = player.d;
+    const aboveHazards = player.y > CONFIG.jumpPad.clearance;
+```
+
+In `src/entities.js`, find exactly:
+```js
+      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'wall';
+```
+Replace with:
+```js
+      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'wall' || e.type === 'pad';
+```
+
+In `src/entities.js`, find exactly:
+```js
+      switch (e.type) {
+        case 'gate':
+```
+Replace with:
+```js
+      switch (e.type) {
+        case 'pad': {
+          const { width, depth } = CONFIG.jumpPad;
+          const front = e.d - depth / 2;
+          if (player.y === 0 && prevD < front && pd >= front && dx <= width / 2 + r * 0.5) {
+            e.used = true;
+            events.push({ type: 'pad', pos });
+          }
+          break;
+        }
+        case 'gate':
+```
+
+In `src/entities.js`, find exactly:
+```js
+        case 'hammer': {
+          const h = CONFIG.hammer;
+```
+Replace with:
+```js
+        case 'hammer': {
+          if (aboveHazards) break;
+          const h = CONFIG.hammer;
+```
+
+In `src/entities.js`, find exactly:
+```js
+          if (e.cooldown <= 0 && dd < r * 0.7 + 0.5 && dx < r * 0.8 + 0.8) {
+```
+Replace with:
+```js
+          if (!aboveHazards && e.cooldown <= 0 && dd < r * 0.7 + 0.5 && dx < r * 0.8 + 0.8) {
+```
+
+In `src/entities.js`, find exactly:
+```js
+          if (prevD < e.d - r * 0.5 && pd >= e.d - r * 0.5 && dx < e.width / 2 + r * 0.6) {
+```
+Replace with:
+```js
+          if (!aboveHazards && prevD < e.d - r * 0.5 && pd >= e.d - r * 0.5 && dx < e.width / 2 + r * 0.6) {
+```
+
+In `src/main.js`, find exactly:
+```js
+let combo = 0;
+```
+Replace with:
+```js
+let combo = 0;
+let jumpElapsed = null;
+```
+
+In `src/main.js`, find exactly:
+```js
+  player.reset();
+```
+Replace with:
+```js
+  player.reset();
+  jumpElapsed = null;
+```
+
+In `src/main.js`, find exactly:
+```js
+  switch (ev.type) {
+```
+Replace with:
+```js
+  switch (ev.type) {
+    case 'pad':
+      if (state === 'playing' && jumpElapsed === null) jumpElapsed = 0;
+      break;
+```
+
+In `src/main.js`, find exactly:
+```js
+      state = 'boss';
+```
+Replace with:
+```js
+      state = 'boss';
+      if (jumpElapsed !== null) {
+        jumpElapsed = null;
+        player.y = 0;
+      }
+```
+
+In `src/main.js`, find exactly:
+```js
+  player.update(dt);
+```
+Replace with:
+```js
+  if (jumpElapsed !== null) {
+    const jump = CONFIG.jumpPad;
+    jumpElapsed += dt;
+    if (state !== 'playing' || jumpElapsed >= jump.duration) {
+      jumpElapsed = null;
+      player.y = 0;
+      if (state === 'playing') player.squash = jump.landingSquash;
+    } else {
+      const progress = jumpElapsed / jump.duration;
+      player.y = 4 * jump.peak * progress * (1 - progress);
+    }
+  }
+
+  player.update(dt);
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
