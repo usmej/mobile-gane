@@ -43,6 +43,7 @@ const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
 const world = new World(scene);
 const entities = new Entities(scene);
 const player = new Player(scene, makeSkinMaterial(getSkin(save.skin)));
+player.setSkin(getSkin(save.skin), makeSkinMaterial(getSkin(save.skin)));
 const fxEl = document.getElementById('fx');
 const fx = new FX(scene, camera, fxEl);
 const tutorial = new Tutorial(fxEl);
@@ -202,7 +203,7 @@ function buySkin(id) {
 function equipSkin(id) {
   if (!save.ownedSkins.includes(id)) return;
   save.skin = id;
-  player.setMaterial(makeSkinMaterial(getSkin(id)));
+  player.setSkin(getSkin(id), makeSkinMaterial(getSkin(id)));
   trail.setColor(getSkin(id).color);
   writeSave(save);
   audio.play('click');

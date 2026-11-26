@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 // pattern: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'
+// shape (optional, default 'blob'): 'blob' | 'drum'
 export const SKINS = [
   { id: 'classic',  name: 'Gloop', price: 0,   currency: 'coins', color: '#5be37a', color2: '#2fae4f', pattern: 'solid' },
   { id: 'bubble',   name: 'Bubblegum', price: 50,  currency: 'coins', color: '#ff8ad8', color2: '#ff4fb8', pattern: 'solid' },
@@ -23,6 +24,7 @@ export const SKINS = [
   { id: 'crumbclout', name: 'Crumb Clout', price: 1950, currency: 'coins', color: '#ffc67d', color2: '#632c13', pattern: 'dots' },
   { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
   { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
+  { id: 'drum', name: 'Drumroll', price: 0, currency: 'coins', color: '#C8843E', color2: '#8E5426', pattern: 'solid', shape: 'drum' },
 ];
 
 export function getSkin(id) {
@@ -108,7 +110,7 @@ export function skinSwatchCSS(skin) {
   if (swatchCache.has(skin.id)) return swatchCache.get(skin.id);
   let css = skin.color;
   try {
-    const c = drawPattern(skin);
+    const c = skin.shape === 'drum' ? drawDrumSide(skin) : drawPattern(skin);
     if (skin.pattern === 'glow') {
       const g = c.getContext('2d');
       g.strokeStyle = skin.color2;
@@ -119,4 +121,72 @@ export function skinSwatchCSS(skin) {
   } catch (e) { /* no canvas: flat color */ }
   swatchCache.set(skin.id, css);
   return css;
+}
+
+// ---------- Drumroll (original wooden drum mascot) ----------
+const INK = '#1B1420';
+const CREAM = '#FFF4E0';
+
+// Side texture: wood planks, two dark hoops, zig-zag rope lacing. Front (u=0.5, -Z) kept
+// clear of lacing so the face reads. Canvas y=0 is the drum top.
+export function drawDrumSide(skin) {
+  skin = skin || getSkin('drum');
+  const W = 512, H = 256;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.fillStyle = skin.color; g.fillRect(0, 0, W, H);
+  g.strokeStyle = skin.color2; g.lineWidth = 3;
+  for (let x = 0; x < W; x += W / 20) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  const hoops = [[26, 56], [200, 230]];
+  g.fillStyle = skin.color2;
+  for (const [a, b] of hoops) {
+    g.fillRect(0, a, W, b - a);
+    g.fillStyle = INK; g.fillRect(0, a, W, 4); g.fillRect(0, b - 4, W, 4); g.fillStyle = skin.color2;
+  }
+  const top = 60, bot = 196, n = 16, step = W / n;
+  for (let i = 0; i < n; i++) {
+    const x0 = i * step, x1 = x0 + step;
+    const mid = (x0 + x1) / 2;
+    if (mid > W * 0.32 && mid < W * 0.68) continue; // face area
+    for (const [ya, yb, xa, xb] of [[top, bot, x0, mid], [bot, top, mid, x1]]) {
+      g.beginPath(); g.moveTo(xa, ya); g.lineTo(xb, yb);
+      g.strokeStyle = INK; g.lineWidth = 11; g.lineCap = 'round'; g.stroke();
+      g.strokeStyle = CREAM; g.lineWidth = 5; g.stroke();
+    }
+  }
+  return c;
+}
+
+export function drawDrumTop() {
+  const S = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d');
+  g.fillStyle = '#FFE9C4'; g.fillRect(0, 0, S, S);
+  g.strokeStyle = INK; g.lineWidth = 8;
+  g.beginPath(); g.arc(S / 2, S / 2, S * 0.47, 0, Math.PI * 2); g.stroke();
+  g.strokeStyle = '#E8C98F'; g.lineWidth = 4;
+  g.beginPath(); g.arc(S / 2, S / 2, S * 0.34, 0, Math.PI * 2); g.stroke();
+  return c;
+}
+
+let drumMats = null;
+// Returns [side, top, bottom] materials for a CylinderGeometry (flat, no emissive).
+export function makeDrumMaterials(skin) {
+  if (drumMats) return drumMats;
+  const mk = (canvas, fallback) => {
+    const o = { color: new THREE.Color(fallback), roughness: 0.8, metalness: 0 };
+    try {
+      const t = new THREE.CanvasTexture(canvas());
+      t.colorSpace = THREE.SRGBColorSpace;
+      o.map = t; o.color = new THREE.Color('#ffffff');
+    } catch (e) { /* flat color fallback */ }
+    return new THREE.MeshStandardMaterial(o);
+  };
+  const side = mk(() => drawDrumSide(skin), '#C8843E');
+  const top = mk(drawDrumTop, '#FFE9C4');
+  const bottom = new THREE.MeshStandardMaterial({ color: new THREE.Color('#8E5426'), roughness: 0.8, metalness: 0 });
+  drumMats = [side, top, bottom];
+  return drumMats;
 }
