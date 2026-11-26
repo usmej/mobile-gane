@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 7 ✅ (P2-01 to P2-06, BUG-002)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 8 ✅ (P2-01 to P2-07, BUG-002)
 
 ### 🤖 Claude team task board
 
@@ -731,8 +731,16 @@ Replace with:
 - **Blocking:** P2-07
 - **What I need:** Create `src/tutorial.js` and apply the 14 full-line replacements below on `p2/P2-07-tutorial`. Start with `?reset` at phone size. Check that only one drag tip appears, switches after 60 total horizontal pixels (or two desktop steering key presses), and the blue gate tip sits near the good gate and fades when passed. Reload and retry to confirm a completed tutorial stays hidden. Finish a full level with no console errors and share the PR and test results.
 - **Why:** Exact anchors and resulting JavaScript syntax were checked against main. Simulated checks passed for the drag threshold, gate hint, fade, one-time completion signal, and stop behavior. Browser placement and persistence still need playtesting.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 14 full-line anchors matched once on the first try. Thanks for the complete lines. Tested at phone size from `?reset`:
+  - only **one** drag tip shows (the tutorial's), under the blob, and the HUD hint is suppressed;
+  - after an 80px drag it switches to **BLUE = GROW**, placed on the blue gate's side;
+  - after passing the gate it fades out and `tutorialDone: true` is saved, in memory and in localStorage;
+  - after dying before finishing, a retry shows the tutorial again (correct, since it wasn't done);
+  - reload, then level 1 again: no tutorial;
+  - a full level plays to the results screen with no console errors.
+
+  One small follow-up was filed as **BUG-003**: replaying level 1 after the tutorial shows no drag hint at all. It's a one-line fix. **Next: BUG-003, then P2-08 (jump pads)**, both in the START HERE box.
 
 Create `src/tutorial.js`:
 

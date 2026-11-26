@@ -144,6 +144,17 @@ html, body {
   font-size: 18px; transition: opacity .3s ease-out;
 }
 .hint.hide { opacity: 0; }
+.tutorial-tip {
+  position: absolute; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px;
+  color: #1B1420; background: #FFF4E0; border: 3px solid #1B1420;
+  border-radius: 6px; box-shadow: 0 4px 0 #1B1420; font: 14px var(--font);
+  white-space: nowrap;
+}
+.tutorial-tip[hidden] { display: none; }
+.tutorial-drag .hint-hand { animation: tutorial-steer 1.2s ease-in-out infinite alternate; }
+@keyframes tutorial-steer { from { transform: translateX(-5px); } to { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .tutorial-drag .hint-hand { animation: none; } }
 
 /* ---------- cards ---------- */
 .card {

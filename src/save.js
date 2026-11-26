@@ -12,6 +12,7 @@ export const DEFAULT_SAVE = {
   sound: true,
   lastDaily: 0,
   dailyStreak: 0,
+  tutorialDone: false,
 };
 
 function freshDefaults() {
