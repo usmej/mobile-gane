@@ -20,25 +20,35 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is P2-01 (6 new skins):
+Your CURRENT task is P2-02 (4 new level themes). P2-01 is DONE and merged. Nice work!
 
-src/skins.js has an array `SKINS`. Each entry looks exactly like this:
-  { id: 'drip', name: 'Drip Lord', price: 150, currency: 'coins', color: '#3aa7ff', color2: '#0b3d91', pattern: 'dots' },
-pattern is one of: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'.
-Read the current list first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/skins.js
+src/themes.js has an array `THEMES` (8 themes right now). Each entry looks exactly like this:
+  {
+    id: 'candy-pop',
+    name: 'Candy Pop',
+    sky: '#5a1f5c',
+    fog: '#6e2a70',
+    track: '#ff6fb5',
+    trackAlt: '#e84d9c',
+    edge: '#fff3fa',
+    accent: '#7afcff',
+    pattern: 'dots',
+  },
+pattern is one of: 'stripes' | 'checker' | 'dots' | 'plain'.
+Read the current list first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/themes.js
 
-Add 6 NEW entries at the END of the SKINS array (before the closing `];`):
-- 4 coin skins priced 900–2000, 2 gem skins priced 40–60 (currency: 'gems')
-- at least 3 different patterns
-- unique lowercase ids that aren't already used; funny original names (no real people/brands/characters)
-- colors as '#rrggbb'; color2 should contrast with color so the pattern shows
+Add 4 NEW themes at the END of the THEMES array (levels 9-12 will use them):
+- each clearly different from the existing 8 (ideas: "Midnight Arcade", "Pickle Planet", "Sunset Drip", "Cotton Candy Storm")
+- sky must differ from track by at least ~30% lightness (no pink-on-pink); fog = sky or very close
+- track vs trackAlt: visible but subtle; edge must contrast with track
+- gate colors are blue #1FA2FF and red #FF3B5C with cream numbers, so the track must NOT be pure blue or red
+- unique lowercase-dash ids
+- flat, deliberate colors (one accent per theme). No neon-rainbow everything.
 
 Reply with:
-1) the 6 new lines, ready to paste;
-2) step-by-step instructions for Person 2 on GitHub's website:
-   new branch "p2/P2-01-new-skins" → edit src/skins.js → paste the 6 lines at the end of SKINS → commit →
-   in "Person Two Instructions.md" change "- [ ] Done" under P2-01 to "- [x] Done" →
-   open a Pull Request into main titled "[P2-01] 6 new skins".
+1) the 4 new entries, ready to paste (same format as above);
+2) the same handoff as last time: write a REQ entry for "Person One Instructions.md" with the code, and Claude
+   will apply it on branch "p2/P2-02-new-themes", test levels 9-12, and merge.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
