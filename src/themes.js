@@ -89,6 +89,94 @@ export const THEMES = [
     accent: '#c07bff',
     pattern: 'plain',
   },
+  // P2-02 — added by Person 2 / ChatGPT
+  {
+
+    id: 'midnight-arcade',
+
+    name: 'Midnight Arcade',
+
+    sky: '#170f2b',
+
+    fog: '#1c1432',
+
+    track: '#717581',
+
+    trackAlt: '#8d909c',
+
+    edge: '#f9df81',
+
+    accent: '#c3a5f2',
+
+    pattern: 'checker',
+
+  },
+
+  {
+
+    id: 'pickle-planet',
+
+    name: 'Pickle Planet',
+
+    sky: '#263319',
+
+    fog: '#2b381e',
+
+    track: '#c5cf76',
+
+    trackAlt: '#a3b34f',
+
+    edge: '#424f21',
+
+    accent: '#ecbe63',
+
+    pattern: 'dots',
+
+  },
+
+  {
+
+    id: 'sunset-drip',
+
+    name: 'Sunset Drip',
+
+    sky: '#51303d',
+
+    fog: '#553441',
+
+    track: '#f5b978',
+
+    trackAlt: '#dc9b59',
+
+    edge: '#633846',
+
+    accent: '#fff0b5',
+
+    pattern: 'stripes',
+
+  },
+
+  {
+
+    id: 'cotton-candy-storm',
+
+    name: 'Cotton Candy Storm',
+
+    sky: '#322a49',
+
+    fog: '#382e50',
+
+    track: '#d1c9df',
+
+    trackAlt: '#b4a9c9',
+
+    edge: '#514568',
+
+    accent: '#f5a8c5',
+
+    pattern: 'checker',
+
+  },
 ];
 
 export function themeForLevel(level) {
