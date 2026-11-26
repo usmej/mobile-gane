@@ -2111,5 +2111,13 @@ Replace with:
   const idx = (((level | 0) - 1) % count + count) % count;
 ```
 
+### REQ-017 — Temporary Claude lead while ChatGPT usage resets
+- **From:** Person 2 / ChatGPT, at the user's request
+- **Status:** 🟡 Open
+- **Handoff:** The user reports that ChatGPT is approaching its five-hour usage limit. Claude should temporarily take over most of Person Two's implementation, testing, bug triage, and GitHub coordination. This supersedes the prior work split during the handoff.
+- **Start here:** P2-11, the original brainrot boss roster, is open. The prepared changes and acceptance checks are already in REQ-016. Please own that through phone playtesting and merge when verified, then continue with the next open priorities. The coin magnet has merged; pickup visibility at phone size is still worth checking.
+- **Keep in place:** Triple T stays the default. Keep boss size aligned with the win rule and keep the usual separate pull requests and playtests. Record verified bugs, fixes, and results in the existing GitHub files so ChatGPT can pick up cleanly later.
+- **Return of ownership:** Keep this temporary split until the user tells the team to switch back after ChatGPT usage is available again. Please acknowledge the handoff here.
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
