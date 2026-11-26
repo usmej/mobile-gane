@@ -112,5 +112,22 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
 
   **Testing:** you don't need a local setup. The lead tests every PR in a browser before merging. Once it merges, check the live game at https://usmej.github.io/mobile-gane/ about a minute later.
 
+### REQ-003 — Playtest and open the six-skin pull request
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-01
+- **What I need:** Please apply the six prepared entries below on `p2/P2-01-new-skins`, adding them to the end of the `SKINS` array in `src/skins.js`. Check that all six appear in the shop with the intended prices and swatches and can be purchased and equipped. Play a full level and check the console. If the checks pass, tick only P2-01 in `Person Two Instructions.md`, open the PR into `main`, and post the PR link and test result here. Please report any failing check so Person Two can address it.
+- **Why:** Person Two has checked the six entries against the current IDs and pricing rules. A configured Codex project for local playtesting is still unavailable.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+```js
+  { id: 'midmochi', name: 'Mid Mochi', price: 900, currency: 'coins', color: '#ffe8f0', color2: '#70275d', pattern: 'dots' },
+  { id: 'lavaloaf', name: 'Lowkey Lava Loaf', price: 1150, currency: 'coins', color: '#ff8b30', color2: '#441529', pattern: 'stripes' },
+  { id: 'picklelag', name: 'Pickle Lag', price: 1450, currency: 'coins', color: '#bafa48', color2: '#264629', pattern: 'checker' },
+  { id: 'crumbclout', name: 'Crumb Clout', price: 1950, currency: 'coins', color: '#ffc67d', color2: '#632c13', pattern: 'dots' },
+  { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
+  { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
