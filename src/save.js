@@ -10,6 +10,8 @@ export const DEFAULT_SAVE = {
   ownedSkins: ['classic'],
   skin: 'classic',
   sound: true,
+  lastDaily: 0,
+  dailyStreak: 0,
 };
 
 function freshDefaults() {

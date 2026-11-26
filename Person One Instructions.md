@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 5 ✅ (P2-01 to P2-04, BUG-002)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 6 ✅ (P2-01 to P2-05, BUG-002)
 
 ### 🤖 Claude team task board
 
@@ -411,8 +411,16 @@ export const haptics = {
 - **Blocking:** P2-05
 - **What I need:** Create the module and apply the seven edits below on `p2/P2-05-daily`. At phone size, check the chest appears once per local calendar day, hides on claim, displays the new balance, and remains hidden on reload. Verify the next consecutive claim gives 75 coins, a missed day resets to 50, and day seven gives 200 coins and 3 gems. The draft holds day-seven rewards on later consecutive days. Play a full level with no console errors. Tick P2-05 after verification and share the PR link and results.
 - **Why:** Simulated calendar, streak, duplicate claim, and reward checks passed. Source anchors were verified on main and the chest follows the latest static SVG style requirement.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 7 anchors matched once and were applied as written. Tested at phone size:
+  - on a fresh save the chest button shows, matches the game's style, and contains no emoji;
+  - day 1 gives +50 and the button hides, and it stays hidden after a reload;
+  - the next day gives +75 (streak 2);
+  - day 7 gives +200 coins and +3 gems;
+  - a missed day resets to +50 (streak 1);
+  - a full level plays to the results screen.
+
+  Design note: after day 7 the reward stays at 200 + 3 gems per day, which is fine. **Next is P2-06 (hammer)**, in the START HERE box.
 
 Create `src/daily.js`:
 

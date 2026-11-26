@@ -10,6 +10,7 @@ import { audio } from './audio.js';
 import { haptics } from './haptics.js';
 import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave } from './save.js';
+import { claim } from './daily.js';
 import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
 import { AutoQuality } from './quality.js';
@@ -54,6 +55,14 @@ const ui = new UI(document.getElementById('ui'), {
   onRetry: () => { audio.play('click'); loadLevel(); startRun(); },
   onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, SKINS); },
   onCloseShop: () => { audio.play('click'); showMenu(); },
+  onClaimDaily: () => {
+    const { coins, gems } = claim(save);
+    if (coins) {
+      writeSave(save);
+      ui.toast(`Daily reward: +${coins} coins${gems ? ` and +${gems} gems` : ''}`);
+    }
+    showMenu();
+  },
   onBuySkin: (id) => buySkin(id),
   onEquipSkin: (id) => equipSkin(id),
   onToggleSound: (on) => {

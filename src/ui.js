@@ -2,6 +2,7 @@
 import { skinSwatchCSS } from './skins.js';
 import { pickMeme } from './memes.js';
 import * as I from './icons.js';
+import { canClaim } from './daily.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
@@ -74,11 +75,13 @@ export class UI {
         <div class="level-tag">LV ${save.level}</div>
       </div>
       <div class="menu-bottom">
+        ${canClaim(save) ? '<button type="button" class="btn btn-md btn-daily"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false" stroke="#1B1420" stroke-width="3" stroke-linejoin="round"><path d="M3 10a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v9H3z" fill="#FFD23F"/><path d="M3 10h18"/><path d="M10 9h4v5h-4z" fill="#FFF4E0"/></svg> Daily reward</button>' : ''}
         <button class="btn btn-play">PLAY</button>
         <button class="btn btn-shop btn-md">SKINS</button>
       </div>`);
     this._on(el, '.btn-play', () => this._call('onPlay'));
     this._on(el, '.btn-shop', () => this._call('onOpenShop'));
+    this._on(el, '.btn-daily', () => this._call('onClaimDaily'));
     const snd = this._on(el, '.btn-sound', () => {
       this.sound = !this.sound;
       snd.innerHTML = this.sound ? I.speakerOn() : I.speakerOff();

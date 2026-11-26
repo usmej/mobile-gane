@@ -103,6 +103,7 @@ html, body {
 .menu-top { width: 100%; max-width: 440px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
 .menu-mid { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
 .menu-bottom { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 16px; padding-bottom: 8px; }
+.btn-daily .ico { font-size: 24px; flex: none; }
 .title { margin: 0; font-weight: normal; line-height: 1; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 .t-line { display: block; white-space: nowrap; }
 .t1 { font-size: clamp(46px, 17vw, 92px); color: var(--green); }
