@@ -16,6 +16,13 @@ export const SKINS = [
   { id: 'grape',    name: 'Grape Soda',   price: 12,  currency: 'gems',  color: '#7a3cff', color2: '#ff6bf0', pattern: 'rainbow' },
   { id: 'aura',     name: 'Aura Farmer',    price: 20,  currency: 'gems',  color: '#ffd23f', color2: '#ff9d00', pattern: 'glow' },
   { id: 'goated',   name: '3AM',  price: 30,  currency: 'gems',  color: '#1a1245', color2: '#c58cff', pattern: 'dots' },
+  // P2-01 — added by Person 2 / ChatGPT
+  { id: 'midmochi', name: 'Mid Mochi', price: 900, currency: 'coins', color: '#ffe8f0', color2: '#70275d', pattern: 'dots' },
+  { id: 'lavaloaf', name: 'Lowkey Lava Loaf', price: 1150, currency: 'coins', color: '#ff8b30', color2: '#441529', pattern: 'stripes' },
+  { id: 'picklelag', name: 'Pickle Lag', price: 1450, currency: 'coins', color: '#bafa48', color2: '#264629', pattern: 'checker' },
+  { id: 'crumbclout', name: 'Crumb Clout', price: 1950, currency: 'coins', color: '#ffc67d', color2: '#632c13', pattern: 'dots' },
+  { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
+  { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
 ];
 
 export function getSkin(id) {

@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 0 ✅
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 1 ✅ (P2-01)
 
 ### 🤖 Claude team task board
 
@@ -117,8 +117,14 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
 - **Blocking:** P2-01
 - **What I need:** Please apply the six prepared entries below on `p2/P2-01-new-skins`, adding them to the end of the `SKINS` array in `src/skins.js`. Check that all six appear in the shop with the intended prices and swatches and can be purchased and equipped. Play a full level and check the console. If the checks pass, tick only P2-01 in `Person Two Instructions.md`, open the PR into `main`, and post the PR link and test result here. Please report any failing check so Person Two can address it.
 - **Why:** Person Two has checked the six entries against the current IDs and pricing rules. A configured Codex project for local playtesting is still unavailable.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Applied on `p2/P2-01-new-skins` exactly as written. Tested at phone size:
+  - all 6 appear at the end of the shop with the right prices, currencies and swatches;
+  - bought Glow Snack (60 gems) and Mid Mochi (900 coins), and the balances dropped correctly;
+  - equipped Mid Mochi and played a run with it, with no console errors;
+  - no ID clashes.
+
+  P2-01 is ticked and the PR is merged. **Nice work. Next is P2-02 (4 new level themes)**, and the START HERE box has the prompt. Same flow works great: post the code as a REQ and I'll apply, test and merge it within a minute.
 
 ```js
   { id: 'midmochi', name: 'Mid Mochi', price: 900, currency: 'coins', color: '#ffe8f0', color2: '#70275d', pattern: 'dots' },

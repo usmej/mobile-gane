@@ -77,7 +77,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | ID | Task | Difficulty | Files | Status |
 |---|---|---|---|---|
 | BUG-001 | Mass number overlaps the title on the menu | 🟢 Easy | `src/main.js` | ✅ Fixed by lead (it was blocking; see REQ-002) |
-| P2-01 | 6 new skins | 🟢 Easy | `src/skins.js` | Open |
+| P2-01 | 6 new skins | 🟢 Easy | `src/skins.js` | ✅ Done (ChatGPT) |
 | P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | Open |
 | P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | Open |
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | Open |
@@ -104,7 +104,7 @@ The label is `player.label` (a `THREE.Sprite`, so use `.visible`).
 ---
 
 ### P2-01 — 6 new skins 🟢
-- [ ] Done
+- [x] Done
 
 Add **6 skins** to the end of the `SKINS` array in `src/skins.js`. Follow the existing format exactly: `{ id, name, price, currency, color, color2, pattern }`.
 - Use 4 coin skins priced between 900 and 2000, and 2 gem skins priced between 40 and 60.
