@@ -20,35 +20,28 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is P2-02 (4 new level themes). P2-01 is DONE and merged. Nice work!
+Your CURRENT task is P2-03 (phone vibration). P2-01 and P2-02 are DONE and merged. Great work!
 
-src/themes.js has an array `THEMES` (8 themes right now). Each entry looks exactly like this:
-  {
-    id: 'candy-pop',
-    name: 'Candy Pop',
-    sky: '#5a1f5c',
-    fog: '#6e2a70',
-    track: '#ff6fb5',
-    trackAlt: '#e84d9c',
-    edge: '#fff3fa',
-    accent: '#7afcff',
-    pattern: 'dots',
-  },
-pattern is one of: 'stripes' | 'checker' | 'dots' | 'plain'.
-Read the current list first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/themes.js
-
-Add 4 NEW themes at the END of the THEMES array (levels 9-12 will use them):
-- each clearly different from the existing 8 (ideas: "Midnight Arcade", "Pickle Planet", "Sunset Drip", "Cotton Candy Storm")
-- sky must differ from track by at least ~30% lightness (no pink-on-pink); fog = sky or very close
-- track vs trackAlt: visible but subtle; edge must contrast with track
-- gate colors are blue #1FA2FF and red #FF3B5C with cream numbers, so the track must NOT be pure blue or red
-- unique lowercase-dash ids
-- flat, deliberate colors (one accent per theme). No neon-rainbow everything.
+1) Create a NEW file src/haptics.js:
+     export const haptics = {
+       enabled: true,
+       buzz(pattern) { /* call navigator.vibrate(pattern) only if it exists and enabled; wrap in try/catch; never throw */ }
+     };
+2) Wire it into src/main.js. Read it first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
+   - add `import { haptics } from './haptics.js';` next to the other imports
+   - inside handleEvent():
+       bad gate (in case 'gate', when !ev.good)  -> haptics.buzz(40)
+       case 'saw'                                -> haptics.buzz([30, 30, 30])
+       wall smash (case 'wall', the smash branch)-> haptics.buzz(60)
+   - inside finishRun(won): lose branch -> haptics.buzz([80, 40, 120]); win branch -> haptics.buzz([20, 20, 20, 20, 60])
+   - mute must also silence vibration: set `haptics.enabled = save.sound` at startup (next to audio.setEnabled(save.sound))
+     and inside onToggleSound (next to audio.setEnabled(save.sound)).
 
 Reply with:
-1) the 4 new entries, ready to paste (same format as above);
-2) the same handoff as last time: write a REQ entry for "Person One Instructions.md" with the code, and Claude
-   will apply it on branch "p2/P2-02-new-themes", test levels 9-12, and merge.
+1) the full src/haptics.js file;
+2) for main.js: each change as "find this exact line -> replace with these lines" (so Claude can apply it exactly);
+3) the same handoff as before: write a REQ entry for "Person One Instructions.md" with the code. Claude will apply it
+   on branch "p2/P2-03-haptics", test it, and merge.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -88,7 +81,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 |---|---|---|---|---|
 | BUG-001 | Mass number overlaps the title on the menu | 🟢 Easy | `src/main.js` | ✅ Fixed by lead (it was blocking; see REQ-002) |
 | P2-01 | 6 new skins | 🟢 Easy | `src/skins.js` | ✅ Done (ChatGPT) |
-| P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | Open |
+| P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | ✅ Done (ChatGPT) |
 | P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | Open |
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | Open |
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | Open |
@@ -126,7 +119,7 @@ Add **6 skins** to the end of the `SKINS` array in `src/skins.js`. Follow the ex
 ---
 
 ### P2-02 — 4 new level themes 🟢
-- [ ] Done
+- [x] Done
 
 Add **4 themes** to `THEMES` in `src/themes.js`, using the same keys as the existing ones (`id, name, sky, fog, track, trackAlt, edge, accent, pattern`).
 - Each should look clearly different from the existing 8. Ideas: "Midnight Arcade", "Cotton Candy Storm", "Pickle Planet", "Sunset Drip".

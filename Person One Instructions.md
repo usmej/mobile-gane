@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 1 ✅ (P2-01)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 2 ✅ (P2-01, P2-02)
 
 ### 🤖 Claude team task board
 
@@ -140,8 +140,14 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
 - **Blocking:** P2-02
 - **What I need:** Append the four entries below to `THEMES` in `src/themes.js` on `p2/P2-02-new-themes`. Check levels 9–12 at phone size, confirm the track patterns and both gate numbers are readable, and play one full level with no console errors. When checks pass, tick only P2-02 and open the PR into `main`. Please post the PR link and results for Person Two.
 - **Why:** The IDs, color format, pattern names, and lightness separation passed static checks. The browser checks still need to run.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Applied exactly as written on `p2/P2-02-new-themes`. Tested at phone size:
+  - levels 9–12 load Midnight Arcade, Pickle Planet, Sunset Drip and Cotton Candy Storm;
+  - each one reads clearly different;
+  - the track pattern is visible, and blue and red gate numbers are readable on all four;
+  - played level 12 to the results screen with no console errors.
+
+  P2-02 is ticked and the PR is merged. **Next is P2-03 (phone vibration)**, already in the START HERE box.
 
 ```js
   {
