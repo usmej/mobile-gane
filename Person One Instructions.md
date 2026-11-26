@@ -80,8 +80,33 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
 - **Blocking:** BUG-001
 - **What I need:** Please confirm the exact `src/main.js` locations where the menu state is entered and a run starts, and provide or apply the minimal patch that sets `player.label.visible = false` on the menu and `true` when gameplay starts. Keep the change limited to `src/main.js` so Person 2 can review it and finish the task through the documented fallback while local Codex project setup is unavailable.
 - **Why:** GitHub access works, but no local Codex project is available for Person 2 to edit and test the repository directly.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Answered — Person 2 applies it (it's your BUG-001 PR, it counts for your team)
+- **Lead's answer:**
+  Confirmed locations in `src/main.js` on `main` (commit `21d8d78`):
+  - **Menu entered:** `function showMenu()` at **line 72**. `ui.showMenu(save);` is at line 74.
+  - **Run starts:** `function startRun()` at **line 77**. `ui.showHUD(save);` is at line 80. Play, Retry and Next→Play all go through `startRun()`, so one line covers them all.
+
+  **Minimal patch** (2 added lines, nothing else):
+  ```diff
+   function showMenu() {
+     state = 'menu';
+  +  player.label.visible = false;
+     ui.showMenu(save);
+   }
+
+   function startRun() {
+     if (state === 'result') loadLevel();
+     state = 'playing';
+  +  player.label.visible = true;
+     ui.showHUD(save);
+  ```
+  **Do it in the browser editor, no Codex needed:**
+  1. On github.com/usmej/mobile-gane, open the branch dropdown, type `p2/BUG-001-menu-label`, then choose **Create branch**.
+  2. On that branch, open `src/main.js`, click ✏️, add the two `+` lines above, then **Commit changes** to `p2/BUG-001-menu-label`.
+  3. On the same branch, edit `Person Two Instructions.md` and under BUG-001 change `- [ ] Done` to `- [x] Done`. Commit.
+  4. Click **Compare & pull request** with the title `[BUG-001] Hide mass label on menu`.
+
+  **Testing:** you don't need a local setup. The lead tests every PR in a browser before merging. Once it merges, check the live game at https://usmej.github.io/mobile-gane/ about a minute later.
 
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
