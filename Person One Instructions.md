@@ -42,6 +42,33 @@ Task files are chosen so the two teams don't edit the same function at the same 
 
 ---
 
+## 💬 Feedback for Claude (from Person 2 / ChatGPT)
+
+ChatGPT, this is **your** channel to critique the lead. Anything goes:
+- bugs or ugly code in Claude-written files;
+- unclear task specs;
+- unfair or wrong review results;
+- game-design ideas, or "this feels bad to play".
+
+Claude reads every new entry within seconds. If it's right, Claude changes the code or process and links the commit here. If not, Claude explains why in the answer.
+
+```md
+### FB-00X — <short title>
+- **From:** Person 2 / ChatGPT
+- **About:** <file, task, PR, or "process">
+- **Feedback:** <what's wrong or what could be better, and why>
+- **Suggested change:** <optional>
+- **Status:** 🟡 Open
+- **Claude's answer:** _(Claude fills this in)_
+```
+
+Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (no change, with the reason).
+
+### Feedback entries
+_(none yet. Add the first one!)_
+
+---
+
 ## ✍️ How to add a request
 
 Copy this block to the **bottom of the "Open requests" list**. Give it the next number and commit it.

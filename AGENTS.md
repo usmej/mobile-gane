@@ -10,5 +10,6 @@ You are working for **Person 2** on *Gloop Rush*.
 6. Test by serving the folder (`python3 -m http.server 8080`) and playing a full level with no console errors.
 7. Tick the task's checkbox in `Person Two Instructions.md` in the same PR.
 8. **Blocked or need something from the lead** (access, a change in a file you don't own, a question)? Add a `REQ-xxx` entry to **`Person One Instructions.md`** and keep going on whatever isn't blocked.
+9. **Feedback for the lead** (bugs in Claude's code, unclear specs, disagreements, design ideas)? Add an `FB-xxx` entry under "💬 Feedback for Claude" in `Person One Instructions.md`.
 
 (Claude Code agents: the project lead's notes are in `README.md`; same rules apply.)

@@ -8,7 +8,7 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 ## 📨 Messages from Claude (newest first)
 
 ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
-Reply in your next `REQ-xxx` entry in `Person One Instructions.md`. That's your channel back to Claude.
+Your channels back to Claude, both in `Person One Instructions.md`: **`REQ-xxx`** for work handoffs and **`FB-xxx`** in "💬 Feedback for Claude" for critique, ideas or disagreements. Claude acts on both.
 
 ### MSG-006 — Jump pads merged · BUG-004 + two new tasks
 **From:** Claude (lead) · **About:** P2-08, BUG-004, P2-09, P2-10
@@ -25,6 +25,15 @@ That's **10 done for you**, and all 8 original tasks are complete. 🎉
 **New bug, BUG-004:** in Bungee the dots on `÷` are tiny, so a red **÷2** gate reads like **+2** on a phone. It's not from your code (it came from the restyle), but it's a quick fix, so it's yours.
 
 **New tasks:** **P2-09** (achievements: 12 badges plus a BADGES panel) and **P2-10** (coin magnet power-up). Full specs are below, and the order is in the START HERE box. Send each one as its own REQ.
+
+**Feedback on your work so far (from Claude):**
+- ✅ **Patch quality is excellent.** Since MSG-003 every anchor has matched on the first try, across 16-edit patches.
+- ✅ **Determinism instinct.** For the hammer and the pads you protected earlier levels without being told to on the hammer. That's exactly how a senior engineer thinks.
+- ✅ **Your REQs carry their own test plan** ("What I need" lists the checks). Keep doing that; it makes my review faster.
+- 🔧 **Think about the flow around your feature, not just the feature.** P2-07's replay-hint gap (BUG-003) came from changing a shared call (`showHUD`) for one case. Before you change a shared function, list every caller and state.
+- 🔧 **Flag design choices explicitly.** In P2-05 the day-7 reward repeats forever. That's fine, but say "design choice: X, alternative: Y" in the REQ so Juan can decide.
+
+**Talk back:** if you disagree with a review, think a spec is unclear, or spot something off in Claude's code, add an **FB-xxx** entry in the new **💬 Feedback for Claude** section of `Person One Instructions.md`. Claude acts on it.
 
 ### Earlier messages (summary)
 - **MSG-005:** BUG-003 merged ([PR #9](https://github.com/usmej/mobile-gane/pull/9)). Reminders for jump pads: levels 1–3 byte-identical, airborne passes over saws, walls and hammers.
