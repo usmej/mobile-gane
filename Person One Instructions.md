@@ -2125,5 +2125,194 @@ Replace with:
 - **Keep in place:** Triple T stays the default. Keep boss size aligned with the win rule and keep the usual separate pull requests and playtests. Record verified bugs, fixes, and results in the existing GitHub files so ChatGPT can pick up cleanly later.
 - **Return of ownership:** Keep this temporary split until the user tells the team to switch back after ChatGPT usage is available again. Please acknowledge the handoff here.
 
+### REQ-018 — Apply and playtest the boss name banner (P2-12)
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-12
+- **What I need:** Apply the complete-line replacements below in a separate P2-12 PR. Playtest, then report the PR and results in Person Two Instructions. ChatGPT is back on the assignment queue.
+- **Why:** Give each boss a readable name and keep the approach meme clear of the HP label. The popup tracks the banner each frame as the boss size eases.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+The optional label width limit leaves the other labels on their existing drawing path. The additional popup anchor form refreshes the boss position while preserving the snapshot behavior of all existing callers. The banner is disposed alongside the HP label between levels. Triple T stays the default, and fight thresholds, boss geometry, and level generation are unaffected.
+
+#### 1. `src/bosses.js`
+
+Find:
+```js
+  fridgeDino, toastOctopus, bellCactus, scooterPigeon,
+  hornedGremlin, megaCube, donutTyrant, slimeKing,
+```
+
+Replace with:
+```js
+  [fridgeDino, 'Frigorifero Dinosauro'],
+  [toastOctopus, 'Toastopo Croccantino'],
+  [bellCactus, 'Cactusso Campanello'],
+  [scooterPigeon, 'Piccione Monopattino'],
+  [hornedGremlin, 'Horned Gremlin'],
+  [megaCube, 'Mega Cube'],
+  [donutTyrant, 'Donut Tyrant'],
+  [slimeKing, 'Slime King'],
+```
+
+#### 2. `src/bosses.js`
+
+Find:
+```js
+  return DESIGNS[idx](size);
+```
+
+Replace with:
+```js
+  const [build, name] = DESIGNS[idx];
+  return { ...build(size), name };
+```
+
+#### 3. `src/labels.js`
+
+Find:
+```js
+export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = null, height = 1 } = {}) {
+```
+
+Replace with:
+```js
+export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = null, height = 1, fit = false } = {}) {
+```
+
+#### 4. `src/labels.js`
+
+Find:
+```js
+    ctx.fillText(t, 128, 68);
+```
+
+Replace with:
+```js
+    if (fit) ctx.fillText(t, 128, 68, 224);
+    else ctx.fillText(t, 128, 68);
+```
+
+#### 5. `src/entities.js`
+
+Find:
+```js
+    const { group: g, body, height } = makeBossMesh(levelData.level || 1, 1);
+```
+
+Replace with:
+```js
+    const { group: g, body, height, name } = makeBossMesh(levelData.level || 1, 1);
+```
+
+#### 6. `src/entities.js`
+
+Find:
+```js
+    this.labels.push(lab);
+    g.add(lab);
+```
+
+Replace with:
+```js
+    const banner = makeLabel(name, { color: CREAM, bg: INK, height: 0.7, fit: true });
+    banner.scale.x = 4.2;
+    const bannerBase = banner.scale.clone();
+    this.labels.push(lab, banner);
+    g.add(lab, banner);
+```
+
+#### 7. `src/entities.js`
+
+Find:
+```js
+    lab.scale.multiplyScalar(1 / k);
+```
+
+Replace with:
+```js
+    lab.scale.multiplyScalar(1 / k);
+    banner.scale.copy(bannerBase).multiplyScalar(1 / k);
+    banner.position.set(0, lab.position.y + 1.25 / k, 0);
+```
+
+#### 8. `src/entities.js`
+
+Find:
+```js
+    this.boss = { group: g, body, label: lab, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
+```
+
+Replace with:
+```js
+    this.boss = { group: g, body, label: lab, banner, bannerBase, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
+```
+
+#### 9. `src/entities.js`
+
+Find:
+```js
+      b.label.scale.copy(b.labelBase).multiplyScalar(1 / b.k); // keep the HP label readable
+```
+
+Replace with:
+```js
+      b.label.scale.copy(b.labelBase).multiplyScalar(1 / b.k); // keep the HP label readable
+      b.banner.scale.copy(b.bannerBase).multiplyScalar(1 / b.k);
+      b.banner.position.y = b.label.position.y + 1.25 / b.k;
+```
+
+#### 10. `src/main.js`
+
+Find:
+```js
+      fx.popText(pickMeme('boss') || 'BOSS', entities.boss.group.position.clone().setY(entities.boss.size * 2.6), '#FF3B5C', 1.3);
+```
+
+Replace with:
+```js
+      const boss = entities.boss;
+      fx.popText(pickMeme('boss') || 'BOSS', (anchor) => {
+        boss.banner.getWorldPosition(anchor);
+        anchor.y += Math.max(1, boss.size * 0.5);
+      }, '#FF3B5C', 1.3);
+```
+
+#### 11. `src/fx.js`
+
+Find:
+```js
+      anchor: position.clone(),
+```
+
+Replace with:
+```js
+      anchor: typeof position === 'function' ? position : position.clone(),
+```
+
+#### 12. `src/fx.js`
+
+Find:
+```js
+    const v = this._tmp.copy(t.anchor).project(this.camera);
+```
+
+Replace with:
+```js
+    if (typeof t.anchor === 'function') t.anchor(this._tmp);
+    else this._tmp.copy(t.anchor);
+    const v = this._tmp.project(this.camera);
+```
+
+**Checks before merging**
+
+- Verify names against their characters on levels 1–8 and that level 9 repeats level 1.
+- At phone width, watch the approach at mass below, equal to, and above boss HP. Check that the name fits, its banner stays above HP, and the full meme stamp and rise avoid both labels as the boss scales. Check that near-threshold wins and losses still follow mass ≥ HP.
+- Retry and switch levels to catch lingering labels. Finish a full run, inspect the console, and spot-check a regular hit or coin popup.
+
+I checked that each full-line anchor matches once on main, parsed all five patched modules, and checked the eight names and rotation wrap. Browser playtesting is pending.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
