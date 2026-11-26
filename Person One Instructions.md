@@ -726,5 +726,274 @@ Replace with:
           if (e.cooldown
 ```
 
+### REQ-010 — Apply and playtest the level one tutorial
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-07
+- **What I need:** Create `src/tutorial.js` and apply the 14 full-line replacements below on `p2/P2-07-tutorial`. Start with `?reset` at phone size. Check that only one drag tip appears, switches after 60 total horizontal pixels (or two desktop steering key presses), and the blue gate tip sits near the good gate and fades when passed. Reload and retry to confirm a completed tutorial stays hidden. Finish a full level with no console errors and share the PR and test results.
+- **Why:** Exact anchors and resulting JavaScript syntax were checked against main. Simulated checks passed for the drag threshold, gate hint, fade, one-time completion signal, and stop behavior. Browser placement and persistence still need playtesting.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Create `src/tutorial.js`:
+
+```js
+import { hand } from './icons.js';
+
+export class Tutorial {
+  constructor(overlayEl) {
+    this.overlayEl = overlayEl;
+    this.tip = document.createElement('div');
+    this.tip.className = 'tutorial-tip';
+    this.tip.hidden = true;
+    overlayEl.appendChild(this.tip);
+    this.phase = 'idle';
+  }
+
+  start() {
+    this.phase = 'drag';
+    this.distance = 0;
+    this.tip.innerHTML = `${hand()}<span>DRAG</span>`;
+    this.tip.classList.add('tutorial-drag');
+    this.tip.style.opacity = '';
+    this.tip.hidden = true;
+  }
+
+  addDrag(dx) {
+    if (this.phase === 'drag') this.distance += Math.abs(dx);
+  }
+
+  update(dt, player, nextGate) {
+    if (this.phase === 'idle') return false;
+    if (this.phase === 'drag' && this.distance >= 60) {
+      this.phase = 'gate';
+      this.tip.textContent = 'BLUE = GROW';
+      this.tip.classList.remove('tutorial-drag');
+    }
+    if (this.phase === 'drag') {
+      this.place(player, 30);
+    } else if (this.phase === 'gate') {
+      if (!nextGate || nextGate.passed) {
+        this.phase = 'fade';
+        this.fadeLeft = 0.25;
+      } else {
+        this.place(nextGate.screen, -32);
+      }
+    } else if (this.phase === 'fade') {
+      this.fadeLeft -= dt;
+      if (this.fadeLeft <= 0) {
+        this.stop();
+        return true;
+      }
+      this.tip.style.opacity = String(this.fadeLeft / 0.25);
+    }
+    return false;
+  }
+
+  place(point, offsetY) {
+    const { clientWidth: w, clientHeight: h } = this.overlayEl;
+    this.tip.hidden = !point || point.x < 0 || point.x > w || point.y < 0 || point.y > h;
+    if (this.tip.hidden) return;
+    const margin = this.tip.offsetWidth / 2 + 4;
+    this.tip.style.left = Math.max(margin, Math.min(w - margin, point.x)) + 'px';
+    this.tip.style.top = Math.max(20, Math.min(h - 20, point.y + offsetY)) + 'px';
+  }
+
+  stop() {
+    this.phase = 'idle';
+    this.tip.hidden = true;
+  }
+}
+```
+
+In `src/main.js`, find exactly:
+```
+import { Trail } from './trail.js';
+```
+Replace with:
+```
+import { Trail } from './trail.js';
+import { Tutorial } from './tutorial.js';
+```
+
+In `src/main.js`, find exactly:
+```
+import { generateLevel, applyOp } from './levels.js';
+```
+Replace with:
+```
+import { generateLevel, applyOp, isGoodOp } from './levels.js';
+```
+
+In `src/main.js`, find exactly:
+```
+const fx = new FX(scene, camera, document.getElementById('fx'));
+```
+Replace with:
+```
+const fxEl = document.getElementById('fx');
+const fx = new FX(scene, camera, fxEl);
+const tutorial = new Tutorial(fxEl);
+let firstTutorialGate;
+const tutorialPoint = new THREE.Vector3();
+
+function tutorialScreenPoint(x, y, z) {
+  const p = tutorialPoint.set(x, y, z).project(camera);
+  if (p.z < -1 || p.z > 1) return null;
+  return { x: (p.x + 1) * fxEl.clientWidth / 2, y: (1 - p.y) * fxEl.clientHeight / 2 };
+}
+```
+
+In `src/main.js`, find exactly:
+```
+function showMenu() {
+  state = 'menu';
+```
+Replace with:
+```
+function showMenu() {
+  tutorial.stop();
+  state = 'menu';
+```
+
+In `src/main.js`, find exactly:
+```
+  ui.showHUD(save);
+```
+Replace with:
+```
+  ui.showHUD(save, save.level !== 1);
+  if (save.level === 1 && !save.tutorialDone) {
+    firstTutorialGate = level.items.find((item) => item.type === 'gate');
+    tutorial.start();
+  } else {
+    tutorial.stop();
+  }
+```
+
+In `src/main.js`, find exactly:
+```
+function finishRun(won) {
+  state = 'ending';
+```
+Replace with:
+```
+function finishRun(won) {
+  tutorial.stop();
+  state = 'ending';
+```
+
+In `src/main.js`, find exactly:
+```
+  if (state === 'playing') player.steer(dx * (390 / Math.max(320, Math.min(window.innerWidth, 700))));
+```
+Replace with:
+```
+  if (state === 'playing') {
+    tutorial.addDrag(dx);
+    player.steer(dx * (390 / Math.max(320, Math.min(window.innerWidth, 700))));
+  }
+```
+
+In `src/main.js`, find exactly:
+```
+  if (e.key === 'ArrowLeft' || e.key === 'a') player.steer(-40);
+  if (e.key === 'ArrowRight' || e.key === 'd') player.steer(40);
+```
+Replace with:
+```
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    tutorial.addDrag(-40);
+    player.steer(-40);
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    tutorial.addDrag(40);
+    player.steer(40);
+  }
+```
+
+In `src/main.js`, find exactly:
+```
+  fx.update(dt);
+  renderer.render(scene, camera);
+```
+Replace with:
+```
+  fx.update(dt);
+  if (state === 'playing' && tutorial.phase !== 'idle') {
+    camera.updateMatrixWorld();
+    const playerPoint = tutorialScreenPoint(player.x, player.y, pz);
+    const gate = firstTutorialGate;
+    const side = gate && isGoodOp(gate.left.op) ? -1 : 1;
+    const nextGate = gate && {
+      passed: player.d >= gate.d,
+      screen: tutorialScreenPoint(side * CONFIG.trackHalfWidth / 2, 2.55, -gate.d),
+    };
+    if (tutorial.update(dt, playerPoint, nextGate)) {
+      save.tutorialDone = true;
+      writeSave(save);
+    }
+  }
+  renderer.render(scene, camera);
+```
+
+In `src/ui.js`, find exactly:
+```
+  showHUD(save) {
+```
+Replace with:
+```
+  showHUD(save, showDragHint = true) {
+```
+
+In `src/ui.js`, find exactly:
+```
+      <div class="hint">${I.hand()}${I.arrows()}<span>DRAG</span></div>`);
+```
+Replace with:
+```
+      ${showDragHint ? `<div class="hint">${I.hand()}${I.arrows()}<span>DRAG</span></div>` : ''}`);
+```
+
+In `src/ui.js`, find exactly:
+```
+    this.hintTimer = setTimeout(() => this.hud && this.hud.hint.classList.add('hide'), 2500);
+```
+Replace with:
+```
+    if (this.hud.hint) {
+      this.hintTimer = setTimeout(() => this.hud?.hint?.classList.add('hide'), 2500);
+    }
+```
+
+In `src/save.js`, find exactly:
+```
+  dailyStreak: 0,
+```
+Replace with:
+```
+  dailyStreak: 0,
+  tutorialDone: false,
+```
+
+In `style.css`, find exactly:
+```
+.hint.hide { opacity: 0; }
+```
+Replace with:
+```
+.hint.hide { opacity: 0; }
+.tutorial-tip {
+  position: absolute; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px;
+  color: #1B1420; background: #FFF4E0; border: 3px solid #1B1420;
+  border-radius: 6px; box-shadow: 0 4px 0 #1B1420; font: 14px var(--font);
+  white-space: nowrap;
+}
+.tutorial-tip[hidden] { display: none; }
+.tutorial-drag .hint-hand { animation: tutorial-steer 1.2s ease-in-out infinite alternate; }
+@keyframes tutorial-steer { from { transform: translateX(-5px); } to { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .tutorial-drag .hint-hand { animation: none; } }
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
