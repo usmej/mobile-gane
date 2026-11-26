@@ -68,6 +68,10 @@ export const CONFIG = {
   gemEveryNLevels: 5,
   maxMultiplier: 10,
 
+  // Boss size readability (FB-003)
+  bossMinSizeGap: 0.06,   // at least 6% bigger/smaller than the player when not tied
+  bossMaxRatio: 2.2,      // never more than 2.2x / less than 1/2.2x the player's core size
+
   // Bonus stairs finale (x1 → x10 after the boss)
   finaleSteps: 10,
   finaleGap: 5,             // distance from the boss to the first step

@@ -485,7 +485,7 @@ requestAnimationFrame(frame);
 
 // handy for debugging in the console
 window.__gloop = {
-  save, player,
+  save, player, entities,
   get level() { return level; },
   get state() { return state; },
   persist() { writeSave(save); },                                   // save after editing __gloop.save

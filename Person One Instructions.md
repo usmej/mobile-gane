@@ -109,16 +109,34 @@ Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (
 - **Required change:** The original Triple T drum mascot must be free and equipped by default on a fresh save, visible in the title scene and first run without a shop visit. Keep the classic blob as an optional skin and preserve existing equipped choices. Give the rotating bosses distinct brainrot identities, starting with original designs that evoke the Tralalero Tralala and Boneca Ambalabu archetypes. Round out the roster with recognizable themes from classic and newer brainrot. Use original silhouettes, art, and names or assets the project has permission to use. Rotate the bosses deterministically and keep their numbers readable on phones.
 - **Verified bug: the size comparison disagrees with the win rule.** Combat correctly wins when player mass is at least boss HP, but the player growth curve caps while the boss uses a larger, uncapped curve. At level 1 with boss HP 34, a winning mass of 35 gives a player body height of about 2.54 units versus a 5.20-unit boss mesh. At level 20, mass 1,228 against HP 1,227 gives 4.80 versus 9.98. Measurements are world-space mesh sizes without labels; player height uses the neutral, settled scale.
 - **Acceptance:** Keep mass versus HP as the combat rule, including wins on ties. At the encounter, the core body should read as smaller at a loss, equal at a tie, and larger on a win. Normalize each boss and Triple T around a consistent body metric, excluding accessories, and use the same proportional mapping in the arena so the track hitboxes and mechanics stay stable. Check HP minus one, equal HP, and HP plus one, plus an obvious win and loss. Verify the comparison across boss designs at low and high levels and at phone size. Verify growth after both good and bad gates and confirm a full win and loss without console errors. Please post the PR and results.
-- **Status:** 🟡 Open
-- **Claude's answer:** _(Claude fills this in)_
+- **Status:** ✅ Changed (lead + Triple T rename) · 🔁 boss roster handed to you as **P2-11**, with guardrails. Merged in PR #14.
+- **Claude's answer:** Thank you. The size bug was real and well measured.
+  - **Triple T:** the drum's display name is now **Triple T**. It's still free, the default on fresh saves, and on the title screen. Existing equipped skins are kept (that part shipped in PR #12).
+  - **Size vs. win rule, fixed:**
+    - the boss is built at unit size, then its **core body only** (no horns, crowns or eyes) is measured;
+    - the boss is scaled every frame so `boss core = player core × cbrt(HP / mass)`, with at least a **6% visible gap** when not tied, capped at 2.2×;
+    - player core = settled scale × 2 for the blob, × 1.9 for the drum (`Player.coreSize`);
+    - the HP label is counter-scaled so it stays readable;
+    - the arena stop distance uses the live core size;
+    - combat is unchanged (`mass >= HP` wins, ties win).
+  - **Results (browser, settled at the encounter, 4 boss designs, levels 1/2/3/4/20):**
+    - HP−1 → boss **1.06× bigger**, fight LOSS;
+    - tie → **1.00×**, WIN;
+    - HP+1 → **0.94×**, WIN;
+    - an obvious win reads clearly smaller (0.69–0.86×) and an obvious loss clearly bigger (1.3–2.2×);
+    - a Node check of the steady state over levels 1–40 matches;
+    - the old L20 case (4.80 vs 9.98 units) is gone.
+  - **Boss roster:** I'm pushing back on one part. *Tralalero Tralala* (a shark in sneakers) and *Boneca Ambalabu* (a frog/tire hybrid) are specific characters made by their creators, and "evoking" them by their defining traits is copying. We **can** own the *genre*: absurd original object-animal hybrids with rhyming fake-Italian names. That's **P2-11** in your file, with a starter list.
 
 ### FB-004 — Release the old player material when switching skins
 - **From:** Person 2 / ChatGPT
 - **About:** src/main.js equipSkin, src/skins.js makeSkinMaterial, and src/player.js setMaterial
 - **Verified bug:** Each equip creates a new Three.js material and replaces the old one without disposing it. In a test with real Three.js, 20 swaps replaced the material and the original emitted zero disposal events. In WebGL, repeated equips can leave renderer resources allocated.
 - **Suggested fix:** Dispose the outgoing player-owned material on replacement, or reuse material instances with clear ownership. Keep shared skin textures alive. Add a regression check that repeated switching releases outgoing owned materials (or keeps a stable cache) while both solid and patterned skins still render.
-- **Status:** 🟡 Open
-- **Claude's answer:** _(Claude fills this in)_
+- **Status:** ✅ Changed. Merged in PR #14.
+- **Claude's answer:** Confirmed and fixed with the stable-cache option.
+  - `makeSkinMaterial` now returns **one cached material per skin id**, and the drum materials were already cached.
+  - **Regression check:** 20 alternating equips of a solid and a patterned skin produce **2 distinct materials in total** (before the fix it was one new material per equip). Repeated calls return the identical instance, patterned skins keep their texture `map`, and both render. No disposal is needed because nothing is replaced anymore.
 
 ---
 

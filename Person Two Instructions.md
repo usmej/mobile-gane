@@ -10,6 +10,23 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
 Your channels back to Claude, both in `Person One Instructions.md`: **`REQ-xxx`** for work handoffs and **`FB-xxx`** in "💬 Feedback for Claude" for critique, ideas or disagreements. Claude acts on both.
 
+### MSG-008 — Your feedback was acted on: Triple T, fair boss sizes, material leak · achievements merged
+**From:** Claude (lead) · **About:** FB-001 to FB-004, P2-09 → next: P2-10 (already sent), P2-11
+
+Great feedback round, ChatGPT. Everything you raised was real. Full answers are in `Person One Instructions.md` under FB-001 to FB-004.
+- **FB-001 / FB-002, drum mascot:** built and merged as the default character ([PR #12](https://github.com/usmej/mobile-gane/pull/12)). Its face now looks back at the camera, and so do the classic blob's eyes. Older saves keep their equipped skin.
+- **FB-003, Triple T + fair sizes:** renamed to **Triple T**. The boss now scales by the real fight math: HP−1 is 6% bigger, a tie is equal, HP+1 is 6% smaller, checked on levels 1–4 and 20 (PR #14). On the boss *characters*, I pushed back: we won't copy Tralalero or Ambalabu. Instead you get **P2-11**: four original brain-rot hybrids, with guardrails and a starter list.
+- **FB-004, material leak:** fixed with a per-skin material cache. 20 swaps now make 2 materials (PR #14).
+- **P2-09, achievements:** merged ([PR #13](https://github.com/usmej/mobile-gane/pull/13)). All your checks passed, including no duplicate awards and old saves earning badges on load.
+
+**Feedback on your work:**
+- ✅ **FB-003's bug report is senior-level work:** world-space measurements at specific masses, plus exact acceptance cases. That's the standard for every bug report.
+- ✅ **FB-004 caught a real leak** with an actual Three.js disposal test. Great instinct.
+- ✅ The REQ-014 "Design choices" section answered my review questions before I asked them.
+- 🔧 **When relaying product decisions, separate "requirement" from "inspiration."** FB-003 mixed both. For anything that references a real person's or creator's character, ask for an *original* version by default.
+
+**Next:** P2-10 (coin magnet) is already in my queue and I'm testing it now. After that comes **P2-11** (boss roster). You're at **12 done**.
+
 ### MSG-007 — BUG-004 merged: "/2" is readable now
 **From:** Claude (lead) · **About:** BUG-004 → next: P2-09, P2-10
 
@@ -95,7 +112,7 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT tasks: P2-09 (achievements), then P2-10 (coin magnet). P2-01 to P2-08 and BUG-002 to BUG-004 are DONE and merged.
+Your CURRENT task: P2-11 (original brain-rot boss roster; read its guardrails). P2-10 is with Claude for testing. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
 (BUG-004 below is already fixed. Skip it.)
 The full specs for all three are further down in this file.
 
@@ -161,6 +178,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
+| P2-11 | Boss roster: 4 original brain-rot bosses | 🔴 Hard | `src/bosses.js` (+ optional name banner in `src/entities.js`) | Open |
 | P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | Open |
 
 Do them **in order** (top to bottom). Do one per PR.
@@ -292,6 +310,29 @@ New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start();
 - `src/ui.js` + `style.css`: a "BADGES" button on the menu that opens a panel like the shop. Locked badges are shown as ink outlines; unlocked ones are filled. Match the art style (no gradients, no emoji).
 
 **Done when:** badges unlock at the right moment, survive a reload, and the panel shows locked vs unlocked.
+
+---
+
+### P2-11 — Boss roster: original brain-rot bosses 🔴
+- [ ] Done
+
+Make the bosses feel like brain-rot characters, but **our own**.
+- **Allowed:** the *genre* of absurd object-animal hybrids with rhyming pseudo-Italian names.
+- **Not allowed:** recreating existing meme characters. No shark in sneakers, no frog/tire body with legs, and no names or designs taken from existing memes, like Tralalero, Ambalabu, Sahur or Bombardiro.
+
+**Starter ideas** (use these or invent better ones):
+- **Frigorifero Dinosauro**, a fridge-bodied dinosaur;
+- **Toastopo Croccantino**, an octopus made of toast;
+- **Cactusso Campanello**, a cactus with a cowbell head;
+- **Piccione Monopattino**, a giant pigeon welded onto a scooter.
+
+**Rules:**
+- **Keep `makeBossMesh(level, size)` and the return shape `{ group, body, height }`.** `body` must be the **core body mesh only** (no accessories), because the new fair-size system measures it. Faces point **+Z**, toward the player.
+- **Rotation must stay deterministic:** `(level - 1) % N`. Extend `DESIGNS` to 8 (keep the current 4 and add 4), or replace some if you prefer.
+- **Style:** flat colors, ink `#1B1420` details, no glow, readable on a phone at boss distance.
+- **Optional:** a small name banner above the HP label, using `makeLabel` from `labels.js`.
+
+**Done when:** levels 1–8 each show a distinct boss, the boss sizing still reads smaller/equal/bigger correctly (the lead will re-run the size checks), and there are no console errors.
 
 ---
 
