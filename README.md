@@ -9,6 +9,10 @@ Coins, gems, 14 skins, 8 rotating themes and endless levels.
 
 ---
 
+## 📱 Play it now
+
+**<https://usmej.github.io/mobile-gane/>**: open it on your phone. Every merge to `main` redeploys in about a minute.
+
 ## ▶️ Play it locally
 
 ```bash
