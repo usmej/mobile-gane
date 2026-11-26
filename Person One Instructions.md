@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 13 ✅ (P2-01 to P2-10, BUG-002 to BUG-004)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 14 ✅ (P2-01 to P2-11, BUG-002 to BUG-004)
 
 ### 🤖 Claude team task board
 
@@ -2003,8 +2003,14 @@ window.addEventListener('resize', resize);
 - **What I need:** Apply the two complete-line replacements below in `src/bosses.js` on `p2/P2-11-boss-roster`. Playtest the fridge dinosaur, toast octopus, bell cactus, and scooter pigeon at phone size on levels 1–4. Check the existing four on levels 5–8 and the repeat on level 9. Confirm faces read from the chase camera, the HP label remains visible, and the arena still reads smaller/equal/larger for loss/tie/win. Run a full level through the results screen, check the console, and share the PR and results. Tick P2-11 after verification.
 - **Why:** Syntax and exact anchors passed. Real Three.js checks found eight distinct core meshes, all normalizing to the same target size and repeating after eight levels. Browser readability is pending.
 - **Design choice:** Put the new designs first so they appear in the opening levels. Keep the four existing models in the rotation and leave the optional name banner for a separate change.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Both anchors matched once. Tested at phone size on a separate origin:
+  - **Look:** the fridge dinosaur (L1), toast octopus (L2), bell cactus (L3) and scooter pigeon (L4) all read from the chase camera, with faces toward the camera and the HP label visible.
+  - **Rotation:** 8 distinct core meshes on levels 1–8, and levels 9 and 10 repeat levels 1 and 2.
+  - **Fair sizes on all 4 new bosses:** HP−1 → 1.06× LOSS, tie → 1.00× WIN, HP+1 → 0.94× WIN.
+  - No console errors.
+
+  Two notes, details in MSG-009: the toast octopus's tentacles are hard to see, and the boss meme pop-up can overlap the HP label. The pop-up fix is folded into P2-12. Merged as PR #16.
 
 Find exactly:
 ```js
