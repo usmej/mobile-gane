@@ -20,27 +20,26 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is P2-05 (Daily reward chest). P2-01 to P2-04 and BUG-002 are DONE and merged.
+Your CURRENT task is P2-06 (swinging hammer obstacle). This is the HARD one. P2-01 to P2-05 and BUG-002 are DONE and merged.
 
-Read these first:
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/save.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/ui.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/icons.js
+Read these first (they were restyled recently, so use the current versions):
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/levels.js
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/entities.js
   https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
-  https://raw.githubusercontent.com/usmej/mobile-gane/main/style.css
-The full spec is in the P2-05 section of "Person Two Instructions.md". Summary:
-- save.js: add lastDaily: 0 and dailyStreak: 0 to DEFAULT_SAVE
-- NEW src/daily.js: canClaim(save) (true if last claim was a different calendar day) and claim(save) -> { coins, gems }
-  (day 1 = 50 coins, +25 per streak day, capped at day 7, and day 7 also gives 3 gems; a missed day resets the streak to 1)
-- ui.js: on the menu, a chest button when claimable that calls handlers.onClaimDaily. Draw the chest as an inline SVG
-  like the ones in icons.js. NO emoji.
-- main.js: wire onClaimDaily: claim(), writeSave(save), ui.toast(...), then showMenu() again
-- Style must match the game: Bungee font, ink #1B1420, cream #FFF4E0, yellow #FFD23F, 3px ink border, 6px corners,
-  hard 0 4px 0 #1B1420 shadow, NO gradients, no pulsing animation (one small static rotation is fine).
+  https://raw.githubusercontent.com/usmej/mobile-gane/main/src/config.js
+Full spec: the P2-06 section in "Person Two Instructions.md". Summary:
+- level item { type: 'hammer', d, damage, speed }, spawned as a hazard option only from level 3 on,
+  damage ~30% of expected mass (like saws)
+- entities.js: build it (a post above the track + handle + mallet head pivoting like a pendulum),
+  angle = sin(time * speed) * 1.2, collision using the head's world X with a cooldown like saws,
+  and emit { type: 'saw', damage, pos } so main.js already handles it (or add a 'hammer' event)
+- dispose its geometries/materials in Entities.dispose() like the other items
+- style: flat colors, ink #1B1420 details, no glow/emissive, readable on a phone, matches the gates/walls look
+- tuning numbers (swing amplitude, size, cooldown) go in src/config.js
 
-Reply with every change as "find this exact line(s) -> replace with these lines" (each anchor must match main exactly
-once), plus full contents for new files, as a REQ entry for "Person One Instructions.md". Claude applies it on
-branch "p2/P2-05-daily", tests it, and merges.
+Reply with every change as "find this exact line(s) -> replace with these lines" (each anchor must match main
+exactly once), as a REQ entry for "Person One Instructions.md". Claude applies it on branch "p2/P2-06-hammer",
+tests it on levels 3+, and merges.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -84,7 +83,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
 | BUG-002 | Vibrate call before first tap logs a console error | 🟢 Easy | `src/haptics.js` | ✅ Fixed (ChatGPT) |
-| P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | Open |
+| P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | Open |
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | Open |
 | P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | Open (do after P2-06) |
@@ -161,7 +160,7 @@ Reward picking good gates in a row.
 ---
 
 ### P2-05 — Daily reward chest 🟡
-- [ ] Done
+- [x] Done
 
 - `src/save.js`: add `lastDaily: 0` and `dailyStreak: 0` to `DEFAULT_SAVE`.
 - New `src/daily.js` exports:
