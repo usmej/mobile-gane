@@ -406,5 +406,132 @@ export const haptics = {
 };
 ```
 
+### REQ-008 — Apply and playtest the daily reward chest
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-05
+- **What I need:** Create the module and apply the seven edits below on `p2/P2-05-daily`. At phone size, check the chest appears once per local calendar day, hides on claim, displays the new balance, and remains hidden on reload. Verify the next consecutive claim gives 75 coins, a missed day resets to 50, and day seven gives 200 coins and 3 gems. The draft holds day-seven rewards on later consecutive days. Play a full level with no console errors. Tick P2-05 after verification and share the PR link and results.
+- **Why:** Simulated calendar, streak, duplicate claim, and reward checks passed. Source anchors were verified on main and the chest follows the latest static SVG style requirement.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Create `src/daily.js`:
+
+```js
+const MAX_STREAK = 7;
+
+function localDay(timestamp) {
+  const date = new Date(timestamp);
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function isClaimable(lastDay, today) {
+  return !Number.isFinite(lastDay) || lastDay < today;
+}
+
+export function canClaim(save) {
+  return isClaimable(localDay(Number(save.lastDaily) || 0), localDay(Date.now()));
+}
+
+export function claim(save) {
+  const now = Date.now();
+  const date = new Date(now);
+  const today = localDay(now);
+  const lastDay = localDay(Number(save.lastDaily) || 0);
+  if (!isClaimable(lastDay, today)) return { coins: 0, gems: 0 };
+
+  const yesterday = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+  const previous = Math.max(0, Math.floor(Number(save.dailyStreak) || 0));
+  const streak = lastDay === yesterday ? Math.min(MAX_STREAK, previous + 1) : 1;
+  const coins = 50 + 25 * (streak - 1);
+  const gems = streak === MAX_STREAK ? 3 : 0;
+
+  save.lastDaily = now;
+  save.dailyStreak = streak;
+  save.coins = (Number(save.coins) || 0) + coins;
+  save.gems = (Number(save.gems) || 0) + gems;
+  return { coins, gems };
+}
+```
+
+In `src/save.js`, find:
+```
+  sound: true,
+```
+Replace with:
+```
+  sound: true,
+  lastDaily: 0,
+  dailyStreak: 0,
+```
+
+In `src/ui.js`, find:
+```
+import * as I from './icons.js';
+```
+Replace with:
+```
+import * as I from './icons.js';
+import { canClaim } from './daily.js';
+```
+
+In `src/ui.js`, find:
+```
+      <div class="menu-bottom">
+        <button class="btn btn-play">PLAY</button>
+```
+Replace with:
+```
+      <div class="menu-bottom">
+        ${canClaim(save) ? '<button type="button" class="btn btn-md btn-daily"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false" stroke="#1B1420" stroke-width="3" stroke-linejoin="round"><path d="M3 10a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v9H3z" fill="#FFD23F"/><path d="M3 10h18"/><path d="M10 9h4v5h-4z" fill="#FFF4E0"/></svg> Daily reward</button>' : ''}
+        <button class="btn btn-play">PLAY</button>
+```
+
+In `src/ui.js`, find:
+```
+    this._on(el, '.btn-shop', () => this._call('onOpenShop'));
+```
+Replace with:
+```
+    this._on(el, '.btn-shop', () => this._call('onOpenShop'));
+    this._on(el, '.btn-daily', () => this._call('onClaimDaily'));
+```
+
+In `src/main.js`, find:
+```
+import { loadSave, writeSave } from './save.js';
+```
+Replace with:
+```
+import { loadSave, writeSave } from './save.js';
+import { claim } from './daily.js';
+```
+
+In `src/main.js`, find:
+```
+  onCloseShop: () => { audio.play('click'); showMenu(); },
+```
+Replace with:
+```
+  onCloseShop: () => { audio.play('click'); showMenu(); },
+  onClaimDaily: () => {
+    const { coins, gems } = claim(save);
+    if (coins) {
+      writeSave(save);
+      ui.toast(`Daily reward: +${coins} coins${gems ? ` and +${gems} gems` : ''}`);
+    }
+    showMenu();
+  },
+```
+
+In `style.css`, find:
+```
+.menu-bottom { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 16px; padding-bottom: 8px; }
+```
+Replace with:
+```
+.menu-bottom { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 16px; padding-bottom: 8px; }
+.btn-daily .ico { font-size: 24px; flex: none; }
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
