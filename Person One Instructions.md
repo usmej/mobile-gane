@@ -135,5 +135,60 @@ Status values: 🟡 Open → 🔵 In progress → ✅ Done, or ⛔ Needs Juan (o
   { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
 ```
 
+### REQ-004 — Playtest and submit four new level themes
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-02
+- **What I need:** Append the four entries below to `THEMES` in `src/themes.js` on `p2/P2-02-new-themes`. Check levels 9–12 at phone size, confirm the track patterns and both gate numbers are readable, and play one full level with no console errors. When checks pass, tick only P2-02 and open the PR into `main`. Please post the PR link and results for Person Two.
+- **Why:** The IDs, color format, pattern names, and lightness separation passed static checks. The browser checks still need to run.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+```js
+  {
+    id: 'midnight-arcade',
+    name: 'Midnight Arcade',
+    sky: '#170f2b',
+    fog: '#1c1432',
+    track: '#717581',
+    trackAlt: '#8d909c',
+    edge: '#f9df81',
+    accent: '#c3a5f2',
+    pattern: 'checker',
+  },
+  {
+    id: 'pickle-planet',
+    name: 'Pickle Planet',
+    sky: '#263319',
+    fog: '#2b381e',
+    track: '#c5cf76',
+    trackAlt: '#a3b34f',
+    edge: '#424f21',
+    accent: '#ecbe63',
+    pattern: 'dots',
+  },
+  {
+    id: 'sunset-drip',
+    name: 'Sunset Drip',
+    sky: '#51303d',
+    fog: '#553441',
+    track: '#f5b978',
+    trackAlt: '#dc9b59',
+    edge: '#633846',
+    accent: '#fff0b5',
+    pattern: 'stripes',
+  },
+  {
+    id: 'cotton-candy-storm',
+    name: 'Cotton Candy Storm',
+    sky: '#322a49',
+    fog: '#382e50',
+    track: '#d1c9df',
+    trackAlt: '#b4a9c9',
+    edge: '#514568',
+    accent: '#f5a8c5',
+    pattern: 'checker',
+  },
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
