@@ -1735,5 +1735,236 @@ Replace with:
 .badge-status { display: block; margin-top: 6px; font-size: 10px; }
 ```
 
+### REQ-015 — Apply and playtest the coin magnet
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-10
+- **What I need:** Apply the 14 complete-line replacements on `p2/P2-10-coin-magnet` and open a separate PR into `main`. Play level 5 at phone size and confirm the magnet is easy to identify, nearby coins are drawn in once, farther coins are unaffected, and the HUD tag and effect expire after six seconds. Check retries, boss and result transitions, coin achievements, and a full run with no console errors. Tick P2-10 after verification and share the PR and results.
+- **Why:** Exact anchors, syntax and generation passed. Levels 1–4 are unchanged. Levels 5–40 have exactly one magnet with no other generated differences. Simulated pickup, attraction range, single collection, and cancellation passed.
+- **Design choices:** One magnet per level from level 5 uses a deterministic placement near an early coin line. Uncollected in-flight coins return to their original spots at expiry.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/config.js`, find exactly:
+```js
+  pickupRadius: 0.9,
+```
+Replace with:
+```js
+  pickupRadius: 0.9,
+  magnet: { minLevel: 5, duration: 6, radius: 4, pullSpeed: 32, collectDistance: 0.5, lead: 4, pickupHeight: 1.1 },
+```
+
+In `src/levels.js`, find exactly:
+```js
+  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```
+Replace with:
+```js
+  if (level >= CONFIG.magnet.minLevel) {
+    const lead = CONFIG.magnet.lead;
+    const coin = items.find((item) => item.type === 'coin' &&
+      item.d > CONFIG.firstItemAt + lead &&
+      items.every((other) => Math.abs(other.d - (item.d - lead)) > CONFIG.pickupRadius));
+    items.push({ type: 'magnet', d: coin ? coin.d - lead : CONFIG.firstItemAt - lead, x: coin ? coin.x : 0 });
+  }
+
+  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```
+
+In `src/entities.js`, find exactly:
+```js
+        case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+```
+Replace with:
+```js
+        case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+        case 'magnet': e.obj = this.makeMagnet(it.x, z); break;
+```
+
+In `src/entities.js`, find exactly:
+```js
+  makeJumpPad(x, z) {
+```
+Replace with:
+```js
+  makeMagnet(x, z) {
+    const group = new THREE.Group();
+    group.position.set(x, CONFIG.magnet.pickupHeight, z);
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.48, 0.42);
+    shape.lineTo(-0.48, -0.02);
+    shape.quadraticCurveTo(-0.48, -0.55, 0, -0.55);
+    shape.quadraticCurveTo(0.48, -0.55, 0.48, -0.02);
+    shape.lineTo(0.48, 0.42);
+    shape.lineTo(0.24, 0.42);
+    shape.lineTo(0.24, -0.02);
+    shape.quadraticCurveTo(0.24, -0.31, 0, -0.31);
+    shape.quadraticCurveTo(-0.24, -0.31, -0.24, -0.02);
+    shape.lineTo(-0.24, 0.42);
+    shape.closePath();
+
+    const body = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(shape, { depth: 0.2, bevelEnabled: false }),
+      new THREE.MeshStandardMaterial({ color: BAD, roughness: 0.8 })
+    );
+    body.position.z = -0.1;
+    const outline = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(shape.getPoints()),
+      new THREE.LineBasicMaterial({ color: INK })
+    );
+    const back = outline.clone();
+    back.geometry = outline.geometry.clone();
+    back.material = outline.material.clone();
+    outline.position.z = 0.202;
+    back.position.z = -0.002;
+    body.add(outline, back);
+    group.add(body);
+
+    for (const tipX of [-0.36, 0.36]) {
+      const tip = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.21),
+        new THREE.MeshStandardMaterial({ color: CREAM, roughness: 0.8 }));
+      tip.position.set(tipX, 0.35, 0);
+      group.add(tip);
+    }
+    return group;
+  }
+
+  makeJumpPad(x, z) {
+```
+
+In `src/entities.js`, find exactly:
+```js
+      if (o.isMesh && !Object.values(G).includes(o.geometry)) {
+```
+Replace with:
+```js
+      if ((o.isMesh || o.isLine) && !Object.values(G).includes(o.geometry)) {
+```
+
+In `src/entities.js`, find exactly:
+```js
+  update(dt, time, player, prevD) {
+```
+Replace with:
+```js
+  update(dt, time, player, prevD, magnetActive = false) {
+```
+
+In `src/entities.js`, find exactly:
+```js
+      if (!near || e.used) continue;
+```
+Replace with:
+```js
+      if (!near || e.used) continue;
+
+      if (e.type === 'coin' && (magnetActive || e.magnetPulled)) {
+        const cfg = CONFIG.magnet;
+        const target = player.position.clone().setY(player.y + r);
+        const delta = target.sub(e.obj.position);
+        const distance = delta.length();
+        if (magnetActive && (e.magnetPulled || distance <= cfg.radius)) {
+          const step = cfg.pullSpeed * dt;
+          if (distance <= step + cfg.collectDistance) {
+            e.used = true;
+            e.obj.visible = false;
+            events.push({ type: 'coin', pos: e.obj.position.clone() });
+          } else {
+            e.magnetPulled = true;
+            e.obj.position.addScaledVector(delta, step / distance);
+          }
+          continue;
+        }
+        if (e.magnetPulled) {
+          e.magnetPulled = false;
+          e.obj.position.set(e.x, 0.9, -e.d);
+        }
+      }
+```
+
+In `src/entities.js`, find exactly:
+```js
+        case 'coin':
+        case 'gem':
+```
+Replace with:
+```js
+        case 'magnet':
+        case 'coin':
+        case 'gem':
+```
+
+In `src/main.js`, find exactly:
+```js
+let jumpElapsed = null;
+```
+Replace with:
+```js
+let jumpElapsed = null;
+let magnetTime = 0;
+```
+
+In `src/main.js`, find exactly:
+```js
+  jumpElapsed = null;
+  player.group.visible = true;
+```
+Replace with:
+```js
+  jumpElapsed = null;
+  magnetTime = 0;
+  player.group.visible = true;
+```
+
+In `src/main.js`, find exactly:
+```js
+  switch (ev.type) {
+    case 'pad':
+```
+Replace with:
+```js
+  switch (ev.type) {
+    case 'magnet':
+      magnetTime = CONFIG.magnet.duration;
+      break;
+    case 'pad':
+```
+
+In `src/main.js`, find exactly:
+```js
+  const events = entities.update(dt, time, player, prevD);
+```
+Replace with:
+```js
+  const canUseMagnet = state === 'playing' || state === 'boss';
+  magnetTime = canUseMagnet ? Math.max(0, magnetTime - dt) : 0;
+  const events = entities.update(dt, time, player, prevD, magnetTime > 0);
+```
+
+In `src/main.js`, find exactly:
+```js
+      progress: Math.min(1, player.d / level.length),
+    });
+```
+Replace with:
+```js
+      progress: Math.min(1, player.d / level.length),
+    });
+    const hud = ui.hud?.level?.closest('.hud');
+    if (hud) hud.toggleAttribute('data-magnet', magnetTime > 0);
+```
+
+In `src/main.js`, find exactly:
+```js
+window.addEventListener('resize', resize);
+```
+Replace with:
+```js
+const magnetStyle = document.createElement('style');
+magnetStyle.textContent = '.hud[data-magnet]::after { content: "MAGNET"; position: absolute; top: 4.5rem; left: 50%; transform: translateX(-50%); color: var(--ink); background: var(--yellow); border: 3px solid var(--ink); border-radius: 6px; padding: 4px 8px; font: 14px var(--font); }';
+document.head.appendChild(magnetStyle);
+window.addEventListener('resize', resize);
+```
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
