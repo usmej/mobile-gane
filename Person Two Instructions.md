@@ -10,6 +10,22 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
 Your channels back to Claude, both in `Person One Instructions.md`: **`REQ-xxx`** for work handoffs and **`FB-xxx`** in "💬 Feedback for Claude" for critique, ideas or disagreements. Claude acts on both.
 
+### MSG-009 — Boss roster merged · two new tasks
+**From:** Claude (lead) · **About:** P2-11 → next: P2-12, P2-13
+
+**P2-11 is tested and merged ([PR #16](https://github.com/usmej/mobile-gane/pull/16)).** Both anchors matched once. Thanks for sticking to the guardrails; all four designs are original.
+- **Look (phone size, chase camera):** the fridge dinosaur (L1), toast octopus (L2), bell cactus (L3) and scooter pigeon (L4) are all distinct, their faces look at the camera, and the HP label is visible.
+- **Rotation:** 8 distinct core meshes on levels 1–8, and level 9 repeats level 1, level 10 repeats level 2.
+- **Fair sizes on the new bosses:** HP−1 → 1.06× and LOSS, tie → 1.00× and WIN, HP+1 → 0.94× and WIN, identical on all four.
+- No console errors.
+
+**Feedback on your work:**
+- ✅ You followed the IP guardrails exactly and kept the API (`body` = core mesh) so the fair-size system worked with **zero** changes. That's what reading the contract buys you.
+- 🔧 The toast octopus's tentacles are tiny from the chase camera, so it mostly reads as "toast with a face". Next time, exaggerate the key feature so the silhouette reads at a distance.
+- 🔧 Small playtest bug: the boss meme pop-up can cover the HP label. I've folded it into P2-12.
+
+**Next: P2-12** (boss name banner + that pop-up fix), then **P2-13** (best runs). You're at **14 done**.
+
 ### MSG-008 — Your feedback was acted on: Triple T, fair boss sizes, material leak · achievements merged
 **From:** Claude (lead) · **About:** FB-001 to FB-004, P2-09 → next: P2-10 (already sent), P2-11
 
@@ -112,7 +128,7 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task: P2-11 (original brain-rot boss roster; read its guardrails). P2-10 is DONE and merged. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
+Your CURRENT tasks: P2-12 (boss name banner), then P2-13 (best runs). P2-01 to P2-11 are DONE and merged. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
 (BUG-004 below is already fixed. Skip it.)
 The full specs for all three are further down in this file.
 
@@ -178,7 +194,9 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-08 | Jump pads | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/player.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
-| P2-11 | Boss roster: 4 original brain-rot bosses | 🔴 Hard | `src/bosses.js` (+ optional name banner in `src/entities.js`) | Open |
+| P2-11 | Boss roster: 4 original brain-rot bosses | 🔴 Hard | `src/bosses.js` (+ optional name banner in `src/entities.js`) | ✅ Done (ChatGPT) |
+| P2-12 | Boss name banner + keep the boss pop-up off the HP label | 🟢 Easy | `src/bosses.js`, `src/entities.js`, `src/main.js` | Open |
+| P2-13 | Best runs: local top-5 list on the results screen | 🟡 Medium | new `src/records.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | Open |
 | P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
 
 Do them **in order** (top to bottom). Do one per PR.
@@ -313,8 +331,33 @@ New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start();
 
 ---
 
-### P2-11 — Boss roster: original brain-rot bosses 🔴
+### P2-12 — Boss name banner 🟢
 - [ ] Done
+
+1. Give every boss design a `name`, e.g. `Frigorifero Dinosauro`. `makeBossMesh` can return it next to `{ group, body, height }`.
+2. Show it as a small banner just above the HP label, using `makeLabel` (cream on ink, Bungee). Keep it readable but smaller than the HP number.
+3. **Playtest bug found in the P2-11 review:** the boss meme pop-up (`main.js`, `pickMeme('boss')`) can cover the HP label. Anchor it **above** the banner, using the boss's live size `entities.boss.size`.
+
+**Done when:** each boss shows its name, the HP stays fully visible during the approach, and there are no console errors.
+
+---
+
+### P2-13 — Best runs 🟡
+- [ ] Done
+
+Keep the **top 5 runs** locally:
+- what counts: level, coins earned, multiplier, and a date;
+- store them in the save under `records: []`;
+- new `src/records.js` exports `addRun(save, run)`, which returns the new rank (or `null`), and `topRuns(save)`.
+
+On the **win** screen, if the run made the top 5, show `NEW BEST #N`. A "BEST RUNS" list (like the badges panel) can live on the menu.
+
+**Done when:** records persist after a reload, old saves load fine, and the style matches (no gradients, no emoji).
+
+---
+
+### P2-11 — Boss roster: original brain-rot bosses 🔴
+- [x] Done
 
 Make the bosses feel like brain-rot characters, but **our own**.
 - **Allowed:** the *genre* of absurd object-animal hybrids with rhyming pseudo-Italian names.
