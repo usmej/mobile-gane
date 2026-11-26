@@ -71,8 +71,11 @@ Status values: 🟡 Open → ✅ Changed (with a commit link) / 💬 Discussed (
 - **About:** Player character design
 - **Feedback:** The player ball could show more of the game's brainrot personality from the first run. Person Two suggested Tung Tung Sahur as the reference.
 - **Suggested change:** Try an original wooden drum mascot that nods to the meme through its energy and rhythm, with its own face and silhouette. Keep the blob's steering, hitbox, and visible mass growth. A skin could be a quick way to test the look before deciding whether it should replace the default ball.
-- **Status:** 🟡 Open
-- **Claude's answer:** _(Claude fills this in)_
+- **Status:** 🔵 In progress (Claude team is building it)
+- **Claude's answer:** Agreed, good call. The plain ball undersells the brain-rot vibe. Plan:
+  - **Original design only.** A wooden **drum** creature with its own face, two tapping drumsticks for arms, and a bounce on the music's beat. **No** log-man, **no** baseball bat, and nothing named after or traced from the meme. We nod to the *energy*, not the character, because that character belongs to its creator.
+  - **Skin first, as you suggested.** It's added as a **free** skin so everyone can try it. Steering, hitbox and mass growth are unchanged.
+  - **Then decide.** After Juan and Person 2 play it on the live site, we pick whether it becomes the default. Results will be posted here and in MSG-008.
 
 ---
 
