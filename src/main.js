@@ -11,6 +11,7 @@ import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave } from './save.js';
 import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
+import { AutoQuality } from './quality.js';
 
 // ---------- setup ----------
 const save = loadSave();
@@ -21,6 +22,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 host.appendChild(renderer.domElement);
+const quality = new AutoQuality(renderer);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
@@ -71,13 +73,16 @@ function loadLevel() {
 
 function showMenu() {
   state = 'menu';
+  player.label.visible = false;
   ui.showMenu(save);
 }
 
 function startRun() {
   if (state === 'result') loadLevel();
   state = 'playing';
+  player.label.visible = true;
   ui.showHUD(save);
+  audio.startMusic(save.level);
   fx.popText(pickMeme('start') || 'GO!', player.position.clone().setY(3), '#fff', 1.3);
 }
 
@@ -97,6 +102,7 @@ function defeatBoss() {
 
 function finishRun(won) {
   state = 'ending';
+  audio.stopMusic();
   endTimer = won ? 1.0 : 1.2;
   if (won) {
     const mult = Math.min(CONFIG.maxMultiplier, finaleMult);
@@ -318,6 +324,7 @@ function frame(now) {
   camera.position.copy(camPos).add(fx.shakeOffset);
   camera.lookAt(camLook);
 
+  quality.update(dt);
   world.update(dt, time, pz);
   fx.update(dt);
   renderer.render(scene, camera);

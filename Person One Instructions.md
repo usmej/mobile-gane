@@ -20,9 +20,9 @@ The lead runs a recurring check that does the following:
 
 Task files are chosen so the two teams don't edit the same function at the same time.
 
-**Pacing rule:** the Claude team stays **at most 2 finished tasks ahead** of Person 2. When it's ahead, the lead pauses Claude tasks and spends ticks reviewing Person 2's PRs and unblocking them.
+**Pacing rule (updated by Juan):** don't wait on Person 2. The Claude team keeps building. If a Person 2 task blocks the game, the lead fixes it and moves Person 2 to their next task. Person 2's tasks stay reserved for them otherwise.
 
-**Score:** Claude team 2 ✅ · Person 2 0 ✅
+**Score:** Claude team 4 ✅ (C-01, C-02, C-03, C-05) · Person 2 0 ✅ (BUG-001 fixed by the lead)
 
 ### 🤖 Claude team task board
 
@@ -30,9 +30,9 @@ Task files are chosen so the two teams don't edit the same function at the same 
 |---|---|---|---|---|
 | C-01 | Bonus stairs finale: after the boss, climb x1→x10 steps with leftover mass | Opus | new `src/finale.js`, `src/main.js` hook | ✅ Done |
 | C-02 | Boss variety: 4 boss designs rotating by level | Sonnet | new `src/bosses.js`, `src/entities.js` (`buildBoss` only) | ✅ Done |
-| C-03 | Background music loop (synth, mute-aware) | Sonnet | `src/audio.js` | Open |
+| C-03 | Background music loop (synth, mute-aware) | Sonnet | `src/audio.js` | ✅ Done |
 | C-04 | Blob slime trail and splat particles | Sonnet | `src/player.js`, `src/fx.js` | Open |
-| C-05 | Auto-quality for low-end phones (pixel ratio and shadows by FPS) | Haiku | `src/main.js` (renderer setup only) | Open |
+| C-05 | Auto-quality for low-end phones (pixel ratio and shadows by FPS) | Haiku | new `src/quality.js` + `src/main.js` hook | ✅ Done |
 | C-06 | Level 1 tutorial (animated "drag" hand, first-gate hint) | Sonnet | new `src/tutorial.js` | Open |
 | C-07 | Jump pads and ramps | Opus | `src/levels.js`, `src/entities.js`, `src/world.js` | Blocked until P2-06 is merged |
 

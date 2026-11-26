@@ -20,33 +20,25 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your FIRST task is BUG-001:
+Your CURRENT task is P2-01 (6 new skins):
 
-BUG-001: On the main menu, the blob's floating mass number ("10") draws on top of the big
-"GLOOP RUSH" title. In src/main.js, the number is `player.label` (a THREE.Sprite; hide it with
-`.visible = false`). These two functions are in src/main.js right now:
+src/skins.js has an array `SKINS`. Each entry looks exactly like this:
+  { id: 'drip', name: 'Drip Lord', price: 150, currency: 'coins', color: '#3aa7ff', color2: '#0b3d91', pattern: 'dots' },
+pattern is one of: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'.
+Read the current list first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/skins.js
 
-  function showMenu() {
-    state = 'menu';
-    ui.showMenu(save);
-  }
-
-  function startRun() {
-    if (state === 'result') loadLevel();
-    state = 'playing';
-    ui.showHUD(save);
-    fx.popText(pickMeme('start') || 'GO!', player.position.clone().setY(3), '#fff', 1.3);
-  }
-
-Fix: hide the label on the menu and show it again when a run starts (Play, Retry and Next must
-all still show it during gameplay).
+Add 6 NEW entries at the END of the SKINS array (before the closing `];`):
+- 4 coin skins priced 900–2000, 2 gem skins priced 40–60 (currency: 'gems')
+- at least 3 different patterns
+- unique lowercase ids that aren't already used; funny original names (no real people/brands/characters)
+- colors as '#rrggbb'; color2 should contrast with color so the pattern shows
 
 Reply with:
-1) the two updated functions, complete and ready to paste;
-2) step-by-step instructions for Person 2 to commit them on GitHub's website:
-   new branch "p2/BUG-001-menu-label" → edit src/main.js → paste → commit →
-   in "Person Two Instructions.md" change "- [ ] Done" under BUG-001 to "- [x] Done" →
-   open a Pull Request into main titled "[BUG-001] Hide mass label on menu".
+1) the 6 new lines, ready to paste;
+2) step-by-step instructions for Person 2 on GitHub's website:
+   new branch "p2/P2-01-new-skins" → edit src/skins.js → paste the 6 lines at the end of SKINS → commit →
+   in "Person Two Instructions.md" change "- [ ] Done" under P2-01 to "- [x] Done" →
+   open a Pull Request into main titled "[P2-01] 6 new skins".
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -84,7 +76,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 
 | ID | Task | Difficulty | Files | Status |
 |---|---|---|---|---|
-| BUG-001 | Mass number overlaps the title on the menu | 🟢 Easy | `src/main.js` | Open |
+| BUG-001 | Mass number overlaps the title on the menu | 🟢 Easy | `src/main.js` | ✅ Fixed by lead (it was blocking; see REQ-002) |
 | P2-01 | 6 new skins | 🟢 Easy | `src/skins.js` | Open |
 | P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | Open |
 | P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | Open |
@@ -97,7 +89,7 @@ Do them **in order** (top to bottom). Do one per PR.
 ---
 
 ### BUG-001 — Mass number overlaps the menu title 🟢
-- [ ] Done
+- [x] Done (fixed by the lead so the game wasn't blocked; your next task is P2-01)
 
 **Problem:** on the main menu, the blob's floating mass label (`10`) draws on top of the big "GLOOP RUSH" title.
 **Fix:** in `src/main.js`, hide the label while `state === 'menu'` and show it again when a run starts.

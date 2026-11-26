@@ -82,6 +82,116 @@ const SOUNDS = {
   smash() { const t = now(); noise(t, 0.4, 0.8, 4000); tone('sine', 140, 40, t, 0.35, 0.7); },
 };
 
+// ---------- Background music (lookahead-scheduled chiptune loop) ----------
+const MAJ = [0, 4, 7, 12];
+const MIN = [0, 3, 7, 12];
+// Each progression: bpm, 4 chords (root pitch class, tones), 4 lead bars (16 steps; index into tones, -1 = rest)
+const SONGS = [
+  { bpm: 128, chords: [[9, MIN], [5, MAJ], [0, MAJ], [7, MAJ]], lead: [
+    [2, -1, 1, -1, 0, -1, 1, 2, 3, -1, 2, -1, 1, -1, -1, -1],
+    [3, -1, 2, -1, 1, -1, 2, 3, 2, -1, 1, -1, 0, -1, -1, -1],
+    [2, -1, 3, -1, 2, -1, 1, 0, 1, -1, 2, -1, 3, -1, -1, -1],
+    [3, -1, 2, 3, 2, -1, 1, -1, 0, -1, 1, 2, 1, -1, -1, -1]] },
+  { bpm: 136, chords: [[0, MAJ], [7, MAJ], [9, MIN], [5, MAJ]], lead: [
+    [0, 1, 2, -1, 3, -1, 2, -1, 1, -1, 2, -1, 0, -1, -1, -1],
+    [1, 2, 3, -1, 2, -1, 1, -1, 0, -1, 1, -1, 2, -1, -1, -1],
+    [3, -1, 2, 1, 0, -1, 1, 2, 3, -1, -1, -1, 2, -1, 1, -1],
+    [2, -1, 1, -1, 0, -1, 1, -1, 2, 3, 2, -1, 1, -1, 0, -1]] },
+  { bpm: 124, chords: [[2, MIN], [10, MAJ], [5, MAJ], [0, MAJ]], lead: [
+    [0, -1, -1, 2, 1, -1, 0, -1, 2, -1, 3, -1, 2, -1, 1, -1],
+    [2, -1, -1, 3, 2, -1, 1, -1, 0, -1, 1, -1, 2, -1, -1, -1],
+    [3, -1, 2, -1, 1, -1, 2, -1, 3, -1, -1, 2, 1, -1, 0, -1],
+    [2, -1, 1, 0, 1, -1, 2, -1, 3, -1, 2, -1, 0, -1, -1, -1]] },
+  { bpm: 132, chords: [[7, MAJ], [2, MAJ], [4, MIN], [0, MAJ]], lead: [
+    [2, -1, 1, 2, 3, -1, 2, -1, 1, -1, 0, -1, 1, -1, -1, -1],
+    [3, -1, 2, -1, 1, 2, 3, -1, 2, -1, 1, -1, 0, -1, -1, -1],
+    [1, -1, 2, -1, 3, -1, 2, 1, 2, -1, 3, -1, 2, -1, -1, -1],
+    [2, -1, 3, -1, 2, 1, 0, -1, 1, -1, 2, -1, 1, -1, 0, -1]] },
+];
+const BAR_STEPS = 16;
+const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const fold = (pc, base) => base + (((pc - base) % 12) + 12) % 12;
+
+let musicGain = null;
+let musicTimer = null;
+let musicLevel = null;
+let mSong = null, mStep = 0, mNext = 0, mDur = 0.12;
+
+function mNote(type, freq, t0, dur, vol, dest, cutoff) {
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(vol, t0 + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  let out = g;
+  o.connect(g);
+  if (cutoff) {
+    const f = ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = cutoff;
+    g.connect(f);
+    out = f;
+  }
+  out.connect(dest);
+  o.start(t0);
+  o.stop(t0 + dur + 0.02);
+}
+
+function mHat(t0, vol, dest) {
+  if (!noiseBuf) {
+    noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.5), ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const s = ctx.createBufferSource();
+  s.buffer = noiseBuf;
+  const f = ctx.createBiquadFilter();
+  f.type = 'highpass';
+  f.frequency.value = 7000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(vol, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.04);
+  s.connect(f).connect(g).connect(dest);
+  s.start(t0, Math.random() * 0.3);
+  s.stop(t0 + 0.06);
+}
+
+function scheduleStep(step, t) {
+  const bar = Math.floor(step / BAR_STEPS) % 4;
+  const s = step % BAR_STEPS;
+  const [pc, tones] = mSong.chords[bar];
+  const bassBase = fold(pc, 36);
+  // Bass: driving eighths with octave pops
+  if (s % 2 === 0) {
+    const m = bassBase + (s === 6 || s === 14 ? 12 : 0);
+    mNote('triangle', mtof(m), t, mDur * 1.8, 0.7, musicGain);
+  }
+  // Lead
+  const li = mSong.lead[bar][s];
+  if (li >= 0) {
+    const m = fold(pc, 60) + tones[li];
+    mNote('square', mtof(m), t, mDur * 1.5, 0.22, musicGain, 2200);
+  }
+  // Light hi-hat: off-beat eighths, soft sixteenth ghosts
+  if (s % 4 === 2) mHat(t, 0.35, musicGain);
+  else if (s % 2 === 1) mHat(t, 0.08, musicGain);
+}
+
+function musicTick() {
+  try {
+    if (!ctx || !musicGain || !mSong) return;
+    const cur = ctx.currentTime;
+    if (mNext < cur - 0.2) mNext = cur + 0.05; // fell behind (throttled tab): resync
+    while (mNext < cur + 0.1) {
+      scheduleStep(mStep, mNext);
+      mStep = (mStep + 1) % (BAR_STEPS * 4);
+      mNext += mDur;
+    }
+  } catch (e) { /* ignore */ }
+}
+
 export const audio = {
   enabled: true,
   unlock() {
@@ -107,5 +217,35 @@ export const audio = {
       SOUNDS[name]();
     } catch (e) { /* ignore */ }
   },
-  setEnabled(b) { this.enabled = !!b; },
+  setEnabled(b) {
+    this.enabled = !!b;
+    if (!this.enabled) this.stopMusic();
+  },
+  startMusic(levelNumber) {
+    try {
+      if (!this.enabled || !ctx || !master) return;
+      const lvl = Math.abs(Math.floor(Number(levelNumber) || 0));
+      if (musicTimer && musicLevel === lvl) return;
+      this.stopMusic();
+      if (ctx.state === 'suspended') ctx.resume();
+      mSong = SONGS[lvl % SONGS.length];
+      musicLevel = lvl;
+      mDur = 60 / mSong.bpm / 4; // sixteenth note
+      mStep = 0;
+      mNext = ctx.currentTime + 0.06;
+      musicGain = ctx.createGain();
+      musicGain.gain.value = 0.10;
+      musicGain.connect(master);
+      musicTimer = setInterval(musicTick, 25);
+      musicTick();
+    } catch (e) { /* ignore */ }
+  },
+  stopMusic() {
+    try {
+      if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+      if (musicGain) { musicGain.disconnect(); musicGain = null; }
+      musicLevel = null;
+      mSong = null;
+    } catch (e) { /* ignore */ }
+  },
 };
