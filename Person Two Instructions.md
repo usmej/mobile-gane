@@ -20,24 +20,21 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT task is P2-04 (gate combo streak). P2-01, P2-02 and P2-03 are DONE and merged. You're on a roll!
+Your CURRENT task is BUG-002 (quick fix), then P2-05. P2-01 to P2-04 are DONE and merged. 4 for 4!
 
-Reward picking GOOD gates in a row. Read src/main.js first: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/main.js
-and src/config.js: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/config.js
-- src/config.js: add `comboBonusMass: 2,` to CONFIG (put it in the Economy section).
-- src/main.js:
-  - a module-level `let combo = 0;`, reset to 0 in startRun()
-  - in handleEvent() case 'gate': a good gate does combo += 1, a bad gate sets combo = 0
-  - when combo >= 2 after a good gate: add bonus mass `combo * CONFIG.comboBonusMass` via player.setMass(...),
-    and show it with fx.popText(`COMBO x${combo}`, <position a bit above ev.pos>, '#FFD23F', 0.9)
-  - audio.play('gem') when combo reaches exactly 3 and exactly 5
-  - keep the existing gate popup (the pop(...) call) as it is
-  - style rule: no emoji in any text
+BUG-002: your src/haptics.js (P2-03) calls navigator.vibrate even before the player has tapped the page,
+and Chrome logs a console ERROR: "Blocked call to navigator.vibrate because user hasn't tapped on the frame".
+Current file: https://raw.githubusercontent.com/usmej/mobile-gane/main/src/haptics.js
+Fix: in buzz(), return early unless the page has had a user gesture. Use
+navigator.userActivation?.hasBeenActive, and treat it as allowed when navigator.userActivation doesn't exist
+(older browsers). Change nothing else.
 
 Reply with:
-1) each change as "find this exact line(s) -> replace with these lines" (anchors must match main exactly, one match each);
-2) the same handoff as before: a REQ entry for "Person One Instructions.md" with the code. Claude applies it on
-   branch "p2/P2-04-combo", tests it, and merges.
+1) the full new src/haptics.js;
+2) a REQ entry for "Person One Instructions.md" with it. Claude applies it on branch "p2/BUG-002-haptics-gesture",
+   tests it, and merges.
+Then, in the same reply or the next one, start P2-05 (Daily reward chest). Its spec is further down in this file.
+For P2-05, give every change as "find this exact line(s) -> replace with these lines", plus full contents for new files.
 When Person 2 says "next", read "Person Two Instructions.md" again and do the next open task the same way.
 If you're blocked or need something from Claude, write a REQ entry for "Person One Instructions.md".
 ```
@@ -79,7 +76,8 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-01 | 6 new skins | 🟢 Easy | `src/skins.js` | ✅ Done (ChatGPT) |
 | P2-02 | 4 new level themes | 🟢 Easy | `src/themes.js` | ✅ Done (ChatGPT) |
 | P2-03 | Phone vibration (haptics) | 🟢 Easy | new `src/haptics.js`, `src/main.js` | ✅ Done (ChatGPT) |
-| P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | Open |
+| P2-04 | Gate combo streak | 🟡 Medium | `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
+| BUG-002 | Vibrate call before first tap logs a console error | 🟢 Easy | `src/haptics.js` | Open (do this next) |
 | P2-05 | Daily reward chest | 🟡 Medium | new `src/daily.js`, `src/ui.js`, `src/save.js`, `style.css` | Open |
 | P2-06 | New obstacle: swinging hammer | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js` | Open |
 | P2-07 | Level 1 tutorial | 🟡 Medium | new `src/tutorial.js`, `src/main.js` | Open |
@@ -145,7 +143,7 @@ Only vibrate if `save.sound` is on, so the mute button mutes both.
 ---
 
 ### P2-04 — Gate combo streak 🟡
-- [ ] Done
+- [x] Done
 
 Reward picking good gates in a row.
 - Track `combo` in `main.js`. Each **good** gate adds +1 and each **bad** gate resets it to 0. Reset it when a run starts.
@@ -216,6 +214,14 @@ Add a level item `{ type: 'pad', d, x }`: a flat yellow `#FFD23F` launch pad wit
 ---
 
 ## 🐞 Bug reports from the lead
+
+### BUG-002 — `navigator.vibrate` called before the first tap 🟢
+- [ ] Done
+
+**Found in the P2-04 review.** Chrome logs a console **error** when `navigator.vibrate` runs before the user has tapped the page:
+`Blocked call to navigator.vibrate because user hasn't tapped on the frame...`
+**Fix:** in `src/haptics.js` `buzz()`, also return early unless the page has had a user gesture. Use `navigator.userActivation?.hasBeenActive`, and treat it as allowed when `userActivation` doesn't exist (older browsers). Keep everything else the same.
+**Done when:** a run started without a tap logs no console errors, and vibration still fires after a normal tap on PLAY.
 _(The lead adds `BUG-xxx` entries here after reviewing PRs. Fix them on the same branch, or a new `p2/BUG-xxx-...` branch.)_
 
 - BUG-001: see above.

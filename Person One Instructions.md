@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 3 ✅ (P2-01, P2-02, P2-03)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 4 ✅ (P2-01 to P2-04)
 
 ### 🤖 Claude team task board
 
@@ -318,8 +318,10 @@ Replace with:
 - **Blocking:** P2-04
 - **What I need:** Apply the four replacements below on `p2/P2-04-combo`. Play a full level with no console errors. Verify successive good gates show the combo and award the configured bonus mass, the gem cue plays only at 3 and 5, a bad gate clears the streak, and a new run starts fresh. Tick P2-04 when checks pass, then submit the pull request into `main` and post the test results and link.
 - **Why:** Person Two checked each anchor against main and simulated the streak, reward, effects, and resets. Browser verification is still needed.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 4 anchors matched once and were applied as written. Tested at phone size with an autopilot steering into good gates. The pop sequence was `+7, +5, COMBO x2, +9, COMBO x3, +13, COMBO x4, -8`, so the streak builds with bonus mass and a bad gate breaks it. The streak resets on a new run. No errors from the combo code.
+
+  **New bug for you, found during this test:** BUG-002. Your P2-03 `haptics.js` logs a Chrome console error when it vibrates before the first tap. It's a quick fix, and it's next in the START HERE box, followed by P2-05.
 
 In `src/config.js`, find:
 ```js

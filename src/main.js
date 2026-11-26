@@ -42,6 +42,7 @@ let state = 'menu';   // menu | playing | boss | finale | ending | result
 let finaleMult = 1;
 let level = null;
 let runCoins = 0;
+let combo = 0;
 let runGems = 0;
 let endTimer = 0;
 let endResult = null;
@@ -86,6 +87,7 @@ function showMenu() {
 
 function startRun() {
   if (state === 'result') loadLevel();
+  combo = 0;
   state = 'playing';
   player.label.visible = true;
   ui.showHUD(save);
@@ -209,6 +211,13 @@ function handleEvent(ev) {
       pop(`${ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
       fx.burst(ev.pos, ev.good ? '#2fa8ff' : '#ff3b5c', 20);
       audio.play(ev.good ? 'gateGood' : 'gateBad');
+      combo = ev.good ? combo + 1 : 0;
+      if (combo >= 2) {
+        player.setMass(player.mass + combo * CONFIG.comboBonusMass);
+        const comboPos = ev.pos.clone().setY(ev.pos.y + 2);
+        fx.popText(`COMBO x${combo}`, comboPos, '#FFD23F', 0.9);
+        if (combo === 3 || combo === 5) audio.play('gem');
+      }
       if (!ev.good) fx.shake(0.25);
       if (!ev.good) haptics.buzz(40);
       if (player.mass <= 0) lose('Divided into nothing.');
