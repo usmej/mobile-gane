@@ -18,6 +18,7 @@ import { Finale } from './finale.js';
 import { AutoQuality } from './quality.js';
 import { Trail } from './trail.js';
 import { Tutorial } from './tutorial.js';
+import { BossFight } from './bossfight.js';
 
 // ---------- setup ----------
 // Test links for human playtesters (no console needed on a phone):
@@ -51,6 +52,7 @@ player.setSkin(getSkin(save.skin), makeSkinMaterial(getSkin(save.skin)));
 const fxEl = document.getElementById('fx');
 const fx = new FX(scene, camera, fxEl);
 const tutorial = new Tutorial(fxEl);
+const bossFight = new BossFight(fxEl, camera);
 let firstTutorialGate;
 const tutorialPoint = new THREE.Vector3();
 
@@ -65,7 +67,7 @@ trail.setColor(getSkin(save.skin).color);
 audio.setEnabled(save.sound);
 haptics.enabled = save.sound;
 
-let state = 'menu';   // menu | playing | boss | finale | ending | result
+let state = 'menu';   // menu | playing | boss | fight | finale | ending | result
 let finaleMult = 1;
 let level = null;
 let runCoins = 0;
@@ -118,6 +120,7 @@ function recordBadgeEvent(event, message) {
 
 // ---------- flow ----------
 function loadLevel() {
+  bossFight.stop();
   level = generateLevel(save.level);
   world.build(level);
   entities.build(level);
@@ -133,6 +136,7 @@ function loadLevel() {
 }
 
 function showMenu() {
+  bossFight.stop();
   tutorial.stop();
   state = 'menu';
   player.label.visible = false;
@@ -145,6 +149,7 @@ function startManualJump() {
 }
 
 function startRun() {
+  bossFight.stop();
   if (state === 'result') loadLevel();
   combo = 0;
   runTookHit = false;
@@ -187,7 +192,52 @@ function defeatBoss() {
   }
 }
 
+function setHudVisible(v) {
+  const hud = ui.hud?.level?.closest('.hud');
+  if (hud) hud.style.visibility = v ? '' : 'hidden';
+}
+
+const fightPoint = new THREE.Vector3();
+function beginBossFight(b) {
+  state = 'fight';
+  ui.showJumpButton(false);
+  setHudVisible(false);
+  player.targetX = -CONFIG.trackHalfWidth * 0.6; // step aside so the boss is in clear view
+  const canWin = player.mass >= b.hp;
+  bossFight.start({
+    bossGroup: b.group,
+    bossBody: b.body,
+    bossSize: b.size,
+    canWin,
+    onHit: (x, y) => {
+      // screen point -> a spot in front of the boss for the burst
+      const w = fxEl.clientWidth || 1, h = fxEl.clientHeight || 1;
+      fightPoint.set((x / w) * 2 - 1, 1 - (y / h) * 2, 0.5).unproject(camera);
+      fightPoint.sub(camera.position).normalize().multiplyScalar(camera.position.distanceTo(b.group.position) * 0.85).add(camera.position);
+      fx.burst(fightPoint.clone(), canWin ? '#FFD23F' : '#FFF4E0', canWin ? 14 : 6);
+      audio.play(canWin ? 'hit' : 'click');
+      fx.shake(canWin ? 0.15 : 0.05);
+      haptics.buzz(canWin ? 15 : 8);
+    },
+    onEnd: (res) => {
+      if (state !== 'fight') return;
+      if (res.won) {
+        const bonus = Math.round(player.mass * CONFIG.bossFight.perfectBonusRatio * (res.hitRatio || 0));
+        setHudVisible(true);
+        if (bonus > 0) {
+          player.setMass(player.mass + bonus);
+          fx.popText(`+${bonus} BONUS`, player.position.clone().setY(player.y + 4), '#4EE06A', 1.2);
+        }
+        defeatBoss();
+      } else {
+        lose(`Boss had ${b.hp}. You had ${player.mass}.`);
+      }
+    },
+  });
+}
+
 function finishRun(won) {
+  bossFight.stop();
   tutorial.stop();
   state = 'ending';
   audio.stopMusic();
@@ -223,7 +273,7 @@ function finishRun(won) {
 
 let lossReason = '';
 function lose(reason) {
-  if (state !== 'playing' && state !== 'boss') return;
+  if (state !== 'playing' && state !== 'boss' && state !== 'fight') return;
   lossReason = reason;
   finishRun(false);
 }
@@ -451,8 +501,7 @@ function frame(now) {
       const b = entities.boss;
       if (player.d >= b.d - b.size - player.radius * 0.6) {
         player.d = b.d - b.size - player.radius * 0.6;
-        if (player.mass >= b.hp) defeatBoss();
-        else lose(`Boss had ${b.hp}. You had ${player.mass}.`);
+        beginBossFight(b);
       }
     }
   }
@@ -519,6 +568,11 @@ function frame(now) {
   if (state === 'menu') {
     camPos.set(Math.sin(time * 0.4) * 2.5, 3.2 + s, pz + 7 + s);
     camLook.set(0, 1 + s * 0.5, pz);
+  } else if (state === 'fight' && entities.boss) {
+    const b = entities.boss;
+    // Hero steps aside (see beginBossFight); camera swings right and up to frame the boss over the hero.
+    camPos.lerp(new THREE.Vector3(2.4 + s * 0.6, 3.2 + b.size * 1.1, pz + 3 + s * 1.6 + b.size * 1.2), 1 - Math.exp(-3 * dt));
+    camLook.lerp(new THREE.Vector3(0.6, b.size * 0.9, -b.d), 1 - Math.exp(-4 * dt));
   } else {
     const py = player.y;
     camPos.lerp(new THREE.Vector3(player.x * 0.45, 4.6 + s * 2.4 + py, pz + 7.5 + s * 3.4), 1 - Math.exp(-6 * dt));
@@ -526,6 +580,7 @@ function frame(now) {
   }
   camera.position.copy(camPos).add(fx.shakeOffset);
   camera.lookAt(camLook);
+  if (state === 'fight') bossFight.update(dt);
 
   quality.update(dt);
   world.update(dt, time, pz);

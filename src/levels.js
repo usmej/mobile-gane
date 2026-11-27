@@ -162,6 +162,28 @@ export function generateLevel(level) {
       }
       best += n * 2;
       for (let i = 0; i < 5; i++) items.push({ type: 'coin', d: d - 4 + i * 2.2, x: 0 });
+      if (level >= CONFIG.pickupPaths.firstLevel) {
+        const pathRng = makeRng(Math.floor(d * 1000) + level * 7919);
+        const patterns = level >= CONFIG.pickupPaths.motionLevel ? 4 : level >= CONFIG.pickupPaths.waveLevel ? 3 : 2;
+        const pattern = pathRng.int(0, patterns - 1);
+        const row = items.slice(-(2 * n + 5));
+        const { spacing, swing } = CONFIG.pickupPaths;
+        const lane = (i, count) => {
+          if (pattern === 0) return healthySide * [-1, 0, 1, 0][i % 4];
+          if (pattern === 1) return healthySide * [0, 1, 0, -1][i % 4];
+          if (pattern === 2) return healthySide * Math.sin(i / (count - 1) * Math.PI * 2);
+          return healthySide * (2 * i / (count - 1) - 1);
+        };
+        const span = W - swing;
+        row.forEach((item, index) => {
+          const food = item.type === 'food';
+          const i = food ? Math.floor(index / 2) : index - 2 * n;
+          const x = lane(i, food ? n : 5) * span;
+          item.d = d - 5 + i * spacing + (food && !item.good ? 1.1 : 0);
+          item.x = food && !item.good ? (x >= 0 ? -span : span) : x;
+          if (pattern === 3 && food) item.sweep = (item.good ? 1 : -1) * swing;
+        });
+      }
     }
     // occasional gem
     if (rng() < 0.08) items.push({ type: 'gem', d: d + 10, x: rng.range(-W, W) });
@@ -196,6 +218,7 @@ export function generateLevel(level) {
     for (let pos = jump.firstDistance; pos <= length - jump.endBuffer && placed < count; pos++) {
       if (items.some(item => Math.abs(item.d - pos) < jump.obstacleBuffer)) continue;
       items.push({ type: 'barrier', d: pos });
+      items.push({ type: 'coin', d: pos, x: 0, jumpReward: true });
       placed++;
       pos += jump.interval - 1;
     }
