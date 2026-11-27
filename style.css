@@ -356,3 +356,39 @@ html, body {
 .cue.out { opacity: 0; transition: opacity .3s; }
 @keyframes cue-in { from { transform: translateX(-50%) scale(.9); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .cue { animation: none; } }
+
+/* ---------- boss fight ---------- */
+.bf-root { position: absolute; inset: 0; pointer-events: none; }
+.bf-bar {
+  position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  width: min(92vw, 440px); display: flex; flex-direction: column; gap: 8px; align-items: stretch;
+  padding: 10px 14px 12px; background: var(--cream); border: 4px solid var(--ink); border-radius: 20px;
+}
+.bf-title {
+  font: 400 22px/1 'Bungee', 'Arial Black', sans-serif; color: var(--ink); text-align: center; letter-spacing: .02em;
+}
+.bf-title.bf-good { color: #1f9d3a; }
+.bf-title.bf-bad { color: var(--red); }
+.bf-hp, .bf-time { height: 20px; border: 3px solid var(--ink); border-radius: 999px; background: #fff; overflow: hidden; }
+.bf-time { height: 10px; }
+.bf-hp-fill, .bf-time-fill { width: 100%; height: 100%; transform-origin: left center; }
+.bf-hp-fill { background: var(--red); }
+.bf-time-fill { background: var(--yellow); }
+.bf-shake { animation: bf-shake .25s; }
+.bf-spot {
+  position: absolute; left: 0; top: 0; padding: 0; margin: 0; border: 0; background: none;
+  pointer-events: auto; touch-action: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.bf-spot-core {
+  display: block; width: 100%; height: 100%; box-sizing: border-box;
+  background: var(--yellow); border: 5px solid var(--ink); border-radius: 50%;
+  animation: bf-pulse .7s ease-in-out infinite alternate;
+}
+.bf-spot-core.bf-pop { animation: bf-pop .18s ease-out, bf-pulse .7s .18s ease-in-out infinite alternate; }
+.bf-done .bf-spot { pointer-events: none; opacity: .5; }
+@keyframes bf-pulse { from { transform: scale(.92); } to { transform: scale(1.08); } }
+@keyframes bf-pop { from { transform: scale(.2); } to { transform: scale(1); } }
+@keyframes bf-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .bf-spot-core, .bf-spot-core.bf-pop, .bf-shake { animation: none; }
+}
