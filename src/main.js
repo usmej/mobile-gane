@@ -189,7 +189,7 @@ function finishRun(won) {
     const coinsEarned = (runCoins + CONFIG.winBaseCoins + save.level * CONFIG.winCoinsPerLevel) * mult;
     const gemsEarned = runGems + (save.level % CONFIG.gemEveryNLevels === 0 ? 2 : 0);
     const bestRank = addRun(save, { level: save.level, coinsEarned, multiplier: mult, date: new Date().toISOString() });
-    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank };
+    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank, winner: getSkin(save.skin).name.toUpperCase() };
     save.coins += coinsEarned;
     save.gems += gemsEarned;
     save.level += 1;

@@ -140,17 +140,19 @@ export class UI {
   }
 
   // ---------- win ----------
-  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null } = {}) {
+  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null, winner = 'YOU' } = {}) {
+    const ord = (n) => n === 1 ? 'YOUR BEST RUN EVER' : `${n}${n === 2 ? 'ND' : n === 3 ? 'RD' : 'TH'} BEST RUN EVER`;
     const el = this._mount('panel-layer result win', `
       <div class="card card-win">
         <div class="res-head">LEVEL ${level}</div>
+        <div class="winner">${esc(winner)} WINS</div>
         <div class="meme meme-win">${esc(pickMeme('win'))}</div>
         <div class="earn-row">
           <div class="earn-coins"><span class="chip-ico big">${I.coin()}</span><b class="count" data-k="coins">0</b></div>
           <div class="mult-tag">x${multiplier}</div>
         </div>
         ${gemsEarned > 0 ? `<div class="earn-gems"><span class="chip-ico">${I.gem()}</span><b class="count" data-k="gems">0</b></div>` : ''}
-        ${bestRank !== null ? `<div class="record-highlight">NEW BEST #${bestRank}</div>` : ''}
+        ${bestRank !== null ? `<div class="record-highlight">${ord(bestRank)}</div>` : ''}
         <button class="btn btn-next">NEXT</button>
       </div>`);
     this._on(el, '.btn-next', () => this._call('onNext'));
