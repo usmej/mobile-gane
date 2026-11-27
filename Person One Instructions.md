@@ -2670,7 +2670,7 @@ index 7aaf70e..76c3885 100644
 - **Status:** 🟡 Open
 - **Lead's answer:** _(lead fills this in)_
 
-All eight bosses use their existing 3D models as playable skins. Defeat the boss to make its skin purchasable with earned coins. Unlocks follow boss identity through the rotation. Older saves can replay bosses to earn the unlock because they do not store per-boss victory history. Triple T stays the default. The existing shark and crocodile are included, plus four new original character models: Eco Verde, El Saltarín, Radio Rospo, Biscotto Cosmico, and Spaghetto Turbo. Skin swaps use the same gameplay scale and collision radius.
+All eight bosses use their existing 3D models as playable skins. Each shop card shares the exact counterpart name shown on its boss banner. Defeat the boss to make its skin purchasable with earned coins. Unlocks follow boss identity through the rotation. Older saves can replay bosses to earn the unlock because they do not store per-boss victory history. Triple T stays the default. The existing shark and crocodile are included, plus four new original character models: Eco Verde, El Saltarín, Radio Rospo, Biscotto Cosmico, and Spaghetto Turbo. Skin swaps use the same gameplay scale and collision radius.
 
 In `src/bosses.js`, find exactly:
 
@@ -2691,14 +2691,14 @@ Replace with:
 
 ```js
 const DESIGNS = [
-  [squaloScarpettone, 'Squalo Scarpettone', 'boss-squalo', '#368BDC', '#FFF4E0', 250],
-  [coccodrilloBombardone, 'Coccodrillo Bombardone', 'boss-coccodrillo', '#617D39', '#E8AA45', 400],
-  [tazzinaBallerina, 'Tazzina Ballerina', 'boss-tazzina', '#FA8EBD', '#FFF4E0', 550],
-  [scimmiaBananosa, 'Scimmia Bananosa', 'boss-scimmia', '#FFD23F', '#764827', 700],
-  [cactofante, 'Cactofante', 'boss-cactofante', '#47B572', '#EF81AB', 850],
-  [frigocammello, 'Frigocammello', 'boss-frigocammello', '#BFE7F3', '#BE8F53', 1000],
-  [ochettaEsplosiva, 'Ochetta Esplosiva', 'boss-ochetta', '#FFF4E0', '#EF7043', 1200],
-  [alberelloScarpato, 'Alberello Scarpato', 'boss-alberello', '#498747', '#8C562B', 1400],
+  [squaloScarpettone, 'Tralalero Tralala', 'boss-squalo', '#368BDC', '#FFF4E0', 250],
+  [coccodrilloBombardone, 'Bombardiro Crocodilo', 'boss-coccodrillo', '#617D39', '#E8AA45', 400],
+  [tazzinaBallerina, 'Ballerina Cappuccina', 'boss-tazzina', '#FA8EBD', '#FFF4E0', 550],
+  [scimmiaBananosa, 'Chimpanzini Bananini', 'boss-scimmia', '#FFD23F', '#764827', 700],
+  [cactofante, 'Lirilì Larilà', 'boss-cactofante', '#47B572', '#EF81AB', 850],
+  [frigocammello, 'Frigo Camelo', 'boss-frigocammello', '#BFE7F3', '#BE8F53', 1000],
+  [ochettaEsplosiva, 'Bombombini Gusini', 'boss-ochetta', '#FFF4E0', '#EF7043', 1200],
+  [alberelloScarpato, 'Brr Brr Patapim', 'boss-alberello', '#498747', '#8C562B', 1400],
 ];
 
 export const BOSS_SKINS = DESIGNS.map(([, name, id, color, color2, price], index) => ({
@@ -3115,6 +3115,26 @@ Sources:
 Start with one clearly marked, full-width low obstacle on level 4, where jump pads currently begin. Show a tap target on mobile and support Space on desktop. Reuse the current jump arc and clearance system for auto pads and manual jumps. Keep dragging responsive with the other finger. Once introduced, add short jump sequences with steering between landings on later levels. Use a deterministic post-pass on generated levels so levels 1–3 stay identical and avoid overlaps with pads, gates, and boss approaches. Scale warning distance and spacing with run speed and check there is enough room to land before the next required jump. Reject airborne repeats. Award the pad badge only for pad jumps.
 
 Test on a phone-size viewport and desktop. A well-timed jump should clear cleanly, an early or late jump should take a readable mass hit, and retry should reset the jump state. Verify auto pads, steering, and boss and finale transitions, then finish a full level with no console errors.
+
+---
+
+### REQ-024 — Use each brainrot counterpart name in boss banners
+- **From:** Person 2 / ChatGPT, relaying Juan's request
+- **Blocking:** Nothing.
+- **What I need:** Apply these display names in the `DESIGNS` table of `src/bosses.js`. REQ-021's proposed replacement already carries the names, so apply them once. Keep the same geometry, rotation, and skin IDs. The banner and matching shop entry use the same display name.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+1. Squalo Scarpettone → **Tralalero Tralala**
+2. Coccodrillo Bombardone → **Bombardiro Crocodilo**
+3. Tazzina Ballerina → **Ballerina Cappuccina**
+4. Scimmia Bananosa → **Chimpanzini Bananini**
+5. Cactofante → **Lirilì Larilà**
+6. Frigocammello → **Frigo Camelo**
+7. Ochetta Esplosiva → **Bombombini Gusini**
+8. Alberello Scarpato → **Brr Brr Patapim**
+
+Use the listed references for spelling on any follow-up skins in REQ-022. Keep Triple T as the default hero. The preview passed two full rotations and confirmed the banner uses the name from the boss factory. Please check longer names and accents at phone width, particularly Bombardiro Crocodilo on level 2.
 
 ---
 
