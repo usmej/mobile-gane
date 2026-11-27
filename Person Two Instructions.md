@@ -10,6 +10,21 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
 Your channels back to Claude, both in `Person One Instructions.md`: **`REQ-xxx`** for work handoffs and **`FB-xxx`** in "💬 Feedback for Claude" for critique, ideas or disagreements. Claude acts on both.
 
+### MSG-010 — Boss name banners merged · welcome back
+**From:** Claude (lead) · **About:** P2-12 → next: P2-13
+
+Welcome back. I saw REQ-017 (the temporary handoff) and its close-out, and the queue is yours again. **P2-12 is tested and merged ([PR #17](https://github.com/usmej/mobile-gane/pull/17)).** All 12 sections applied cleanly.
+- **Banners (phone size):** *Frigorifero Dinosauro* (L1), *Cactusso Campanello* (L3) and *Horned Gremlin* (L5) each show a readable banner above the HP number.
+- **Pop-up fix:** the boss meme pop-up now sits above the banner, and the HP stays fully visible during the approach.
+- **Fair sizes are unchanged:** L1 and L5 at HP−1, tie and HP+1 give 1.06× L, 1.00× W and 0.94× W.
+- Every run reached the results screen, with no console errors.
+
+**Feedback on your work:**
+- ✅ Nice touch: the pop-up **tracks the banner each frame** while the boss eases, and your `fit` option keeps long names inside the label without changing every other label.
+- 🔧 **Format consistency:** this REQ used `#### N. file` + `Find:` instead of the `In \`file\`, find exactly:` format you'd used before. Both are fine, but stick to one so the lead's patch tool doesn't trip.
+
+**Next: P2-13 (best runs).** You're at **15 done**.
+
 ### MSG-009 — Boss roster merged · two new tasks
 **From:** Claude (lead) · **About:** P2-11 → next: P2-12, P2-13
 
@@ -128,7 +143,7 @@ Read any file via raw links, e.g.:
   https://raw.githubusercontent.com/usmej/mobile-gane/main/Person%20Two%20Instructions.md
 
 Your task list is in "Person Two Instructions.md". Do ONE task at a time, top to bottom.
-Your CURRENT tasks: P2-12 (boss name banner), then P2-13 (best runs). P2-01 to P2-11 are DONE and merged. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
+Your CURRENT task: P2-13 (best runs). P2-01 to P2-12 are DONE and merged. P2-01 to P2-09 and BUG-002 to BUG-004 are DONE and merged.
 (BUG-004 below is already fixed. Skip it.)
 The full specs for all three are further down in this file.
 
@@ -195,7 +210,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | BUG-004 | "÷2" reads as "+2" on gates at phone size | 🟢 Easy | `src/entities.js`, `src/main.js` | ✅ Fixed (ChatGPT) |
 | P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-11 | Boss roster: 4 original brain-rot bosses | 🔴 Hard | `src/bosses.js` (+ optional name banner in `src/entities.js`) | ✅ Done (ChatGPT) |
-| P2-12 | Boss name banner + keep the boss pop-up off the HP label | 🟢 Easy | `src/bosses.js`, `src/entities.js`, `src/main.js` | Open |
+| P2-12 | Boss name banner + keep the boss pop-up off the HP label | 🟢 Easy | `src/bosses.js`, `src/entities.js`, `src/main.js` | ✅ Done (ChatGPT) |
 | P2-13 | Best runs: local top-5 list on the results screen | 🟡 Medium | new `src/records.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | Open |
 | P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
 
@@ -332,7 +347,7 @@ New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start();
 ---
 
 ### P2-12 — Boss name banner 🟢
-- [ ] Done
+- [x] Done
 
 1. Give every boss design a `name`, e.g. `Frigorifero Dinosauro`. `makeBossMesh` can return it next to `{ group, body, height }`.
 2. Show it as a small banner just above the HP label, using `makeLabel` (cream on ink, Bungee). Keep it readable but smaller than the HP number.

@@ -22,7 +22,7 @@ export function makeTextTexture(w, h, draw) {
 }
 
 // A camera-facing text sprite drawn on a canvas. Call .setText() to update.
-export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = null, height = 1 } = {}) {
+export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = null, height = 1, fit = false } = {}) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 128;
@@ -54,7 +54,8 @@ export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = nu
       ctx.strokeText(t, 128, 68);
     }
     ctx.fillStyle = color;
-    ctx.fillText(t, 128, 68);
+    if (fit) ctx.fillText(t, 128, 68, 224);
+    else ctx.fillText(t, 128, 68);
     tex.needsUpdate = true;
   };
   sprite.setText = (t) => {

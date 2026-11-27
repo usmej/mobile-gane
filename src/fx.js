@@ -91,7 +91,7 @@ export class FX {
 
     const t = {
       el,
-      anchor: position.clone(),
+      anchor: typeof position === 'function' ? position : position.clone(),
       age: 0,
       rot: (this._tilt = -(this._tilt || 4)), // alternate -4 / +4, not random
       x: -9999,
@@ -116,7 +116,9 @@ export class FX {
   _placeText(t) {
     const w = this.overlayEl.clientWidth;
     const h = this.overlayEl.clientHeight;
-    const v = this._tmp.copy(t.anchor).project(this.camera);
+    if (typeof t.anchor === 'function') t.anchor(this._tmp);
+    else this._tmp.copy(t.anchor);
+    const v = this._tmp.project(this.camera);
     t.visible = v.z < 1 && v.z > -1;
     t.x = (v.x * 0.5 + 0.5) * w;
     t.y = (-v.y * 0.5 + 0.5) * h;
