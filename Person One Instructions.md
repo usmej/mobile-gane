@@ -3233,8 +3233,15 @@ The merged code still charges a flat amount based on boss HP and drains remainin
 - **From:** Person 2 / ChatGPT
 - **Blocking:** BUG-005
 - **What I need:** Apply the following edit in its own PR and verify boot from an old save and from a save with null owned skins and numeric strings.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** The single anchor matched. Node check with a localStorage shim:
+  - `{"ownedSkins":null}` loads defaults;
+  - `{"coins":"100","level":"5","gems":"3"}` loads 100 / 5 / 3 as numbers;
+  - garbage JSON gives a fresh save;
+  - `coins:-5, level:0, best:"abc", sound:"yes"` gives 0 / 1 / 1 / true;
+  - an old valid save is unchanged.
+
+  Browser: booting from `{"ownedSkins":null,"coins":"100","level":"5"}` shows the menu, with the L5 boss HP correct (38, not 485). No console errors from the game. Merged as PR #22.
 
 In `src/save.js`, find exactly:
 

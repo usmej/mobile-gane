@@ -35,16 +35,20 @@ export function loadSave() {
     if (!raw) return base;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return base;
-    for (const key of Object.keys(parsed)) {
+    for (const [key, fallback] of Object.entries(base)) {
+      if (!Object.prototype.hasOwnProperty.call(parsed, key)) continue;
       const value = parsed[key];
-      if (key === 'defeatedBossSkins') {
-        if (Array.isArray(value)) base.defeatedBossSkins = value.filter((id) => typeof id === 'string');
-      } else if (key === 'stats' || key === 'achievements') {
+      if (Array.isArray(fallback)) {
+        if (Array.isArray(value)) {
+          base[key] = key === 'records' ? value.slice() : value.filter((id) => typeof id === 'string' && id.length > 0);
+        }
+      } else if (typeof fallback === 'number') {
+        const number = typeof value === 'string' && value.trim() ? Number(value) : value;
+        if (Number.isSafeInteger(number) && number >= fallback) base[key] = number;
+      } else if (typeof fallback === 'object') {
         if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
-      } else if (key === 'records') {
-        if (Array.isArray(value)) base.records = value.slice();
-      } else {
-        base[key] = Array.isArray(value) ? value.slice() : value;
+      } else if (typeof value === typeof fallback && value !== '') {
+        base[key] = value;
       }
     }
     return base;
