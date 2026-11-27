@@ -310,6 +310,59 @@ export class UI {
     if (this.hud?.jump) this.hud.jump.hidden = !visible;
   }
 
+  // First-encounter explainer: dimmed backdrop + centered card. Doesn't touch the HUD.
+  showIntro(intro, onDone) {
+    this.hideIntro();
+    if (!intro) return;
+    const back = document.createElement('div');
+    back.className = 'intro-back';
+    back.setAttribute('role', 'dialog');
+    back.setAttribute('aria-modal', 'true');
+    back.innerHTML = `<div class="intro-card">
+      ${intro.icon ? `<div class="intro-icon"></div>` : ''}
+      <div class="intro-new">NEW!</div>
+      <h2 class="intro-title"></h2>
+      <p class="intro-how"></p>
+      <button type="button" class="btn btn-next intro-btn">Got it</button>
+    </div>`;
+    const iconEl = back.querySelector('.intro-icon');
+    if (iconEl) {
+      const raw = String(intro.icon);
+      if (raw.trim().startsWith('<')) iconEl.innerHTML = raw;
+      else if (typeof I[raw] === 'function') iconEl.innerHTML = I[raw]();
+      else iconEl.remove();
+    }
+    back.querySelector('.intro-title').textContent = intro.title || '';
+    back.querySelector('.intro-how').textContent = intro.how || '';
+    const btn = back.querySelector('.intro-btn');
+    this._introShownAt = performance.now();
+    this._introDone = onDone;
+    this._introPrevFocus = document.activeElement;
+    btn.addEventListener('click', () => this.pressIntro());
+    this.root.appendChild(back);
+    this.introEl = back;
+    try { btn.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+  }
+
+  // "Got it" (button, Space or Enter). Ignores accidental presses in the first 350 ms. Fires once.
+  pressIntro() {
+    if (!this.introEl || performance.now() - this._introShownAt < 350) return;
+    const done = this._introDone;
+    this._introDone = null;
+    if (done) this._call_fn(done);
+  }
+
+  _call_fn(f) { try { f(); } catch (e) { console.error(e); } }
+
+  hideIntro() {
+    this._introDone = null;
+    if (this.introEl) { this.introEl.remove(); this.introEl = null; }
+    const prev = this._introPrevFocus;
+    this._introPrevFocus = null;
+    if (prev && prev.isConnected && typeof prev.focus === 'function') { try { prev.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+    else if (document.activeElement && document.activeElement !== document.body) { try { document.activeElement.blur(); } catch (e) { /* ignore */ } }
+  }
+
   // One-line "NEW!" banner that introduces a mechanic. Auto-hides after ~2 s.
   cue(text) {
     clearTimeout(this.cueTimer);

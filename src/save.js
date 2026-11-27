@@ -16,6 +16,7 @@ export const DEFAULT_SAVE = {
   achievements: {},
   stats: {},
   tutorialDone: false,
+  seenIntros: [],            // first-encounter explainers already shown (keys from intros.js)
   records: [],
 };
 

@@ -19,6 +19,7 @@ import { AutoQuality } from './quality.js';
 import { Trail } from './trail.js';
 import { Tutorial } from './tutorial.js';
 import { BossFight } from './bossfight.js';
+import { getIntro, introKeyFor } from './intros.js';
 
 // ---------- setup ----------
 // Test links for human playtesters (no console needed on a phone):
@@ -88,7 +89,7 @@ trail.setColor(getSkin(save.skin).color);
 audio.setEnabled(save.sound);
 haptics.enabled = save.sound;
 
-let state = 'menu';   // menu | playing | boss | fight | finale | ending | result
+let state = 'menu';   // menu | playing | intro | boss | fight | finale | ending | result
 let finaleMult = 1;
 let level = null;
 let runCoins = 0;
@@ -100,6 +101,54 @@ let runGems = 0;
 let endTimer = 0;
 let endResult = null;
 let time = 0;
+let introReturn = 'playing';   // state to resume after an intro card
+let introToken = 0;
+let jumpCoach = null;        // first barrier after its intro: show a JUMP NOW! prompt at the right moment
+let jumpCoachShown = false;
+
+// ---------- first-encounter intros ----------
+function markIntroSeen(key) {
+  if (!save.seenIntros.includes(key)) { save.seenIntros.push(key); writeSave(save); }
+}
+
+function closeIntro() {
+  introToken++;
+  ui.hideIntro();
+}
+
+// Pause the run and explain `key`. `after` runs once the player taps "Got it".
+function openIntro(key, resume, after) {
+  const intro = getIntro(key);
+  if (!intro) return false;
+  introReturn = resume;
+  state = 'intro';
+  ui.showJumpButton(false);
+  const token = ++introToken;
+  ui.showIntro(intro, () => {
+    if (token !== introToken || state !== 'intro') return;
+    markIntroSeen(key);
+    ui.hideIntro();
+    state = resume;
+    if (resume === 'playing') ui.showJumpButton(save.level >= CONFIG.timedJump.firstLevel);
+    if (after) after();
+  });
+  return true;
+}
+
+// Nearest unseen first-time item just ahead of the player (null if none).
+function findUpcomingIntro(speed) {
+  const range = speed * CONFIG.intro.leadSeconds;
+  const tutorialOn = save.level === 1 && !save.tutorialDone && tutorial.phase !== 'idle';
+  let best = null, bestD = Infinity;
+  for (const item of level.items) {
+    if (item.d <= player.d || item.d - player.d > range || item.d >= bestD) continue;
+    const key = introKeyFor(item);
+    if (!key || save.seenIntros.includes(key) || !getIntro(key)) continue;
+    if (tutorialOn && (key === 'gate' || key === 'food')) continue;   // level-1 drag tutorial teaches these
+    best = key; bestD = item.d;
+  }
+  return best;
+}
 
 const ui = new UI(document.getElementById('ui'), {
   onPlay: () => { audio.unlock(); audio.play('click'); startRun(); },
@@ -142,6 +191,8 @@ function recordBadgeEvent(event, message) {
 // ---------- flow ----------
 function loadLevel() {
   bossFight.stop();
+  closeIntro();
+  jumpCoach = null; jumpCoachShown = false; document.querySelector('.btn-jump')?.classList.remove('coach');
   level = generateLevel(save.level);
   world.build(level);
   entities.build(level);
@@ -158,6 +209,7 @@ function loadLevel() {
 
 function showMenu() {
   bossFight.stop();
+  closeIntro();
   tutorial.stop();
   state = 'menu';
   player.label.visible = false;
@@ -171,6 +223,7 @@ function startManualJump() {
 
 function startRun() {
   bossFight.stop();
+  closeIntro();
   if (state === 'result') loadLevel();
   combo = 0;
   runTookHit = false;
@@ -178,7 +231,6 @@ function startRun() {
   player.label.visible = true;
   ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
   ui.showJumpButton(save.level >= CONFIG.timedJump.firstLevel);
-  if (save.level === CONFIG.timedJump.firstLevel) ui.cue('Jump over the striped barriers');
   if (save.level === 1 && !save.tutorialDone) {
     firstTutorialGate = level.items.find((item) => item.type === 'gate');
     tutorial.start();
@@ -220,6 +272,10 @@ function setHudVisible(v) {
 
 const fightPoint = new THREE.Vector3();
 function beginBossFight(b) {
+  if (!save.seenIntros.includes('bossFight') && getIntro('bossFight')) {
+    openIntro('bossFight', 'boss', () => beginBossFight(b));
+    return;
+  }
   state = 'fight';
   ui.showJumpButton(false);
   setHudVisible(false);
@@ -259,6 +315,7 @@ function beginBossFight(b) {
 
 function finishRun(won) {
   bossFight.stop();
+  closeIntro();
   tutorial.stop();
   state = 'ending';
   audio.stopMusic();
@@ -356,9 +413,13 @@ window.addEventListener('pointercancel', endDrag);
 // Pause music while the tab is hidden (the game loop already stops), resume on return.
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) audio.stopMusic();
-  else if (state === 'playing' || state === 'boss' || state === 'finale') audio.startMusic(save.level);
+  else if (state === 'playing' || state === 'intro' || state === 'boss' || state === 'finale') audio.startMusic(save.level);
 });
 window.addEventListener('keydown', (e) => {
+  if (state === 'intro') {
+    if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) ui.pressIntro(); }
+    return;
+  }
   if (state !== 'playing') return;
   if (e.code === 'Space' && save.level >= CONFIG.timedJump.firstLevel && !e.target?.closest?.('button')) {
     e.preventDefault();
@@ -497,6 +558,27 @@ function frame(now) {
   last = now;
   time += dt;
 
+  if (state === 'playing') {
+    const key = findUpcomingIntro(speedForLevel(save.level));
+    if (key) {
+      // After the barrier card, coach the exact moment on that first barrier.
+      if (key === 'barrier') jumpCoach = level.items.find((i) => i.type === 'barrier' && i.d > player.d) || null;
+      openIntro(key, 'playing');
+    }
+  }
+  if (state === 'playing' && jumpCoach) {
+    const gap = jumpCoach.d - player.d;
+    const lead = speedForLevel(save.level) * CONFIG.timedJump.coachLeadSeconds;
+    if (gap <= lead && gap > 0 && !jumpCoachShown) {
+      jumpCoachShown = true;
+      fx.popText('JUMP NOW!', player.position.clone().setY(player.scale * 2 + 2), '#FFD23F', 1.6);
+      document.querySelector('.btn-jump')?.classList.add('coach');
+    }
+    if (gap <= 0 || player.y > 0.3) {
+      if (player.y > 0.3 || gap < -2) { jumpCoach = null; jumpCoachShown = false; document.querySelector('.btn-jump')?.classList.remove('coach'); }
+    }
+  }
+
   const prevD = player.d;
   if (state === 'playing' || state === 'boss') {
     const speed = speedForLevel(save.level);
@@ -539,7 +621,7 @@ function frame(now) {
     if (done) finishRun(true);
   }
 
-  if (jumpElapsed !== null) {
+  if (jumpElapsed !== null && state !== 'intro') {
     const jump = CONFIG.jumpPad;
     jumpElapsed += dt;
     if (state !== 'playing' || jumpElapsed >= jump.duration) {
@@ -555,8 +637,8 @@ function frame(now) {
   player.update(dt);
   trail.update(dt, player, (state === 'playing' || state === 'boss') && player.y < 0.05);
   const canUseMagnet = state === 'playing' || state === 'boss';
-  magnetTime = canUseMagnet ? Math.max(0, magnetTime - dt) : 0;
-  const events = entities.update(dt, time, player, prevD, magnetTime > 0);
+  if (state !== 'intro') magnetTime = canUseMagnet ? Math.max(0, magnetTime - dt) : 0;
+  const events = state === 'intro' ? [] : entities.update(dt, time, player, prevD, magnetTime > 0);
   if (state === 'playing' || state === 'boss') {
     for (const ev of events) {
       handleEvent(ev);
@@ -596,8 +678,10 @@ function frame(now) {
     camLook.lerp(new THREE.Vector3(0.6, b.size * 0.9, -b.d), 1 - Math.exp(-4 * dt));
   } else {
     const py = player.y;
-    camPos.lerp(new THREE.Vector3(player.x * 0.45, 4.6 + s * 2.4 + py, pz + 7.5 + s * 3.4), 1 - Math.exp(-6 * dt));
-    camLook.set(player.x * 0.3, 1 + s * 0.4 + py, pz - 9);
+    // As the character grows the camera rises more than it pulls back and aims further down the
+    // track, so the character sits low on screen and upcoming gates/food stay visible.
+    camPos.lerp(new THREE.Vector3(player.x * 0.45, 4.6 + s * 3.1 + py, pz + 7 + s * 2.2), 1 - Math.exp(-6 * dt));
+    camLook.set(player.x * 0.3, 0.6 + s * 0.2 + py, pz - 10 - s * 3);
   }
   camera.position.copy(camPos).add(fx.shakeOffset);
   camera.lookAt(camLook);
@@ -617,6 +701,7 @@ function frame(now) {
     };
     if (tutorial.update(dt, playerPoint, nextGate)) {
       save.tutorialDone = true;
+      if (!save.seenIntros.includes('gate')) save.seenIntros.push('gate');   // tutorial already taught gates
       writeSave(save);
     }
   }
@@ -640,6 +725,7 @@ window.__gloop = {
   save, player, entities, ui,
   get level() { return level; },
   get state() { return state; },
+  resetIntros() { save.seenIntros = []; writeSave(save); },        // show all first-time explainers again
   persist() { writeSave(save); },                                   // save after editing __gloop.save
   goto(n) { save.level = Math.max(1, n | 0); writeSave(save); loadLevel(); showMenu(); }, // jump to a level
 };
