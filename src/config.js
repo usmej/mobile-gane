@@ -129,7 +129,7 @@ export const CONFIG = {
 
   // Boss fight (tap the weak spots when you reach the boss)
   bossFight: {
-    duration: 5.5,           // seconds to land hits when you are big enough
+    duration: 7,             // seconds to empty the boss bar (miss it = lose)
     spotLife: 0.9,           // a weak spot jumps elsewhere after this long
     spotsAtOnce: 2,
     fightHp: 100,            // fight bar; reaching 0 = PERFECT
@@ -138,6 +138,9 @@ export const CONFIG = {
     loseDuration: 2.2,       // how long the hopeless fight lasts when too small
     minSpotPx: 64,
   },
+  // "Keep going" after a loss: pay gems to continue from where you lost.
+  // cost = (base + level*perLevel + size*perMass), doubled for each extra continue in the same run.
+  continue: { base: 1, perLevel: 0.25, perMass: 0.02, maxCost: 60, minMass: 10 },
   intro: { leadSeconds: 1.2 },  // pause this many seconds of travel before a first-time item
 };
 

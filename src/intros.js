@@ -24,7 +24,7 @@ export function introKeyFor(item) {
 const INK = '#1B1420';
 const svg = (body) =>
   `<svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">${body}</svg>`;
-const T = (x, y, s, fill) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Bungee,Arial Black,sans-serif" font-size="${s}" fill="${fill}" stroke="none">`;
+const T = (x, y, s, fill) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="'Lilita One',Arial Black,sans-serif" font-size="${s}" fill="${fill}" stroke="none">`;
 
 const ICON = {
   gate: svg(`<rect x="2.5" y="4" width="8.5" height="16" rx="2" fill="#1FA2FF"/><rect x="13" y="4" width="8.5" height="16" rx="2" fill="#FF3B5C"/>${T(6.7, 15, 9, '#fff')}+</text>${T(17.3, 15, 9, '#fff')}-</text>`),
@@ -110,6 +110,6 @@ registerIntro('magnet', {
 });
 registerIntro('bossFight', {
   title: 'Boss Fight!',
-  how: "Tap the yellow weak spots fast! If your number is at least the boss's, you win, and taps give bonus mass. If you're smaller you can't win.",
+  how: "Tap the yellow weak spots fast and empty the boss's bar before time runs out! Run out of time and the boss wins.",
   icon: ICON.bossFight,
 });

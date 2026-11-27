@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { CONFIG } from './config.js';
 
 // Boss fight mini-game: tap the glowing weak spots on the boss.
-// canWin === true  -> every hit hurts; the fight can only end in a win (taps just change the bonus).
-// canWin === false -> hits do nothing; after loseDuration the fight ends in a loss.
+// canWin === true  -> every hit hurts; empty the boss bar before time runs out to win, or you lose (TOO SLOW!).
+// canWin === false -> hits do nothing; after loseDuration the fight ends in a loss (main.js no longer starts these:
+//                     a player smaller than the boss is beaten before the fight).
 const END_PAUSE = 0.8;   // seconds the verdict ("PERFECT!") stays up before onEnd fires
 
 export class BossFight {
@@ -208,7 +209,7 @@ export class BossFight {
     }
     this._track();
     if (this.time >= this.total) {
-      if (this.canWin) this._decide('FINISHING BLOW!', true);
+      if (this.canWin) { this._decide('TOO SLOW!', false); this.result.timedOut = true; }
       else this._decide('TOO SMALL!', false);
     }
   }

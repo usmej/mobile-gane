@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const FONT = '"Bungee", "Arial Black", sans-serif';
+export const FONT = '"Lilita One", "Arial Black", sans-serif';
 
 // Canvas texture whose draw(ctx, w, h) is re-run once webfonts have loaded.
 export function makeTextTexture(w, h, draw) {
@@ -15,7 +15,7 @@ export function makeTextTexture(w, h, draw) {
   paint();
   try {
     if (document.fonts && document.fonts.load) {
-      document.fonts.load('40px "Bungee"').then(() => { paint(); }).catch(() => {});
+      document.fonts.load('40px "Lilita One"').then(() => { paint(); }).catch(() => {});
     }
   } catch (e) { /* ignore */ }
   return tex;
@@ -66,7 +66,7 @@ export function makeLabel(text, { color = '#ffffff', stroke = '#1B1420', bg = nu
   };
   sprite.setText(text);
   try {
-    if (document.fonts && document.fonts.load) document.fonts.load('40px "Bungee"').then(() => { if (current !== null) draw(); }).catch(() => {});
+    if (document.fonts && document.fonts.load) document.fonts.load('40px "Lilita One"').then(() => { if (current !== null) draw(); }).catch(() => {});
   } catch (e) { /* ignore */ }
   sprite.disposeLabel = () => { tex.dispose(); mat.dispose(); };
   return sprite;
