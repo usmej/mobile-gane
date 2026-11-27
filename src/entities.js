@@ -229,7 +229,7 @@ export class Entities {
     const hp = levelData.boss.hp;
     // Build at unit size, measure the CORE body (no horns/crowns/eyes), then scale the
     // whole group so the core matches the fight math. See bossCoreTarget().
-    const { group: g, body, height, name } = makeBossMesh(levelData.level || 1, 1);
+    const { group: g, body, height, name, skinId } = makeBossMesh(levelData.level || 1, 1);
     g.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(body);
     const sz = box.getSize(new THREE.Vector3());
@@ -249,7 +249,7 @@ export class Entities {
     lab.scale.multiplyScalar(1 / k);
     banner.scale.copy(bannerBase).multiplyScalar(1 / k);
     banner.position.set(0, lab.position.y + 1.25 / k, 0);
-    this.boss = { group: g, body, label: lab, banner, bannerBase, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
+    this.boss = { group: g, body, label: lab, banner, bannerBase, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, skinId, dead: false };
   }
 
   /**

@@ -8,7 +8,7 @@ import { FX } from './fx.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { haptics } from './haptics.js';
-import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
+import { SKINS, canUnlockSkin, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave, resetSave } from './save.js';
 import { claim } from './daily.js';
 import { BADGES, track } from './achievements.js';
@@ -166,6 +166,11 @@ function defeatBoss() {
   audio.play('smash');
   finaleMult = finale.start(player, b.hp);
   state = 'finale';
+  if (!save.defeatedBossSkins.includes(b.skinId)) {
+    save.defeatedBossSkins.push(b.skinId);
+    writeSave(save);
+    ui.toast(`${getSkin(b.skinId).name} is now available in Skins`);
+  }
 }
 
 function finishRun(won) {
@@ -211,7 +216,12 @@ function lose(reason) {
 
 function buySkin(id) {
   const skin = getSkin(id);
+  if (skin.id !== id) return;
   if (save.ownedSkins.includes(id)) return equipSkin(id);
+  if (!canUnlockSkin(save, skin)) {
+    ui.toast(`Defeat ${skin.name} first`);
+    return;
+  }
   const wallet = skin.currency === 'gems' ? 'gems' : 'coins';
   if (save[wallet] < skin.price) { ui.toast('Not enough ' + wallet); return; }
   save[wallet] -= skin.price;

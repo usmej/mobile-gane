@@ -8,6 +8,7 @@ export const DEFAULT_SAVE = {
   level: 1,
   best: 1,
   ownedSkins: ['drum', 'classic'],
+  defeatedBossSkins: [],
   skin: 'drum',              // FB-002: the drum mascot is the default character
   sound: true,
   lastDaily: 0,
@@ -36,7 +37,9 @@ export function loadSave() {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return base;
     for (const key of Object.keys(parsed)) {
       const value = parsed[key];
-      if (key === 'stats' || key === 'achievements') {
+      if (key === 'defeatedBossSkins') {
+        if (Array.isArray(value)) base.defeatedBossSkins = value.filter((id) => typeof id === 'string');
+      } else if (key === 'stats' || key === 'achievements') {
         if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
       } else if (key === 'records') {
         if (Array.isArray(value)) base.records = value.slice();
