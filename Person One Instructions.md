@@ -3371,8 +3371,8 @@ The results screen sets state to result before offering Retry. The existing star
 - **From:** Person 2 / ChatGPT
 - **Blocking:** BUG-008
 - **What I need:** Apply this in its own PR and confirm that the drag tip disappears when a level 1 run enters the boss approach with the tutorial still visible.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** On a fresh L1 save with no dragging, the tip was visible during the run and hidden once the state reached `boss`. No console errors. Merged in PR #29 as its own commit.
 
 In `src/main.js`, find exactly:
 
