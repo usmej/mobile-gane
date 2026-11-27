@@ -60,6 +60,22 @@ export class Entities {
         case 'gate': e.obj = this.makeGatePair(it, z, W); break;
         case 'magnet': e.obj = this.makeMagnet(it.x, z); break;
         case 'pad': e.obj = this.makeJumpPad(it.x, z); break;
+        case 'barrier': {
+          const { height, depth } = CONFIG.timedJump;
+          const group = new THREE.Group();
+          const rail = new THREE.Mesh(new THREE.BoxGeometry(W * 2, height, depth),
+            new THREE.MeshStandardMaterial({ color: '#D9603F', roughness: 0.85 }));
+          rail.position.y = height / 2;
+          rail.castShadow = true;
+          group.add(rail);
+          const stripe = new THREE.Mesh(new THREE.BoxGeometry(W * 2, height * 0.28, depth * 1.01),
+            new THREE.MeshStandardMaterial({ color: '#FFF4E0' }));
+          stripe.position.y = height * 0.8;
+          group.add(stripe);
+          group.position.z = z;
+          e.obj = group;
+          break;
+        }
         case 'coin': {
           const m = new THREE.Mesh(G.coin, G.coinMat);
           m.rotation.x = Math.PI / 2;
@@ -416,7 +432,7 @@ export class Entities {
       if (!e.obj) continue;
       const near = Math.abs(e.d - pd) < 60;
       // Used gates/pads stay visible; a wall stays visible unless it was smashed.
-      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'pad' || (e.type === 'wall' && !e.smashed);
+      e.obj.visible = !e.used || e.type === 'barrier' || e.type === 'gate' || e.type === 'pad' || (e.type === 'wall' && !e.smashed);
 
       if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
       if (e.type === 'gem' && !e.used) { e.obj.rotation.y = time * 2; e.obj.position.y = 1.1 + Math.sin(time * 3) * 0.2; }
@@ -503,6 +519,17 @@ export class Entities {
               Math.abs(headPosition.y - playerCenterY) < halfY + r) {
             e.cooldown = h.cooldown;
             events.push({ type: 'saw', damage: e.damage, pos: headPosition.clone() });
+          }
+          break;
+        }
+        case 'barrier': {
+          const front = e.d - CONFIG.timedJump.depth / 2;
+          if (prevD < front && pd >= front) {
+            e.used = true;
+            if (player.y < CONFIG.timedJump.height) {
+              const damage = Math.max(1, Math.ceil(player.mass * CONFIG.timedJump.damageRatio));
+              events.push({ type: 'barrier', damage, pos });
+            }
           }
           break;
         }
