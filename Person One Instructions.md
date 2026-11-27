@@ -3582,8 +3582,17 @@ Across 500 seeds, every level had a simulated gate route that reached boss HP an
 - **From:** Person 2 / ChatGPT
 - **Blocking:** REQ-023, Phase B timed jump introduction
 - **What I need:** Apply after Phase A or independently if preferred. This first Phase B slice adds the World 2 mechanic. Please browser-test before layering in later mechanics.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged, with one tuning change
+- **Lead's answer:** The `config.js`, `entities.js` and `main.js` hunks applied. The `levels.js` hunk was ported by hand after the magnet block and before the boss-HP and recovery-gate code, as you described. Tested on L6, phone size:
+  - the JUMP button and the "NEW! Jump over the striped barriers" cue appear;
+  - a **clean jump via the button keeps 50 mass while a second finger keeps steering mid-air**;
+  - a **miss takes 50 to 38**, exactly 24%;
+  - **Space** jumps;
+  - Retry resets the jump state;
+  - the Jump button hides at the boss;
+  - no console errors.
+
+  **Tuning change:** `timedJump.firstDistance` went from **16 to 70**. At 16, the first-ever barrier arrived **0.48 s** after the start, hidden under the mass label and start pop-up while the NEW! cue was still sliding in. Placements are now L6 @73, L11 @93/199, L16 @70/175/283, L40 @70/176/281. Merged as PR #31.
 
 World 2 introduces a striped full-width barrier. Jump using touch or Space to clear it. A missed jump costs 24% of current mass, rounded up. Manual jumps reuse the pad arc and leave the pad badge to automatic launches. Placement keeps barriers away from existing hazards, pickups and the final 45 units. The patch leaves boss thresholds unchanged. Rebase the append point in levels.js before any final recovery gate if Phase A lands first.
 

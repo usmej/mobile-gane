@@ -189,6 +189,18 @@ export function generateLevel(level) {
     items.push({ type: 'magnet', d: coin ? coin.d - lead : CONFIG.firstItemAt - lead, x: coin ? coin.x : 0 });
   }
 
+  const jump = CONFIG.timedJump;
+  if (level >= jump.firstLevel) {
+    const count = Math.min(3, 1 + Math.floor((level - jump.firstLevel) / 5));
+    let placed = 0;
+    for (let pos = jump.firstDistance; pos <= length - jump.endBuffer && placed < count; pos++) {
+      if (items.some(item => Math.abs(item.d - pos) < jump.obstacleBuffer)) continue;
+      items.push({ type: 'barrier', d: pos });
+      placed++;
+      pos += jump.interval - 1;
+    }
+  }
+
   let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
   const balance = CONFIG.routeBalance;
   if (level >= balance.firstLevel) {

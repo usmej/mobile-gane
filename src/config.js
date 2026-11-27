@@ -59,6 +59,17 @@ export const CONFIG = {
     landingSquash: -0.45,
   },
 
+  timedJump: {
+    firstLevel: 6,
+    firstDistance: 70,     // first barrier ~4-5 s into the run, after the NEW! cue (was 16 = 0.5 s)
+    endBuffer: 45,
+    obstacleBuffer: 9,
+    interval: 95,
+    height: 0.7,
+    depth: 1.1,
+    damageRatio: 0.24,
+  },
+
   // Swinging hammer
   hammer: {
     minLevel: 3,

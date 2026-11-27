@@ -82,6 +82,7 @@ const ui = new UI(document.getElementById('ui'), {
   onPlay: () => { audio.unlock(); audio.play('click'); startRun(); },
   onNext: () => { audio.play('click'); loadLevel(); showMenu(); },
   onRetry: () => { audio.play('click'); startRun(); },
+  onJump: () => startManualJump(),
   onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, SKINS); },
   onCloseShop: () => { audio.play('click'); showMenu(); },
   onOpenBadges: () => { audio.play('click'); ui.showBadges(save, BADGES); },
@@ -138,6 +139,11 @@ function showMenu() {
   ui.showMenu(save);
 }
 
+function startManualJump() {
+  if (state !== 'playing' || save.level < CONFIG.timedJump.firstLevel || jumpElapsed !== null) return;
+  jumpElapsed = 0;
+}
+
 function startRun() {
   if (state === 'result') loadLevel();
   combo = 0;
@@ -145,6 +151,8 @@ function startRun() {
   state = 'playing';
   player.label.visible = true;
   ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
+  ui.showJumpButton(save.level >= CONFIG.timedJump.firstLevel);
+  if (save.level === CONFIG.timedJump.firstLevel) ui.cue('Jump over the striped barriers');
   if (save.level === 1 && !save.tutorialDone) {
     firstTutorialGate = level.items.find((item) => item.type === 'gate');
     tutorial.start();
@@ -281,6 +289,11 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('keydown', (e) => {
   if (state !== 'playing') return;
+  if (e.code === 'Space' && save.level >= CONFIG.timedJump.firstLevel && !e.target?.closest?.('button')) {
+    e.preventDefault();
+    if (!e.repeat) startManualJump();
+    return;
+  }
   if (e.key === 'ArrowLeft' || e.key === 'a') {
     tutorial.addDrag(-40);
     player.steer(-40);
@@ -357,6 +370,7 @@ function handleEvent(ev) {
       fx.burst(ev.pos, '#b04bff', 18);
       pop('+1 GEM', ev.pos, C.gem, 'gem', true);
       break;
+    case 'barrier':
     case 'saw':
       runTookHit = true;
       player.setMass(player.mass - ev.damage);
@@ -366,7 +380,7 @@ function handleEvent(ev) {
       fx.shake(0.35);
       audio.play('hit');
       haptics.buzz([30, 30, 30]);
-      if (player.mass <= 0) lose('Sawed in half.');
+      if (player.mass <= 0) lose(ev.type === 'barrier' ? 'Missed the jump.' : 'Sawed in half.');
       break;
     case 'wall':
       runTookHit = true;
@@ -418,6 +432,7 @@ function frame(now) {
     player.d += speed * dt * (state === 'boss' ? 0.75 : 1);
     if (state === 'playing' && player.d >= level.length) {
       state = 'boss';
+      ui.showJumpButton(false);
       tutorial.stop();
       if (jumpElapsed !== null) {
         jumpElapsed = null;
