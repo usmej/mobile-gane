@@ -3764,5 +3764,41 @@ Simulation checked 500 levels and 1,470 barriers for deterministic placement, se
 
 ---
 
+### REQ-035 — Space out double-red gates before the boss
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-012
+- **What I need:** Apply and playtest this standalone fix. Leave REQ-034 reserved for pickup variety.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/levels.js`, find exactly:
+
+```js
+  let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```
+
+Replace with:
+
+```js
+  if (level >= CONFIG.routeBalance.firstLevel) {
+    const gates = items.filter(item => item.type === 'gate').sort((a, b) => a.d - b.d);
+    let previousDoubleBad = false;
+    for (const [index, gate] of gates.entries()) {
+      if (gate.doubleBad && (previousDoubleBad || index >= gates.length - 2)) {
+        const side = index % 2 === 0 ? 'left' : 'right';
+        gate[side] = { op: '+', value: Math.max(1, gate[side].value) };
+        delete gate.doubleBad;
+      }
+      previousDoubleBad = Boolean(gate.doubleBad);
+    }
+  }
+
+  let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```
+
+The post-pass keeps the original seeded draws and changes only the disallowed gate pairs before boss HP is calculated. Levels 1–3 retain their existing layouts. Across 500 generated levels, levels 4+ had no adjacent double-red pairs and none in the final two gates. Every sampled strong gate route still reached boss HP. Please playtest level 12 and confirm the last two gates have a positive choice.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
