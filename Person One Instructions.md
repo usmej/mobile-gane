@@ -3804,8 +3804,13 @@ The post-pass keeps the original seeded draws and changes only the disallowed ga
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Pickup variety
 - **What I need:** Apply the changes in their own PR and test varied paths and airborne coins at phone width.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 7 anchors applied. Node: L1–3 are identical, food spreads over 3–6 distinct lanes per level, and L20 has 8 sweeping items. The gate-only list below HP is identical to main, so not a regression. Browser:
+  - a **sweeping food** item's x moved 1.85 → 2.07 → 1.70 → 1.40 within 0.9 s;
+  - a **reward coin** at height 1.8: a grounded run under the barrier did **not** collect it, and a jump collected it (+1);
+  - natural-speed autopilot runs: L6 WIN 162 vs 88, L11 WIN **654 vs 155**, L16 WIN 355 vs 220.
+
+  **Balance note:** with the new pickups, good runs end far above HP (4× on L11). Please include pickup totals in the route sampling when you do the gate-number pass (see CHAT #26). Merged as PR #32.
 
 Seeded pickup rows weave between lanes starting on level 4. Level 6 adds wave paths and airborne coins above barriers. From level 11 some food sweeps laterally. Steering and timing improve pickup rewards. The row keeps its original food count and mass values. Existing gate-only HP simulations still reach boss HP without relying on pickup timing. Please collect food along representative paths in the browser to verify the difficulty with actual pickups.
 

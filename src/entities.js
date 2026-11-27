@@ -79,7 +79,7 @@ export class Entities {
         case 'coin': {
           const m = new THREE.Mesh(G.coin, G.coinMat);
           m.rotation.x = Math.PI / 2;
-          m.position.set(it.x, 0.9, z);
+          m.position.set(it.x, it.jumpReward ? CONFIG.pickupPaths.jumpCoinHeight : 0.9, z);
           m.castShadow = true;
           e.obj = m; break;
         }
@@ -435,6 +435,9 @@ export class Entities {
       e.obj.visible = !e.used || e.type === 'barrier' || e.type === 'gate' || e.type === 'pad' || (e.type === 'wall' && !e.smashed);
 
       if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
+      if (e.sweep && near && !e.used) {
+        e.obj.position.x = e.x + e.sweep * Math.sin((pd - e.d) / CONFIG.pickupPaths.cycleDistance * 2 * Math.PI + Math.PI / 2);
+      }
       if (e.type === 'gem' && !e.used) { e.obj.rotation.y = time * 2; e.obj.position.y = 1.1 + Math.sin(time * 3) * 0.2; }
       if (e.type === 'saw') {
         e.obj.position.x = Math.sin(time * e.speed + e.phase) * e.amp;
@@ -450,7 +453,8 @@ export class Entities {
       }
       if (!near || e.used) continue;
 
-      if (e.type === 'coin' && (magnetActive || e.magnetPulled)) {
+      if (e.jumpReward && player.y < CONFIG.pickupPaths.jumpCoinClearance) continue;
+      if (e.type === 'coin' && !e.jumpReward && (magnetActive || e.magnetPulled)) {
         const cfg = CONFIG.magnet;
         const target = player.position.clone().setY(player.y + r);
         const delta = target.sub(e.obj.position);
@@ -473,7 +477,7 @@ export class Entities {
         }
       }
 
-      const dx = Math.abs((e.type === 'saw' ? e.obj.position.x : e.x ?? 0) - px);
+      const dx = Math.abs((e.type === 'saw' || e.sweep ? e.obj.position.x : e.x ?? 0) - px);
       const dd = Math.abs(e.d - pd);
       const pos = player.position.clone().setY(r * 2);
 

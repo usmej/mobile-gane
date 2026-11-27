@@ -44,6 +44,11 @@ export const CONFIG = {
 
   // Hit boxes
   pickupRadius: 0.9,
+  pickupPaths: {
+    firstLevel: 4, waveLevel: 6, motionLevel: 11,
+    spacing: 3.6, swing: 0.55, cycleDistance: 27,
+    jumpCoinClearance: 0.9, jumpCoinHeight: 1.8,
+  },
   magnet: { minLevel: 5, duration: 6, radius: 4, pullSpeed: 32, collectDistance: 0.5, lead: 4, pickupHeight: 1.1 },
   sawDamageCooldown: 0.6,
   wallHitRadiusCap: 1.2,   // walls use at most this radius for side reach, so big blobs can still dodge
@@ -120,6 +125,18 @@ export const CONFIG = {
   finaleFirstStepCost: 2,   // rung costs triple: 2, 6, 18, 54, ...
   finaleMassPerLevel: 4,    // bonus mass for beating the boss, from level 2 on...
   finaleMaxMassBonus: 160,  // ...capped
+
+  // Boss fight (tap the weak spots when you reach the boss)
+  bossFight: {
+    duration: 5.5,           // seconds to land hits when you are big enough
+    spotLife: 0.9,           // a weak spot jumps elsewhere after this long
+    spotsAtOnce: 2,
+    fightHp: 100,            // fight bar; reaching 0 = PERFECT
+    damagePerHit: 14,
+    perfectBonusRatio: 0.5,  // bonus mass = mass * ratio * hitRatio
+    loseDuration: 2.2,       // how long the hopeless fight lasts when too small
+    minSpotPx: 64,
+  },
 };
 
 export function massToScale(mass) {
