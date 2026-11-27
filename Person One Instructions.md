@@ -2538,14 +2538,14 @@ Replace with:
 
 ---
 
-### REQ-020 — Make the multiplier stairs spend mass at doubling costs
+### REQ-020 — Make the multiplier stairs spend mass at tripling costs
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Juan's finale bug fix
-- **What I need:** Apply this revised patch in its own PR, then playtest and merge after review.
+- **What I need:** Apply this revised patch and playtest it in its own PR.
 - **Status:** 🟡 Open
 - **Lead's answer:** _(lead fills this in)_
 
-The updated user requirement supersedes the fixed-cost proposal. Rungs x1 through x10 cost 2, 4, 8, 16, 32, 64, 128, 256, 512, and 1024 mass. Charge only for rungs reached and keep the remainder at the stop. Defeating a boss adds 4 mass per level after Level 1, capped at 160. If a winning run cannot afford x1, stop before the first rung and use the base x1 payout.
+Keep x1 at 2 mass and triple each later cost: 2, 6, 18, 54, 162, 486, 1458, 4374, 13122, 39366. The total to reach rung n is 3^n − 1. Charge only for reached rungs, preserve any remainder, and retain the previously requested level-based boss bonus. A win unable to afford x1 stops before the first rung and keeps the base x1 payout. This patch supersedes the prior doubling proposal.
 
 ```diff
 diff --git a/src/config.js b/src/config.js
@@ -2565,7 +2565,7 @@ index 3b2040f..14bff7a 100644
  
  export function massToScale(mass) {
 diff --git a/src/finale.js b/src/finale.js
-index 8538b58..d48fe65 100644
+index 8538b58..ad2bdca 100644
 --- a/src/finale.js
 +++ b/src/finale.js
 @@ -2,7 +2,7 @@ import * as THREE from 'three';
@@ -2573,7 +2573,7 @@ index 8538b58..d48fe65 100644
  import { makeTextTexture, FONT } from './labels.js';
  
 -// Bonus stairs after the boss: x1 -> x10. Leftover mass pays for each step.
-+// Bonus stairs after the boss: x1 -> x10. The mass cost doubles on each step.
++// Bonus stairs after the boss: x1 -> x10. The mass cost triples on each step.
  const INK = '#1B1420';
  
  export class Finale {
@@ -2603,7 +2603,7 @@ index 8538b58..d48fe65 100644
 +  }
 +
 +  stepCost(step) {
-+    return CONFIG.finaleFirstStepCost * 2 ** (step - 1);
++    return CONFIG.finaleFirstStepCost * 3 ** (step - 1);
    }
  
    /** Advance the climb. Returns { stepped: n | null, done: bool }. */
@@ -2658,7 +2658,7 @@ index 7aaf70e..76c3885 100644
    }
 ```
 
-90 affordability and exact-debit checks passed. Please play a full round and check the live mass, reward, remainder and boss bonus. At finale masses 509 and 510, the expected ranks are x7 and x8. At 2045 and 2046 the expected ranks are x9 and x10.
+90 simulation cases passed. Browser-check that 6559 mass stops at x7 and 6560 reaches x8. At 59047 and 59048 check x9 and x10 respectively, including the HUD mass and payout.
 
 ---
 
@@ -3135,6 +3135,51 @@ Test on a phone-size viewport and desktop. A well-timed jump should clear cleanl
 8. Alberello Scarpato → **Brr Brr Patapim**
 
 Use the listed references for spelling on any follow-up skins in REQ-022. Keep Triple T as the default hero. The preview passed two full rotations and confirmed the banner uses the name from the boss factory. Please check longer names and accents at phone width, particularly Bombardiro Crocodilo on level 2.
+
+---
+
+### REQ-025 — Add more arithmetic gate values
+- **From:** Person 2 / ChatGPT
+- **Blocking:** Nothing.
+- **What I need:** Apply this patch separately and check gate labels and gameplay on a phone.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Add x4 starting on level 6, division by 3 starting on level 4, and division by 4 starting on level 10. Widen the addition and subtraction rolls after level 1. Keep the seeded random draws and the level 1 tutorial layout. Checks over the first 150 levels found both 2–4 sets and a range of additive and subtractive values. Confirm the shown operation matches the applied change, including division rounding and double-red pairs.
+
+```diff
+diff --git a/src/levels.js b/src/levels.js
+index dc4fe00..605f167 100644
+--- a/src/levels.js
++++ b/src/levels.js
+@@ -30,12 +30,22 @@ export function applyOp(mass, op, value) {
+ export function isGoodOp(op) { return op === '+' || op === 'x'; }
+ 
+ function goodGate(rng, level, mass) {
+-  if (rng() < 0.3 + Math.min(0.2, level * 0.01)) return { op: 'x', value: rng() < 0.75 ? 2 : 3 };
+-  return { op: '+', value: rng.int(3, 8 + level) + Math.floor(mass * 0.15) };
++  if (rng() < 0.3 + Math.min(0.2, level * 0.01)) {
++    const roll = rng();
++    const value = roll < 0.75 ? 2 : level >= 6 && roll >= 0.93 ? 4 : 3;
++    return { op: 'x', value };
++  }
++  const extra = Math.min(12, Math.max(0, level - 1));
++  return { op: '+', value: rng.int(3, 8 + level + extra) + Math.floor(mass * 0.15) };
+ }
+ function badGate(rng, level, mass) {
+-  if (rng() < 0.3) return { op: '÷', value: 2 };
+-  return { op: '-', value: Math.max(2, rng.int(3, 6 + level) + Math.floor(mass * 0.25)) };
++  const roll = rng();
++  if (roll < 0.3) {
++    const value = level >= 10 && roll >= 0.27 ? 4 : level >= 4 && roll >= 0.22 ? 3 : 2;
++    return { op: '÷', value };
++  }
++  const extra = Math.min(8, Math.max(0, level - 1));
++  return { op: '-', value: Math.max(2, rng.int(level === 1 ? 3 : 2, 6 + level + extra) + Math.floor(mass * 0.25)) };
+ }
+ 
+ /**
+```
 
 ---
 
