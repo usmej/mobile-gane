@@ -3767,38 +3767,88 @@ Simulation checked 500 levels and 1,470 barriers for deterministic placement, se
 ### REQ-035 — Space out double-red gates before the boss
 - **From:** Person 2 / ChatGPT
 - **Blocking:** BUG-012
-- **What I need:** Apply and playtest this standalone fix. Leave REQ-034 reserved for pickup variety.
+- **What I need:** Apply this revised patch to current main and recheck levels 12 and 120.
 - **Status:** 🟡 Open
 - **Lead's answer:** _(lead fills this in)_
 
-In `src/levels.js`, find exactly:
+Your level 120 result reproduces at 8,323 vs 8,460 when the route collects healthy food and ignores streak bonuses. With streak bonuses it already clears. The spacing pass was before sampling, but the recovery estimate credited streak bonuses. This revision keeps spacing before sampling and sizes the recovery gate from a separate strong gate-only route with no food or streak credit. The HP target still uses the regular sampled routes. In 500 generated levels, every level from 4 onward beat its HP ceiling on the conservative route. Level 120 now reaches 8,464 gate-only and 8,693 with healthy food, against 8,460 HP. Levels 1–3 remain identical and spacing checks pass.
 
-```js
-  let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+```diff
+--- a/src/levels.js
++++ b/src/levels.js
+@@ -66,18 +66,18 @@
+   return 'WORLD ' + (Math.floor(index / CONFIG.levelsPerWorld) + 1) + '-' + (index % CONFIG.levelsPerWorld + 1);
+ }
+ 
+-function sampleGateRoutes(items, level, onStrongGate) {
++function sampleGateRoutes(items, level, onStrongGate, routeCount = CONFIG.routeBalance.samples, awardCombo = true) {
+   const gates = items.filter((item) => item.type === 'gate').sort((a, b) => a.d - b.d);
+   const rng = makeRng(level + 39521);
+   const survivors = [];
+   let strong = 0;
+-  for (let route = 0; route <= CONFIG.routeBalance.samples; route++) {
++  for (let route = 0; route <= routeCount; route++) {
+     let mass = CONFIG.startMass, combo = 0;
+     for (const gate of gates) {
+       if (route === 0 && onStrongGate) onStrongGate(gate, mass);
+       const options = [gate.left, gate.right].map(({ op, value }) => {
+         const streak = isGoodOp(op) ? combo + 1 : 0;
+-        return { streak, mass: applyOp(mass, op, value) + (streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
++        return { streak, mass: applyOp(mass, op, value) + (awardCombo && streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
+       }).sort((a, b) => a.mass - b.mass);
+       const next = options[route === 0 || rng() < CONFIG.routeBalance.preferStrongGate ? 1 : 0];
+       mass = next.mass;
+@@ -201,16 +201,31 @@
+     }
+   }
+ 
++  if (level >= CONFIG.routeBalance.firstLevel) {
++    const gates = items.filter(item => item.type === 'gate').sort((a, b) => a.d - b.d);
++    let previousDoubleBad = false;
++    for (const [index, gate] of gates.entries()) {
++      if (gate.doubleBad && (previousDoubleBad || index >= gates.length - 2)) {
++        const side = index % 2 === 0 ? 'left' : 'right';
++        gate[side] = { op: '+', value: Math.max(1, gate[side].value) };
++        delete gate.doubleBad;
++      }
++      previousDoubleBad = Boolean(gate.doubleBad);
++    }
++  }
++
+   let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+   const balance = CONFIG.routeBalance;
+   if (level >= balance.firstLevel) {
+-    const { typical, strong } = sampleGateRoutes(items, level, (gate, mass) => {
++    // Repair the strongest route without assuming food pickups or combo bonuses.
++    const { strong: baseRouteMass } = sampleGateRoutes(items, level, (gate, mass) => {
+       const cap = Math.floor(mass * CONFIG.doubleBad.maxLossRatio);
+       if (gate.doubleBad && gate.left.op === '-' && gate.right.op === '-') {
+         gate.left.value = Math.min(cap, gate.left.value);
+         gate.right.value = Math.min(cap, gate.right.value);
+       }
+-    });
++    }, 0, false);
++    const { typical, strong } = sampleGateRoutes(items, level);
+     const offset = level - balance.firstLevel;
+     const floor = Math.min(balance.maxHpFloor, Math.round(
+       balance.firstBossHp + offset * balance.hpPerLevel + offset ** 2 * balance.hpCurve
+@@ -218,10 +233,10 @@
+     const target = Math.round(typical + Math.max(0, strong - typical) * balance.strongRouteWeight);
+     const ceiling = Math.floor(floor * balance.hpBand);
+     bossHp = Math.max(floor, Math.min(ceiling, target, strong));
+-    if (strong < bossHp) {
++    if (baseRouteMass < bossHp) {
+       items.push({
+         type: 'gate', d: length - balance.recoveryGateGap,
+-        left: { op: '+', value: bossHp - strong + balance.recoveryMassMargin },
++        left: { op: '+', value: bossHp - baseRouteMass + balance.recoveryMassMargin },
+         right: { op: '÷', value: 2 },
+       });
+     }
 ```
-
-Replace with:
-
-```js
-  if (level >= CONFIG.routeBalance.firstLevel) {
-    const gates = items.filter(item => item.type === 'gate').sort((a, b) => a.d - b.d);
-    let previousDoubleBad = false;
-    for (const [index, gate] of gates.entries()) {
-      if (gate.doubleBad && (previousDoubleBad || index >= gates.length - 2)) {
-        const side = index % 2 === 0 ? 'left' : 'right';
-        gate[side] = { op: '+', value: Math.max(1, gate[side].value) };
-        delete gate.doubleBad;
-      }
-      previousDoubleBad = Boolean(gate.doubleBad);
-    }
-  }
-
-  let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
-```
-
-The post-pass keeps the original seeded draws and changes only the disallowed gate pairs before boss HP is calculated. Levels 1–3 retain their existing layouts. Across 500 generated levels, levels 4+ had no adjacent double-red pairs and none in the final two gates. Every sampled strong gate route still reached boss HP. Please playtest level 12 and confirm the last two gates have a positive choice.
 
 ---
+
 
 ### REQ-034 — Add longer, varied pickup paths
 - **From:** Person 2 / ChatGPT
