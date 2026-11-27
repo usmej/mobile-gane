@@ -202,7 +202,7 @@ function finishRun(won) {
     // keep what you picked up — losing shouldn't feel like a total L
     save.coins += runCoins;
     save.gems += runGems;
-    endResult = { won, level: save.level, reason: lossReason };
+    endResult = { won, level: save.level, reason: lossReason, progress: Math.min(1, player.d / Math.max(1, level.length)) };
     player.group.visible = false;
     fx.burst(player.position.clone().setY(1), getSkin(save.skin).color, 50);
     fx.popText(pickMeme('lose') || 'L', player.position.clone().setY(2.5), '#FF3B5C', 1.6);
@@ -418,6 +418,7 @@ function frame(now) {
     player.d += speed * dt * (state === 'boss' ? 0.75 : 1);
     if (state === 'playing' && player.d >= level.length) {
       state = 'boss';
+      tutorial.stop();
       if (jumpElapsed !== null) {
         jumpElapsed = null;
         player.y = 0;
@@ -538,7 +539,7 @@ requestAnimationFrame(frame);
 
 // handy for debugging in the console
 window.__gloop = {
-  save, player, entities,
+  save, player, entities, ui,
   get level() { return level; },
   get state() { return state; },
   persist() { writeSave(save); },                                   // save after editing __gloop.save
