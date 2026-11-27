@@ -29,6 +29,7 @@ export const CONFIG = {
   pickupRadius: 0.9,
   magnet: { minLevel: 5, duration: 6, radius: 4, pullSpeed: 32, collectDistance: 0.5, lead: 4, pickupHeight: 1.1 },
   sawDamageCooldown: 0.6,
+  wallHitRadiusCap: 1.2,   // walls use at most this radius for side reach, so big blobs can still dodge
   jumpPad: {
     minLevel: 4,
     lead: 7,

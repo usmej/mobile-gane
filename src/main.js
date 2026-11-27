@@ -109,7 +109,8 @@ const ui = new UI(document.getElementById('ui'), {
 
 function recordBadgeEvent(event, message) {
   const unlocked = track(save, event);
-  if (event.type !== 'sync' || unlocked.length) writeSave(save);
+  // Only hit localStorage when a badge unlocks; counters are saved with the run at finishRun().
+  if (unlocked.length) writeSave(save);
   const messages = [message, ...unlocked.map(({ name }) => 'BADGE: ' + name)].filter(Boolean);
   if (messages.length) ui.toast(messages.join(' · '));
 }
@@ -242,21 +243,37 @@ function equipSkin(id) {
 }
 
 // ---------- input: drag anywhere to steer ----------
-let dragging = false;
-let lastX = 0;
-window.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; });
+// One finger steers at a time. Extra fingers are tracked so that if the steering
+// finger lifts, another finger still on the screen takes over without a jump.
+const pointers = new Map();   // pointerId -> last clientX
+let steerId = null;
+window.addEventListener('pointerdown', (e) => {
+  pointers.set(e.pointerId, e.clientX);
+  if (steerId === null) steerId = e.pointerId;
+});
 window.addEventListener('pointermove', (e) => {
-  if (!dragging) return;
-  const dx = e.clientX - lastX;
-  lastX = e.clientX;
+  if (!pointers.has(e.pointerId)) return;
+  const prev = pointers.get(e.pointerId);
+  pointers.set(e.pointerId, e.clientX);
+  if (e.pointerId !== steerId) return;
+  const dx = e.clientX - prev;
   if (state === 'playing') {
     tutorial.addDrag(dx);
     player.steer(dx * (390 / Math.max(320, Math.min(window.innerWidth, 700))));
   }
 });
-const endDrag = () => { dragging = false; };
+const endDrag = (e) => {
+  pointers.delete(e.pointerId);
+  if (e.pointerId === steerId) steerId = pointers.size ? pointers.keys().next().value : null;
+};
 window.addEventListener('pointerup', endDrag);
 window.addEventListener('pointercancel', endDrag);
+
+// Pause music while the tab is hidden (the game loop already stops), resume on return.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) audio.stopMusic();
+  else if (state === 'playing' || state === 'boss' || state === 'finale') audio.startMusic(save.level);
+});
 window.addEventListener('keydown', (e) => {
   if (state !== 'playing') return;
   if (e.key === 'ArrowLeft' || e.key === 'a') {
@@ -299,7 +316,7 @@ function handleEvent(ev) {
       const before = player.mass;
       player.setMass(applyOp(before, ev.op, ev.value));
       if (player.mass < before) runTookHit = true;
-      pop(`${ev.op === '÷' ? '/' : ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
+      pop(`${ev.op}${ev.value}`, ev.pos, ev.good ? C.good : C.bad, ev.good ? 'gateGood' : 'gateBad', ev.op === 'x' || ev.op === '÷' || ev.value >= 10);
       fx.burst(ev.pos, ev.good ? '#2fa8ff' : '#ff3b5c', 20);
       audio.play(ev.good ? 'gateGood' : 'gateBad');
       combo = ev.good ? combo + 1 : 0;

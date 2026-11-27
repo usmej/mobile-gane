@@ -33,7 +33,7 @@ export function track(save, event) {
     stats.cleanWin, stats.coins >= 1000,
   ];
   return BADGES.filter((badge, index) => {
-    if (!eligible[index] || Object.hasOwn(save.achievements, badge.id)) return false;
+    if (!eligible[index] || Object.prototype.hasOwnProperty.call(save.achievements, badge.id)) return false;
     save.achievements[badge.id] = Date.now();
     return true;
   });

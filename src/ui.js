@@ -227,7 +227,7 @@ export class UI {
 
   showBadges(save, badges) {
     const cards = badges.map((badge) => {
-      const unlocked = Object.hasOwn(save.achievements, badge.id);
+      const unlocked = Object.prototype.hasOwnProperty.call(save.achievements, badge.id);
       return `<div class="badge-card${unlocked ? ' is-unlocked' : ''}">
         <div class="badge-name">${esc(badge.name)}</div>
         <div>${esc(badge.desc)}</div>
