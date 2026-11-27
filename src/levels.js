@@ -69,14 +69,26 @@ export function generateLevel(level) {
       const speed = rng.range(hammer.minSpeed, hammer.maxSpeed + level * hammer.speedPerLevel);
       items.push({ type: 'hammer', d, damage: Math.max(3, Math.floor(best * hammer.damageRatio)), speed });
     } else if (rowIndex % 3 === 0 || r < 0.28) {
-      // Gate pair — mostly one good + one bad, sometimes two goods (pick the better one).
-      const g = goodGate(rng, level, best);
-      const other = rng() < 0.25 ? goodGate(rng, level, best) : badGate(rng, level, best);
-      const goodLeft = rng() < 0.5;
-      items.push({ type: 'gate', d, left: goodLeft ? g : other, right: goodLeft ? other : g });
-      const a = applyOp(best, g.op, g.value);
-      const b = isGoodOp(other.op) ? applyOp(best, other.op, other.value) : 0;
-      best = Math.min(9999, Math.max(a, b));
+      const db = CONFIG.doubleBad;
+      const pDouble = level < db.minLevel ? 0 : Math.min(db.max, db.start + (level - db.minLevel) * db.perLevel);
+      if (rng() < pDouble) {
+        // Double-red pair: both choices hurt, so the player picks the SMALLER loss.
+        // A '-' gate is capped so a smart pick always survives.
+        const cap = (gate) => (gate.op === '-' ? { op: '-', value: Math.max(1, Math.min(gate.value, Math.floor(best * db.maxLossRatio))) } : gate);
+        const left = cap(badGate(rng, level, best));
+        const right = cap(badGate(rng, level, best));
+        items.push({ type: 'gate', d, left, right, doubleBad: true });
+        best = Math.max(1, Math.max(applyOp(best, left.op, left.value), applyOp(best, right.op, right.value)));
+      } else {
+        // Gate pair — mostly one good + one bad, sometimes two goods (pick the better one).
+        const g = goodGate(rng, level, best);
+        const other = rng() < 0.25 ? goodGate(rng, level, best) : badGate(rng, level, best);
+        const goodLeft = rng() < 0.5;
+        items.push({ type: 'gate', d, left: goodLeft ? g : other, right: goodLeft ? other : g });
+        const a = applyOp(best, g.op, g.value);
+        const b = isGoodOp(other.op) ? applyOp(best, other.op, other.value) : 0;
+        best = Math.min(9999, Math.max(a, b));
+      }
     } else if (r < 0.28 + hazardChance) {
       const hazardRoll = rng();
       if (level >= hammer.minLevel && hazardRoll < hammer.hazardShare) {

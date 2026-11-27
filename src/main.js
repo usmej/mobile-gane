@@ -307,7 +307,7 @@ function handleEvent(ev) {
       pop(`${ev.good ? '+' : '-'}${ev.value}`, ev.pos, ev.good ? C.green : C.bad, ev.good ? 'foodGood' : 'foodBad');
       fx.burst(ev.pos, ev.good ? '#3fd64f' : '#8a4b1e', 10);
       audio.play(ev.good ? 'foodGood' : 'foodBad');
-      if (player.mass <= 0) lose('Ate too much junk.');
+      if (player.mass <= 0) lose('Ate too much mold.');
       break;
     case 'coin':
       runCoins += 1;

@@ -1,228 +1,307 @@
 import * as THREE from 'three';
 
 // Boss mesh factory. Group origin is on the floor, front faces +Z (toward the player).
-// Returns { group, body, height } where body is the squashable main mesh.
+// Returns { group, body, height, name } where body is the single main core mesh
+// (callers measure it with Box3 and rescale the whole group, so sizes are baked into
+// the geometry here, never into group.scale). Eight original hybrid-creature bosses.
 
-const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, ...o });
+const INK = '#1B1420';
+const CREAM = '#FFF4E0';
 
-function add(group, mesh, x, y, z, shadow = true) {
-  mesh.position.set(x, y, z);
-  mesh.castShadow = shadow;
-  group.add(mesh);
-  return mesh;
+// Small builder context: every dimension is given in unit space and multiplied by `size`.
+function mk(size) {
+  const g = new THREE.Group();
+  const S = size;
+  const put = (geo, color, x, y, z, o = {}) => {
+    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+      color, roughness: 0.55, flatShading: o.flat !== false,
+    }));
+    m.position.set(x * S, y * S, z * S);
+    if (o.order) m.rotation.order = o.order;
+    if (o.rot) m.rotation.set(o.rot[0], o.rot[1], o.rot[2]);
+    if (o.scale) m.scale.set(o.scale[0], o.scale[1], o.scale[2]);
+    m.castShadow = o.shadow !== false;
+    g.add(m);
+    return m;
+  };
+  const c = {
+    g, S,
+    box: (col, w, h, d, x, y, z, o) => put(new THREE.BoxGeometry(w * S, h * S, d * S), col, x, y, z, o),
+    sph: (col, r, x, y, z, o) => put(new THREE.SphereGeometry(r * S, 14, 10), col, x, y, z, o),
+    ico: (col, r, x, y, z, o) => put(new THREE.IcosahedronGeometry(r * S, 1), col, x, y, z, o),
+    cyl: (col, rt, rb, h, x, y, z, o) => put(new THREE.CylinderGeometry(rt * S, rb * S, h * S, 12), col, x, y, z, o),
+    cone: (col, r, h, x, y, z, o) => put(new THREE.ConeGeometry(r * S, h * S, 6), col, x, y, z, o),
+    cap: (col, r, len, x, y, z, o) => put(new THREE.CapsuleGeometry(r * S, len * S, 4, 8), col, x, y, z, o),
+    // cream eye with ink pupil, facing +Z
+    eye(x, y, z, r = 0.14, look = 0) {
+      c.sph(CREAM, r, x, y, z, { flat: false, shadow: false });
+      c.sph(INK, r * 0.55, x + look * r * 0.3, y, z + r * 0.65, { flat: false, shadow: false });
+    },
+    // chunky sneaker: sole, upper, toe cap, ink laces
+    shoe(x, color = CREAM, z = 0.15) {
+      c.box(INK, 0.56, 0.09, 0.96, x, 0.045, z);
+      c.box(color, 0.52, 0.24, 0.9, x, 0.2, z);
+      c.sph(CREAM, 0.27, x, 0.2, z + 0.34, { scale: [1, 0.7, 0.9] });
+      for (let i = 0; i < 3; i++) c.box(INK, 0.34, 0.045, 0.05, x, 0.335, z - 0.05 + i * 0.12, { shadow: false });
+    },
+  };
+  return c;
 }
 
-function crown(group, size, y, radius, color = 0xffd23f) {
-  const mat = std(color, { metalness: 0.6, roughness: 0.3, flatShading: true });
-  add(group, new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 1.05, size * 0.3, 8), mat), 0, y, 0);
-  const n = 5;
+// 1. Blue-grey shark standing upright on sneakers.
+function squaloScarpettone(size) {
+  const c = mk(size);
+  const skin = '#6F8FA8', dark = '#4C6B86';
+  c.shoe(-0.4);
+  c.shoe(0.4);
+  for (const x of [-0.4, 0.4]) c.cyl(skin, 0.15, 0.17, 0.5, x, 0.5, 0.05);
+  const body = c.sph(skin, 0.8, 0, 1.22, 0, { scale: [1, 1.1, 0.9] });
+  c.sph(CREAM, 0.62, 0, 1.08, 0.3, { scale: [0.95, 1.0, 0.55] });
+  // dorsal fin + side fins + tail
+  c.cone(dark, 0.3, 0.7, 0, 2.2, -0.2, { rot: [-0.35, 0, 0] });
+  for (const s of [-1, 1]) {
+    c.cone(dark, 0.22, 0.75, s * 0.95, 1.0, 0.05, { rot: [0, 0, -s * 1.9] });
+  }
+  c.cone(dark, 0.3, 0.7, 0, 0.55, -0.85, { rot: [-2.2, 0, 0] });
+  for (const s of [-1, 1]) {
+    c.eye(s * 0.34, 1.58, 0.62, 0.17, -s);
+    c.box(INK, 0.3, 0.07, 0.06, s * 0.34, 1.84, 0.6, { rot: [0, 0, s * 0.35], shadow: false });
+  }
+  // toothy grin
+  c.box(INK, 1.0, 0.24, 0.1, 0, 1.0, 0.68, { shadow: false });
+  for (let i = -3; i <= 3; i++) {
+    c.cone(CREAM, 0.07, 0.18, i * 0.13, 1.06, 0.74, { rot: [Math.PI, 0, 0], shadow: false });
+    if (Math.abs(i) < 3) c.cone(CREAM, 0.06, 0.14, i * 0.13 + 0.065, 0.93, 0.74, { shadow: false });
+  }
+  return { group: c.g, body, height: 2.55 * size };
+}
+
+// 2. Green crocodile whose body is a fat bomber plane.
+function coccodrilloBombardone(size) {
+  const c = mk(size);
+  const green = '#4FAE4B', dark = '#2E7D3A';
+  const body = c.sph(green, 0.8, 0, 1.0, 0, { scale: [1, 1, 1.5] });
+  c.sph(CREAM, 0.6, 0, 0.82, 0.2, { scale: [0.8, 0.8, 1.3] });
+  // wings, tail plane, tail fin
+  c.box(dark, 2.9, 0.1, 0.7, 0, 1.0, 0.0, { rot: [0, 0, 0.04] });
+  c.box(dark, 1.1, 0.08, 0.4, 0, 1.2, -1.15);
+  c.box(dark, 0.1, 0.8, 0.55, 0, 1.75, -1.1, { rot: [0.25, 0, 0] });
+  // wheels
+  for (const s of [-1, 1]) c.cyl(INK, 0.2, 0.2, 0.16, s * 0.45, 0.2, 0.3, { rot: [0, 0, Math.PI / 2] });
+  // croc snout with teeth
+  c.box(green, 0.9, 0.3, 1.0, 0, 1.0, 1.15);
+  c.box(dark, 0.8, 0.2, 0.95, 0, 0.74, 1.1);
+  c.box(INK, 0.78, 0.05, 0.9, 0, 0.86, 1.12, { shadow: false });
+  for (let i = -3; i <= 3; i++) {
+    c.cone(CREAM, 0.06, 0.16, i * 0.12, 0.93, 1.55, { rot: [Math.PI, 0, 0], shadow: false });
+    c.cone(CREAM, 0.05, 0.13, i * 0.12 + 0.06, 0.8, 1.52, { shadow: false });
+  }
+  for (const s of [-1, 1]) c.sph(INK, 0.045, s * 0.2, 1.1, 1.64, { flat: false, shadow: false });
+  // propeller
+  c.sph(INK, 0.1, 0, 1.0, 1.72, { flat: false });
+  c.box(INK, 0.14, 1.3, 0.05, 0, 1.0, 1.76, { rot: [0, 0, 0.5] });
+  c.box(INK, 1.3, 0.14, 0.05, 0, 1.0, 1.76, { rot: [0, 0, 0.5] });
+  // bulging croc eyes on top
+  for (const s of [-1, 1]) c.eye(s * 0.34, 1.68, 0.55, 0.19, -s);
+  return { group: c.g, body, height: 2.2 * size };
+}
+
+// 3. Ballerina with a cappuccino cup for a head.
+function tazzinaBallerina(size) {
+  const c = mk(size);
+  const skin = '#FFD3B8', pink = '#FF8FC0', tutu = '#FF6FB5';
+  for (const s of [-1, 1]) {
+    c.cyl(skin, 0.07, 0.06, 0.75, s * 0.2, 0.42, 0, { flat: false });
+    c.cone(pink, 0.09, 0.22, s * 0.2, 0.11, 0.02, { rot: [Math.PI, 0, 0] });
+    c.cap(skin, 0.06, 0.5, s * 0.62, 1.05, 0.05, { rot: [0, 0, s * 0.9], flat: false });
+  }
+  c.cyl(tutu, 0.3, 0.85, 0.26, 0, 0.88, 0);
+  c.cyl(pink, 0.28, 0.4, 0.2, 0, 0.74, 0, { scale: [1, 1, 0.9] });
+  c.cyl(pink, 0.22, 0.25, 0.35, 0, 1.0, 0);
+  // saucer + cup head
+  c.cyl('#FFFFFF', 0.95, 0.75, 0.1, 0, 1.17, 0);
+  const body = c.cyl('#FFFFFF', 0.8, 0.55, 0.95, 0, 1.7, 0);
+  c.cyl('#8B5A3C', 0.74, 0.74, 0.05, 0, 2.17, 0, { shadow: false });
+  c.sph('#F3DFC2', 0.74, 0, 2.2, 0, { scale: [1, 0.32, 1] });
+  c.sph(CREAM, 0.28, 0, 2.28, 0.05, { scale: [1, 0.4, 1], shadow: false });
+  const h = c.S;
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.22 * h, 0.07 * h, 6, 10, Math.PI), new THREE.MeshStandardMaterial({ color: '#FFFFFF', roughness: 0.55, flatShading: true }));
+  handle.position.set(0.72 * h, 1.7 * h, 0);
+  handle.rotation.z = -Math.PI / 2;
+  handle.castShadow = true;
+  c.g.add(handle);
+  // face on the cup
+  for (const s of [-1, 1]) {
+    c.eye(s * 0.28, 1.8, 0.64, 0.12, 0);
+    c.sph('#FF8FA8', 0.1, s * 0.5, 1.6, 0.6, { scale: [1, 0.7, 0.4], flat: false, shadow: false });
+  }
+  c.box(INK, 0.26, 0.07, 0.05, 0, 1.58, 0.66, { shadow: false });
+  return { group: c.g, body, height: 2.5 * size };
+}
+
+// 4. Monkey growing out of a giant banana peel.
+function scimmiaBananosa(size) {
+  const c = mk(size);
+  const fur = '#8A5A3A', peel = '#FFD23F';
+  const n = 7;
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
-    add(group, new THREE.Mesh(new THREE.ConeGeometry(size * 0.14, size * 0.42, 5), mat),
-      Math.cos(a) * radius * 0.85, y + size * 0.34, Math.sin(a) * radius * 0.85);
+    const r = 0.55;
+    c.box(peel, 0.55, 0.9, 0.1, Math.sin(a) * r, 0.5, Math.cos(a) * r, { order: 'YXZ', rot: [0.85, a, 0] });
+    c.cone('#7A4A1E', 0.1, 0.18, Math.sin(a) * (r + 0.4), 0.2, Math.cos(a) * (r + 0.4), { order: 'YXZ', rot: [2.4, a, 0] });
   }
-  add(group, new THREE.Mesh(new THREE.SphereGeometry(size * 0.1, 8, 6), std(0xff2d55)), 0, y + size * 0.2, radius * 1.02, false);
-}
-
-function hornedGremlin(size) {
-  const g = new THREE.Group();
-  const body = add(g, new THREE.Mesh(new THREE.IcosahedronGeometry(size, 1), std(0xe0245e, { roughness: 0.4, flatShading: true })), 0, size, 0);
-  const hornMat = std(0x222222, { flatShading: true });
+  c.cyl(peel, 0.4, 0.5, 0.4, 0, 0.75, 0);
+  const body = c.sph(fur, 0.7, 0, 1.15, 0, { scale: [1, 1.05, 0.9] });
+  c.sph('#F2C99A', 0.5, 0, 1.05, 0.3, { scale: [1, 1.05, 0.5], flat: false });
   for (const s of [-1, 1]) {
-    const h = add(g, new THREE.Mesh(new THREE.ConeGeometry(size * 0.25, size * 0.8, 6), hornMat), s * size * 0.55, size * 1.8, 0);
-    h.rotation.z = -s * 0.4;
+    c.cap(fur, 0.17, 0.5, s * 0.85, 1.2, 0.1, { rot: [0, 0, s * 0.55] });
+    c.sph(fur, 0.2, s * 0.5, 1.7, 0, { flat: false });
+    c.sph('#F2C99A', 0.12, s * 0.5, 1.7, 0.12, { flat: false, shadow: false });
   }
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xfff200 });
-  const browMat = std(0x222222);
+  c.sph(fur, 0.46, 0, 1.7, 0.05);
+  c.sph('#F2C99A', 0.3, 0, 1.58, 0.32, { scale: [1.25, 0.95, 0.7], flat: false });
+  for (const s of [-1, 1]) c.eye(s * 0.17, 1.82, 0.38, 0.12, 0);
+  c.box(INK, 0.4, 0.09, 0.05, 0, 1.5, 0.53, { shadow: false });
+  c.box(CREAM, 0.3, 0.06, 0.04, 0, 1.46, 0.54, { shadow: false });
+  c.sph(INK, 0.04, -0.07, 1.6, 0.54, { flat: false, shadow: false });
+  c.sph(INK, 0.04, 0.07, 1.6, 0.54, { flat: false, shadow: false });
+  return { group: c.g, body, height: 2.2 * size };
+}
+
+// 5. Elephant made of cactus.
+function cactofante(size) {
+  const c = mk(size);
+  const green = '#40A45D', dark = '#278046';
+  for (const x of [-0.45, 0.45]) c.cyl(dark, 0.28, 0.3, 0.55, x, 0.28, 0.1);
+  const body = c.sph(green, 0.85, 0, 1.12, 0, { scale: [1, 1.1, 0.95] });
+  // big ears with pink insides
   for (const s of [-1, 1]) {
-    add(g, new THREE.Mesh(new THREE.SphereGeometry(size * 0.18, 10, 8), eyeMat), s * size * 0.35, size * 1.2, size * 0.85, false);
-    const brow = add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.4, size * 0.08, size * 0.1), browMat), s * size * 0.35, size * 1.48, size * 0.9, false);
-    brow.rotation.z = s * 0.45;
+    c.cyl(dark, 0.62, 0.62, 0.12, s * 1.02, 1.3, 0.05, { order: 'YXZ', rot: [Math.PI / 2, s * 0.35, 0] });
+    c.cyl('#FF9CC2', 0.45, 0.45, 0.04, s * 1.03, 1.3, 0.12, { order: 'YXZ', rot: [Math.PI / 2, s * 0.35, 0], shadow: false });
   }
-  // jagged teeth
-  const toothMat = std(0xffffff, { flatShading: true });
-  for (let i = -2; i <= 2; i++) {
-    const t = add(g, new THREE.Mesh(new THREE.ConeGeometry(size * 0.07, size * 0.2, 4), toothMat), i * size * 0.14, size * 0.62, size * 0.93, false);
-    t.rotation.x = Math.PI;
-  }
-  return { group: g, body, height: size * 2.3 };
-}
-
-function megaCube(size) {
-  const g = new THREE.Group();
-  const s = size * 1.7;
-  const body = add(g, new THREE.Mesh(new THREE.BoxGeometry(s, s, s), std(0x8a3ffc, { roughness: 0.35, flatShading: true })), 0, s / 2, 0);
-  crown(g, size, s + size * 0.15, size * 0.55);
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-  const browMat = std(0x1a0a2e);
-  for (const sx of [-1, 1]) {
-    add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.36, size * 0.36, size * 0.06), eyeMat), sx * size * 0.4, s * 0.62, s / 2 + 0.02, false);
-    add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.16, size * 0.16, size * 0.06), pupilMat), sx * size * 0.4, s * 0.6, s / 2 + size * 0.05, false);
-    const brow = add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.5, size * 0.1, size * 0.12), browMat), sx * size * 0.4, s * 0.62 + size * 0.28, s / 2 + size * 0.06, false);
-    brow.rotation.z = sx * 0.5; // grumpy: inner ends lower
-  }
-  add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.7, size * 0.1, size * 0.06), browMat), 0, s * 0.25, s / 2 + 0.02, false);
-  return { group: g, body, height: s + size * 0.9 };
-}
-
-function donutTyrant(size) {
-  const g = new THREE.Group();
-  const R = size * 0.85;
-  const r = size * 0.42;
-  const cy = R + r;
-  // torus lies in the XY plane (axis along Z): upright, ring faces +Z
-  const body = add(g, new THREE.Mesh(new THREE.TorusGeometry(R, r, 10, 20), std(0xd9a066, { flatShading: true })), 0, cy, 0);
-  const frost = add(g, new THREE.Mesh(new THREE.TorusGeometry(R, r * 1.12, 10, 20, Math.PI * 1.35), std(0xff6fb5, { roughness: 0.25, flatShading: true })), 0, cy, 0, false);
-  frost.rotation.z = -Math.PI * 0.175; // center the frosted arc over the top
-  // sprinkles on the frosting
-  const colors = [0xffffff, 0xffe14a, 0x4ad8ff, 0x7dff6a, 0x9b5cff];
-  const geo = new THREE.BoxGeometry(size * 0.2, size * 0.06, size * 0.06);
+  // trunk + tusks
+  c.cap(dark, 0.2, 0.7, 0, 0.82, 0.92, { rot: [-0.3, 0, 0] });
+  c.sph(dark, 0.22, 0, 0.45, 1.0, { flat: false });
+  for (const s of [-1, 1]) c.cone(CREAM, 0.07, 0.4, s * 0.3, 0.88, 0.85, { rot: [1.9, 0, s * 0.2] });
+  // spikes
   for (let i = 0; i < 16; i++) {
-    const a = Math.PI * (0.02 + 0.96 * ((i * 0.618) % 1)) + 0; // top half
-    const b = ((i * 1.37) % 1) * Math.PI * 1.2 - Math.PI * 0.1; // mostly front-facing
-    const rr = r * 1.14;
-    const rad = R + rr * Math.cos(b);
-    const sp = new THREE.Mesh(geo, std(colors[i % colors.length], { roughness: 0.3 }));
-    sp.position.set(Math.cos(a) * rad, cy + Math.sin(a) * rad, rr * Math.sin(b));
-    sp.rotation.set(i, i * 2.1, i * 0.7);
-    g.add(sp);
+    const a = i * 2.4, y = 0.2 + (i / 16) * 0.7;
+    const r = Math.sqrt(1 - y * y);
+    const dx = Math.sin(a) * r, dz = Math.cos(a) * r;
+    if (dz > 0.3 && y < 0.8) continue;
+    c.cone(CREAM, 0.05, 0.22, dx * 0.9, 1.12 + y * 0.95, dz * 0.8, { rot: [dz * 1.3, 0, -dx * 1.3], shadow: false });
   }
-  // eyes on the ring
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-  const browMat = std(0x4a1d0a);
-  for (const sx of [-1, 1]) {
-    const a = Math.PI / 2 + sx * 0.62;
-    const ex = Math.cos(a) * R, ey = cy + Math.sin(a) * R;
-    add(g, new THREE.Mesh(new THREE.SphereGeometry(size * 0.2, 10, 8), eyeMat), ex, ey, r * 1.0, false);
-    add(g, new THREE.Mesh(new THREE.SphereGeometry(size * 0.09, 8, 6), pupilMat), ex, ey, r * 1.0 + size * 0.15, false);
-    const brow = add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.45, size * 0.09, size * 0.1), browMat), ex, ey + size * 0.28, r * 1.05, false);
-    brow.rotation.z = -sx * 0.5;
+  for (const s of [-1, 1]) c.eye(s * 0.34, 1.5, 0.72, 0.14, 0);
+  // flower
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    c.sph('#FF6FB5', 0.11, Math.cos(a) * 0.17, 2.1, Math.sin(a) * 0.17 + 0.02, { flat: false, shadow: false });
   }
-  return { group: g, body, height: 2 * (R + r * 1.12) };
+  c.sph('#FFD23F', 0.1, 0, 2.12, 0.02, { flat: false, shadow: false });
+  return { group: c.g, body, height: 2.3 * size };
 }
 
-function slimeKing(size) {
-  const g = new THREE.Group();
-  const sy = 0.85;
-  const body = add(g, new THREE.Mesh(new THREE.SphereGeometry(size, 16, 12),
-    std(0x3ddc4b, { roughness: 0.15, transparent: true, opacity: 0.82, flatShading: false })), 0, size * sy, 0);
-  body.scale.y = 1; // squash handled by caller; shape set via geometry below
-  body.geometry.scale(1, sy, 1);
-  // inner darker core blob for depth
-  add(g, new THREE.Mesh(new THREE.SphereGeometry(size * 0.45, 10, 8), std(0x1b8f2a, { transparent: true, opacity: 0.6 })), 0, size * 0.6, -size * 0.1, false);
-  crown(g, size, size * sy * 2 + size * 0.02, size * 0.5);
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-  for (const sx of [-1, 1]) {
-    add(g, new THREE.Mesh(new THREE.SphereGeometry(size * 0.2, 10, 8), eyeMat), sx * size * 0.35, size * 1.15, size * 0.78, false);
-    add(g, new THREE.Mesh(new THREE.SphereGeometry(size * 0.09, 8, 6), pupilMat), sx * size * 0.33, size * 1.13, size * 0.78 + size * 0.15, false);
+// 6. Camel with a fridge for a torso.
+function frigocammello(size) {
+  const c = mk(size);
+  const tan = '#D9A25E', tanDark = '#B47E3E';
+  for (const x of [-0.45, 0.45]) {
+    c.cyl(tan, 0.15, 0.17, 0.45, x, 0.2, 0.1);
+    c.box(INK, 0.3, 0.1, 0.34, x, 0.05, 0.12);
   }
-  // drippy mouth
-  const mouthMat = std(0x0e4d17);
-  add(g, new THREE.Mesh(new THREE.BoxGeometry(size * 0.8, size * 0.2, size * 0.08), mouthMat), 0, size * 0.62, size * 0.88, false);
-  const dripMat = std(0x66ff73, { transparent: true, opacity: 0.85 });
-  for (let i = -2; i <= 2; i++) {
-    const len = size * (0.18 + 0.1 * ((i + 2) % 3));
-    const d = add(g, new THREE.Mesh(new THREE.CapsuleGeometry(size * 0.05, len, 3, 6), dripMat), i * size * 0.17, size * 0.52 - len / 2, size * 0.92, false);
-    d.rotation.x = 0;
+  const body = c.box('#E6EEF2', 1.5, 1.3, 0.95, 0, 1.0, 0);
+  c.box('#B9C7D0', 1.5, 0.05, 0.97, 0, 1.42, 0, { shadow: false });
+  c.box(INK, 0.08, 0.4, 0.1, 0.55, 1.15, 0.5, { shadow: false });
+  c.box(INK, 0.08, 0.28, 0.1, 0.55, 1.65 - 0.05, 0.5, { shadow: false });
+  c.box('#B9C7D0', 0.4, 0.2, 0.05, -0.35, 1.0, 0.48, { shadow: false });
+  // humps on top of the fridge
+  for (const x of [-0.3, 0.3]) c.sph(tan, 0.32, x, 1.72, -0.2, { scale: [1, 0.9, 1] });
+  // camel neck + head
+  c.cap(tan, 0.24, 0.35, 0, 1.85, 0.4, { rot: [0.25, 0, 0] });
+  c.sph(tan, 0.42, 0, 2.0, 0.5, { scale: [1, 0.95, 1.05] });
+  c.sph('#F2D6A8', 0.28, 0, 1.9, 0.82, { scale: [1.1, 0.85, 0.8], flat: false });
+  for (const s of [-1, 1]) {
+    c.sph(INK, 0.04, s * 0.1, 1.93, 1.03, { flat: false, shadow: false });
+    c.eye(s * 0.22, 2.12, 0.82, 0.1, 0);
+    c.cone(tanDark, 0.1, 0.28, s * 0.3, 2.38, 0.4, { rot: [0, 0, -s * 0.3] });
   }
-  return { group: g, body, height: size * sy * 2 + size * 0.7 };
+  c.box(INK, 0.22, 0.05, 0.05, 0, 1.78, 1.0, { shadow: false });
+  return { group: c.g, body, height: 2.5 * size };
 }
 
-function rosterBox(group, size, color, dimensions, position) {
-  return add(group, new THREE.Mesh(
-    new THREE.BoxGeometry(...dimensions.map((n) => n * size)),
-    std(color, { flatShading: true })
-  ), ...position.map((n) => n * size));
-}
-
-function rosterEyes(group, size, y, z) {
-  for (const x of [-0.24, 0.24]) {
-    rosterBox(group, size, '#FFF4E0', [0.32, 0.32, 0.10], [x, y, z]);
-    rosterBox(group, size, '#1B1420', [0.12, 0.16, 0.04], [x + 0.025, y, z + 0.07]);
-  }
-}
-
-function fridgeDino(size) {
-  const g = new THREE.Group();
-  const body = rosterBox(g, size, '#62BCA8', [1.20, 1.45, 0.92], [0, 1.03, 0]);
+// 7. Goose in a pilot helmet with a bomb strapped under it.
+function ochettaEsplosiva(size) {
+  const c = mk(size);
+  const orange = '#FF9A2E', leather = '#8A5A3A';
   for (const x of [-0.35, 0.35]) {
-    rosterBox(g, size, '#246E67', [0.35, 0.38, 0.62], [x, 0.19, 0.13]);
+    c.cyl(orange, 0.07, 0.07, 0.3, x, 0.18, 0.05, { flat: false });
+    c.box(orange, 0.34, 0.07, 0.5, x, 0.035, 0.2);
   }
-  for (let i = 0; i < 3; i++) {
-    add(g, new THREE.Mesh(new THREE.ConeGeometry(0.20 * size, 0.37 * size, 4),
-      std('#FFD23F')), 0, (1.60 - i * 0.29) * size, (-0.52 - i * 0.12) * size);
+  const body = c.sph('#FFFFFF', 0.8, 0, 0.9, 0, { scale: [1, 1, 1.1] });
+  for (const s of [-1, 1]) c.sph('#E8EEF2', 0.7, s * 0.82, 0.95, 0, { scale: [0.25, 0.8, 0.6], rot: [0, 0, s * 0.2] });
+  c.cone('#E8EEF2', 0.3, 0.6, 0, 1.0, -0.95, { rot: [-2.0, 0, 0] });
+  // neck + head
+  c.cap('#FFFFFF', 0.28, 0.3, 0, 1.55, 0.15);
+  c.sph('#FFFFFF', 0.45, 0, 1.78, 0.2);
+  // helmet with goggles
+  c.sph(leather, 0.5, 0, 1.85, 0.15, { scale: [1, 0.85, 1] });
+  c.box(INK, 1.0, 0.07, 0.1, 0, 1.72, 0.52, { shadow: false });
+  for (const s of [-1, 1]) {
+    c.box(leather, 0.14, 0.4, 0.3, s * 0.47, 1.65, 0.12);
+    c.cyl(INK, 0.19, 0.19, 0.1, s * 0.22, 2.0, 0.52, { rot: [Math.PI / 2, 0, 0] });
+    c.cyl(CREAM, 0.13, 0.13, 0.12, s * 0.22, 2.0, 0.54, { rot: [Math.PI / 2, 0, 0], flat: false, shadow: false });
+    c.eye(s * 0.2, 1.72, 0.52, 0.1, 0);
   }
-  rosterBox(g, size, '#1B1420', [0.12, 0.43, 0.10], [0.43, 0.82, 0.51]);
-  rosterBox(g, size, '#246E67', [0.67, 0.29, 0.52], [0, 1.11, 0.56]);
-  rosterEyes(g, size, 1.47, 0.52);
-  return { group: g, body, height: 1.83 * size };
+  // big orange beak
+  c.box(orange, 0.6, 0.16, 0.8, 0, 1.64, 0.85);
+  c.box('#E87A12', 0.5, 0.1, 0.6, 0, 1.5, 0.78);
+  c.box(INK, 0.5, 0.03, 0.6, 0, 1.57, 0.8, { shadow: false });
+  // bomb strapped under the belly
+  c.sph(INK, 0.3, 0, 0.32, 0.62);
+  c.sph(CREAM, 0.07, -0.1, 0.42, 0.88, { flat: false, shadow: false });
+  c.cyl(INK, 0.08, 0.1, 0.12, 0, 0.62, 0.62);
+  c.cyl(CREAM, 0.02, 0.02, 0.18, 0, 0.74, 0.62, { flat: false, shadow: false });
+  c.sph('#FF6A2E', 0.06, 0, 0.86, 0.62, { flat: false, shadow: false });
+  c.box(CREAM, 0.9, 0.07, 0.12, 0, 0.5, 0.52, { rot: [0.5, 0, 0], shadow: false });
+  return { group: c.g, body, height: 2.35 * size };
 }
 
-function toastOctopus(size) {
-  const g = new THREE.Group();
-  const body = rosterBox(g, size, '#A9572F', [1.52, 1.29, 0.64], [0, 0.99, 0]);
-  rosterBox(g, size, '#F6BD71', [1.29, 1.07, 0.10], [0, 0.99, 0.35]);
-  for (let i = 0; i < 8; i++) {
-    const angle = ((i + 0.5) / 8) * Math.PI * 2;
-    const arm = add(g, new THREE.Mesh(new THREE.CapsuleGeometry(0.105 * size, 0.65 * size, 4, 8),
-      std('#B96A43')), Math.cos(angle) * 0.56 * size, 0.30 * size, Math.sin(angle) * 0.35 * size);
-    arm.rotation.z = -Math.cos(angle) * 1.12;
-    arm.rotation.x = Math.sin(angle) * 1.12;
+// 8. Cartoon tree with a face in its trunk, standing on two sneakers.
+function alberelloScarpato(size) {
+  const c = mk(size);
+  const bark = '#8A5A3A', barkDark = '#5E3A22', leaf = '#4FBF5A';
+  c.shoe(-0.3, '#FF3B5C', 0.1);
+  c.shoe(0.3, '#FF3B5C', 0.1);
+  c.cyl(bark, 0.45, 0.55, 1.05, 0, 0.72, 0);
+  for (const s of [-1, 1]) {
+    c.cap(bark, 0.12, 0.5, s * 0.68, 1.1, 0, { rot: [0, 0, -s * 0.9] });
+    c.ico(leaf, 0.22, s * 0.9, 1.4, 0);
   }
-  rosterEyes(g, size, 1.19, 0.46);
-  rosterBox(g, size, '#1B1420', [0.32, 0.11, 0.07], [0, 0.89, 0.45]);
-  return { group: g, body, height: 1.66 * size };
-}
-
-function bellCactus(size) {
-  const g = new THREE.Group();
-  const body = add(g, new THREE.Mesh(new THREE.CapsuleGeometry(0.43 * size, 0.74 * size, 4, 8),
-    std('#40A45D', { flatShading: true })), 0, 0.80 * size, 0);
-  for (const side of [-1, 1]) {
-    rosterBox(g, size, '#278046', [0.47, 0.24, 0.33], [side * 0.43, 0.77, 0]);
-    rosterBox(g, size, '#278046', [0.23, 0.46, 0.33], [side * 0.61, 0.94, 0]);
+  // crown of leaves (core)
+  const body = c.ico(leaf, 0.8, 0, 1.55, -0.02);
+  c.ico('#3BA848', 0.4, -0.5, 1.95, 0.25);
+  c.ico('#3BA848', 0.38, 0.5, 1.95, 0.2);
+  c.ico('#6FD46E', 0.4, 0, 2.2, -0.1);
+  for (const [x, y, z] of [[-0.45, 1.5, 0.62], [0.3, 1.75, 0.68], [0.6, 1.4, 0.5]]) c.sph('#FF3B5C', 0.1, x, y, z, { flat: false, shadow: false });
+  // face in the trunk
+  for (const s of [-1, 1]) {
+    c.eye(s * 0.2, 0.92, 0.48, 0.14, -s);
+    c.box(INK, 0.3, 0.07, 0.06, s * 0.2, 1.1, 0.5, { rot: [0, 0, -s * 0.35], shadow: false });
   }
-  add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.35 * size, 0.62 * size, 0.53 * size, 8),
-    std('#FFD23F', { flatShading: true })), 0, 1.55 * size, 0);
-  rosterBox(g, size, '#1B1420', [0.82, 0.13, 0.78], [0, 1.30, 0]);
-  rosterEyes(g, size, 1.56, 0.48);
-  return { group: g, body, height: 1.83 * size };
-}
-
-function scooterPigeon(size) {
-  const g = new THREE.Group();
-  const body = add(g, new THREE.Mesh(new THREE.SphereGeometry(size, 12, 8),
-    std('#8798B6', { flatShading: true })), 0, 0.88 * size, 0);
-  body.scale.set(0.64, 0.58, 0.66);
-  add(g, new THREE.Mesh(new THREE.SphereGeometry(0.43 * size, 12, 8),
-    std('#566B90', { flatShading: true })), 0, 1.46 * size, 0.28 * size);
-  const beak = add(g, new THREE.Mesh(new THREE.ConeGeometry(0.17 * size, 0.37 * size, 4),
-    std('#FFAB39')), 0, 1.40 * size, 0.77 * size);
-  beak.rotation.x = Math.PI / 2;
-  rosterEyes(g, size, 1.59, 0.69);
-  rosterBox(g, size, '#FF7658', [0.73, 0.16, 1.96], [0, 0.27, 0]);
-  rosterBox(g, size, '#1B1420', [0.13, 0.95, 0.13], [0, 0.75, 0.88]);
-  rosterBox(g, size, '#1B1420', [0.68, 0.12, 0.15], [0, 1.22, 0.88]);
-  for (const z of [-0.76, 0.76]) {
-    const wheel = add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.18 * size, 0.18 * size,
-      0.19 * size, 12), std('#1B1420')), 0, 0.18 * size, z * size);
-    wheel.rotation.z = Math.PI / 2;
-  }
-  return { group: g, body, height: 1.89 * size };
+  c.sph(INK, 0.22, 0, 0.58, 0.38, { scale: [1.2, 0.8, 0.5], flat: false, shadow: false });
+  c.box(barkDark, 0.4, 0.04, 0.05, 0, 0.3, 0.47, { shadow: false });
+  return { group: c.g, body, height: 2.5 * size };
 }
 
 const DESIGNS = [
-  [fridgeDino, 'Frigorifero Dinosauro'],
-  [toastOctopus, 'Toastopo Croccantino'],
-  [bellCactus, 'Cactusso Campanello'],
-  [scooterPigeon, 'Piccione Monopattino'],
-  [hornedGremlin, 'Horned Gremlin'],
-  [megaCube, 'Mega Cube'],
-  [donutTyrant, 'Donut Tyrant'],
-  [slimeKing, 'Slime King'],
+  [squaloScarpettone, 'Squalo Scarpettone'],
+  [coccodrilloBombardone, 'Coccodrillo Bombardone'],
+  [tazzinaBallerina, 'Tazzina Ballerina'],
+  [scimmiaBananosa, 'Scimmia Bananosa'],
+  [cactofante, 'Cactofante'],
+  [frigocammello, 'Frigocammello'],
+  [ochettaEsplosiva, 'Ochetta Esplosiva'],
+  [alberelloScarpato, 'Alberello Scarpato'],
 ];
 
 export function makeBossMesh(level, size) {

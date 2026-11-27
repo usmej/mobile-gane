@@ -1,9 +1,10 @@
 # 🟢 Gloop Rush
 
 An original **brain-rot 3D mobile runner**, made for the phone and played in the browser.
-You run down a candy-colored track as a squishy blob, pick the right gates (`+7`, `x2`, `-8`, `÷2`),
-eat healthy food to grow, dodge saws, smash walls, and beat the boss at the end if you're **big enough**.
-Coins, gems, 14 skins, 8 rotating themes and endless levels.
+You run down a candy-colored track as **Triple T**, a living wooden log with a bat (the classic gloop blob is an optional skin).
+Pick the right gates (`+7`, `x2`, `-8`, `÷2`), eat healthy food to grow, avoid rotten moldy food, dodge saws and swinging hammers,
+smash walls, and beat the boss at the end if you're **big enough**.
+Coins, gems, 21 skins, 12 rotating themes, 12 badges and endless levels.
 
 > Genre reference: "jelly run / tall man run"-style runners. The mechanics are similar, but every name, character and visual here is our own.
 
@@ -45,13 +46,23 @@ Controls: **drag left and right** (or use the ← → keys on a computer).
 
 ## 🧠 Game design
 
-- **Mass** is your number. It floats over the blob, and the blob grows as it goes up.
-- **Gates:** blue is good (`+N`, `xN`) and red is bad (`-N`, `÷N`). Choose your side.
-- **Food:** 🥦 healthy food grows you, 🍔 junk shrinks you ("eat healthier").
-- **Coins** 🪙 and **gems** 💎 pay for skins in the shop.
+- **Mass** is your number. It floats over your character, and you grow as it goes up.
+- **Gates:** blue is good (`+N`, `xN`) and red is bad (`-N`, `÷N`). Choose your side. From **level 2**, some gate pairs are **DOUBLE RED**: both choices hurt, so pick the smaller loss.
+- **Food:** 🥦 healthy broccoli grows you. ROTTEN MOLDY FOOD shrinks you.
+- **Coins** 🪙 and **gems** 💎 pay for skins in the shop. From **level 5**, coin magnet pickups pull nearby coins to you for a few seconds.
+- **Jump pads** (from level 4) launch you over hazards. **Swinging hammers** (from level 3) cut your mass if you get hit.
 - **Saws** slide side to side and cut your mass. **Walls** show a number: if you're bigger, you smash through and lose that much mass. If you're smaller, it's game over.
-- **The boss** waits at the finish with HP. If your mass is at least its HP, you win, and leftover mass becomes a **coin multiplier from x1 to x10**.
+- **Bosses:** 8 brain-rot-style bosses rotate by level, each with a name banner. A boss's size shows the fight: if it's bigger than you, you'd lose. If your mass is at least its HP, you win.
+- **Bonus stairs:** after the boss, leftover mass climbs a staircase of **x1 to x10** coin multipliers.
+- **Daily reward:** claim a coin reward (plus gems on some days) once per day, with a streak bonus.
+- **Badges:** achievements (BADGES) unlock as you play, from your first win to big combos and finishes.
 - **Levels** are generated from a seed, so each level number always plays the same way. Difficulty, speed and length grow over time, and the color theme changes every level.
+
+**Test links:** add `?reset` to the URL to wipe progress and start fresh, or `?level=N` to jump straight to level N.
+
+## 📜 Credits
+
+Third-party libraries, fonts and the original-character notice are listed in **[`CREDITS.md`](CREDITS.md)**.
 
 ---
 
@@ -71,6 +82,15 @@ src/config.js       ALL tuning numbers
 src/ui.js           menus, HUD, shop
 src/fx.js           particles + floating meme text
 src/audio.js        synthesized sound effects
+src/bosses.js       the 8 boss meshes (built from code)
+src/finale.js       bonus stairs after the boss (x1 to x10)
+src/trail.js        slime trail behind the character
+src/quality.js      lowers render cost on slow phones
+src/haptics.js      vibration feedback
+src/daily.js        daily reward and streak
+src/tutorial.js     first-run "DRAG" hint
+src/achievements.js BADGES and their unlock rules
+src/icons.js        inline SVG icons
 src/skins.js        skins (data + materials)
 src/themes.js       level color themes (data)
 src/memes.js        meme text pack (data)
