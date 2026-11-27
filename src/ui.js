@@ -80,11 +80,13 @@ export class UI {
         <div class="menu-secondary">
           <button class="btn btn-shop btn-md">SKINS</button>
           <button class="btn btn-md btn-badges">BADGES</button>
+          <button class="btn btn-md btn-records">BEST RUNS</button>
         </div>
       </div>`);
     this._on(el, '.btn-play', () => this._call('onPlay'));
     this._on(el, '.btn-shop', () => this._call('onOpenShop'));
     this._on(el, '.btn-badges', () => this._call('onOpenBadges'));
+    this._on(el, '.btn-records', () => this._call('onOpenRecords'));
     this._on(el, '.btn-daily', () => this._call('onClaimDaily'));
     const snd = this._on(el, '.btn-sound', () => {
       this.sound = !this.sound;
@@ -138,7 +140,7 @@ export class UI {
   }
 
   // ---------- win ----------
-  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1 } = {}) {
+  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null } = {}) {
     const el = this._mount('panel-layer result win', `
       <div class="card card-win">
         <div class="res-head">LEVEL ${level}</div>
@@ -148,6 +150,7 @@ export class UI {
           <div class="mult-tag">x${multiplier}</div>
         </div>
         ${gemsEarned > 0 ? `<div class="earn-gems"><span class="chip-ico">${I.gem()}</span><b class="count" data-k="gems">0</b></div>` : ''}
+        ${bestRank !== null ? `<div class="record-highlight">NEW BEST #${bestRank}</div>` : ''}
         <button class="btn btn-next">NEXT</button>
       </div>`);
     this._on(el, '.btn-next', () => this._call('onNext'));
@@ -236,6 +239,26 @@ export class UI {
         <div class="skin-grid badge-grid">${cards}</div>
       </div>`);
     this._on(el, '.btn-close', () => this._call('onCloseBadges'));
+  }
+
+  showRecords(runs) {
+    const rows = runs.map((run, index) => {
+      const date = new Date(run.date).toISOString().slice(0, 10);
+      return `<li class="badge-card record-row">
+        <div class="badge-name">#${index + 1} · LV ${run.level}</div>
+        <div>${fmt(run.coinsEarned)} coins · x${run.multiplier}</div>
+        <time datetime="${date}">${date}</time>
+      </li>`;
+    }).join('');
+    const el = this._mount('panel-layer shop', `
+      <div class="card card-shop">
+        <button class="btn btn-close" aria-label="Close best runs">${I.closeX()}</button>
+        <div class="shop-head"><span class="shop-title">BEST RUNS</span></div>
+        ${rows
+          ? `<ol class="skin-grid record-list" role="list">${rows}</ol>`
+          : '<div class="badge-card">Win a level to record your first run.</div>'}
+      </div>`);
+    this._on(el, '.btn-close', () => this._call('onCloseRecords'));
   }
 
   // ---------- misc ----------

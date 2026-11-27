@@ -12,6 +12,7 @@ import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave, resetSave } from './save.js';
 import { claim } from './daily.js';
 import { BADGES, track } from './achievements.js';
+import { addRun, topRuns } from './records.js';
 import { pickMeme } from './memes.js';
 import { Finale } from './finale.js';
 import { AutoQuality } from './quality.js';
@@ -85,6 +86,8 @@ const ui = new UI(document.getElementById('ui'), {
   onCloseShop: () => { audio.play('click'); showMenu(); },
   onOpenBadges: () => { audio.play('click'); ui.showBadges(save, BADGES); },
   onCloseBadges: () => { audio.play('click'); showMenu(); },
+  onOpenRecords: () => { audio.play('click'); ui.showRecords(topRuns(save)); },
+  onCloseRecords: () => { audio.play('click'); showMenu(); },
   onClaimDaily: () => {
     const { coins, gems } = claim(save);
     if (coins) {
@@ -174,7 +177,8 @@ function finishRun(won) {
     const mult = Math.min(CONFIG.maxMultiplier, finaleMult);
     const coinsEarned = (runCoins + CONFIG.winBaseCoins + save.level * CONFIG.winCoinsPerLevel) * mult;
     const gemsEarned = runGems + (save.level % CONFIG.gemEveryNLevels === 0 ? 2 : 0);
-    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult };
+    const bestRank = addRun(save, { level: save.level, coinsEarned, multiplier: mult, date: new Date().toISOString() });
+    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank };
     save.coins += coinsEarned;
     save.gems += gemsEarned;
     save.level += 1;

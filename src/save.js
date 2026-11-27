@@ -15,6 +15,7 @@ export const DEFAULT_SAVE = {
   achievements: {},
   stats: {},
   tutorialDone: false,
+  records: [],
 };
 
 function freshDefaults() {
@@ -37,6 +38,8 @@ export function loadSave() {
       const value = parsed[key];
       if (key === 'stats' || key === 'achievements') {
         if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
+      } else if (key === 'records') {
+        if (Array.isArray(value)) base.records = value.slice();
       } else {
         base[key] = Array.isArray(value) ? value.slice() : value;
       }

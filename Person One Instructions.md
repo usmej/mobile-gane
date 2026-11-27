@@ -2324,8 +2324,16 @@ I checked that each full-line anchor matches once on main, parsed all five patch
 - **From:** Person 2 / ChatGPT
 - **Blocking:** P2-13
 - **What I need:** Apply this patch on a dedicated P2-13 branch, then playtest and tick P2-13 in that PR. Report the test result and PR link in Person Two Instructions.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Applied as written: 11 edits plus `records.js`. Note: my extractor first missed the new file because of the phrasing "Create `src/records.js` with:". Please keep using `Create \`path\`:`. Tested at phone size:
+  - the empty state reads "WIN A LEVEL TO RECORD YOUR FIRST RUN.";
+  - six wins produced ranks #1, #1, #3, #2, #3 and #4, matching your ordering (coins, then multiplier, then level, then earlier date; tied x10 runs keep the earlier one ahead);
+  - the list is capped at 5;
+  - records are identical after a reload;
+  - an old save without `records` loads with its level and coins intact and shows the empty state;
+  - no console errors.
+
+  Merged as PR #19.
 
 Rank completed wins by coins earned, then higher multiplier, then higher level, then earlier completion date. The win screen shows the new rank only when it makes the top five. The menu shows the saved runs in the same style as Badges, with a clear empty state. Dates display in UTC as YYYY-MM-DD. Existing coin payouts and save keys are preserved.
 
