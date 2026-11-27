@@ -49,16 +49,15 @@ export class BossFight {
     root.className = 'bf-root';
     root.innerHTML = `
       <div class="bf-bar">
-        <div class="bf-title">TAP THE WEAK SPOTS!</div>
+        <div class="bf-head"><div class="bf-title">TAP THE WEAK SPOTS!</div><div class="bf-count" aria-label="seconds left"></div></div>
         <div class="bf-hp"><div class="bf-hp-fill"></div></div>
-        <div class="bf-time"><div class="bf-time-fill"></div></div>
       </div>`;
     this.overlay.appendChild(root);
     this.root = root;
     this.titleEl = root.querySelector('.bf-title');
     this.hpEl = root.querySelector('.bf-hp');
     this.hpFill = root.querySelector('.bf-hp-fill');
-    this.timeFill = root.querySelector('.bf-time-fill');
+    this.countEl = root.querySelector('.bf-count');   // countdown number replaces the old unlabeled time bar
 
     this.spots = [];
     for (let i = 0; i < Math.max(1, C.spotsAtOnce); i++) this._spawn();
@@ -178,6 +177,7 @@ export class BossFight {
     this.titleEl.classList.toggle('bf-good', won);
     this.titleEl.classList.toggle('bf-bad', !won);
     this.root.classList.add('bf-done');
+    this.countEl.textContent = '';
     const total = this.cfg.fightHp;
     this.result = won
       ? { won: true, hitRatio: Math.max(0, Math.min(1, this.dealt / total)), perfect: this.fightHp <= 0 }
@@ -199,7 +199,8 @@ export class BossFight {
       return;
     }
     this.time += dt;
-    this.timeFill.style.transform = `scaleX(${Math.max(0, 1 - this.time / this.total).toFixed(3)})`;
+    const left = Math.max(0, Math.ceil(this.total - this.time));
+    if (this.countEl.textContent !== String(left)) this.countEl.textContent = String(left);
     this.hpFill.style.transform = `scaleX(${(this.fightHp / this.cfg.fightHp).toFixed(3)})`;
     for (const s of this.spots) {
       s.age += dt;

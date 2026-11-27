@@ -14,8 +14,8 @@ export const CONFIG = {
   // Blob
   startMass: 10,
   minScale: 0.55,
-  scalePerCbrt: 0.22,       // scale = minScale + cbrt(mass) * scalePerCbrt
-  maxScale: 2.4,
+  scalePerCbrt: 0.17,       // scale = minScale + cbrt(mass) * scalePerCbrt (still proportional to mass)
+  maxScale: 1.9,            // capped so a huge character never blocks the view of what's coming
 
   // Levels
   levelLengthBase: 230,
@@ -73,6 +73,7 @@ export const CONFIG = {
     height: 0.7,
     depth: 1.1,
     damageRatio: 0.24,
+    coachLeadSeconds: 0.45, // first-ever barrier: show JUMP NOW! this long before reaching it
   },
 
   // Swinging hammer
@@ -137,6 +138,7 @@ export const CONFIG = {
     loseDuration: 2.2,       // how long the hopeless fight lasts when too small
     minSpotPx: 64,
   },
+  intro: { leadSeconds: 1.2 },  // pause this many seconds of travel before a first-time item
 };
 
 export function massToScale(mass) {

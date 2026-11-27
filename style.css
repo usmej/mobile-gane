@@ -395,3 +395,41 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .bf-spot-core, .bf-spot-core.bf-pop, .bf-shake { animation: none; }
 }
+
+/* ---------- first-encounter intro card ---------- */
+.intro-back {
+  position: absolute; inset: 0; z-index: 30; pointer-events: auto;
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--sat) + var(--gutter)) var(--gutter) calc(var(--sab) + var(--gutter));
+  background: rgba(27, 20, 32, .55);
+}
+.intro-card {
+  width: min(100%, 340px); padding: 20px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  background: var(--cream); border: 4px solid var(--ink); border-radius: 20px;
+  box-shadow: var(--drop); color: var(--ink);
+  animation: intro-pop 260ms cubic-bezier(.2, .9, .3, 1.2) both;
+}
+@keyframes intro-pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.intro-icon { font-size: 72px; line-height: 1; }
+.intro-new {
+  font-family: var(--font); font-size: 12px; letter-spacing: .04em;
+  background: var(--red); color: var(--cream); border: 3px solid var(--ink); border-radius: 6px; padding: 4px 8px;
+}
+.intro-title { margin: 0; font-family: var(--font); font-weight: 400; font-size: 28px; line-height: 1.1; text-transform: uppercase; }
+.intro-how { margin: 0; font-family: var(--body); font-weight: 600; font-size: 20px; line-height: 1.25; }
+.intro-btn { margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .intro-card { animation: none; } }
+
+/* boss fight: countdown number instead of an unlabeled time bar */
+.bf-head { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.bf-count {
+  min-width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center;
+  font: 400 20px 'Bungee', 'Arial Black', sans-serif; color: var(--ink);
+  background: var(--yellow); border: 3px solid var(--ink);
+}
+.bf-count:empty { display: none; }
+.bf-time { display: none; }
+.btn-jump.coach { animation: jump-coach .5s ease-in-out infinite alternate; }
+@keyframes jump-coach { from { transform: scale(1); } to { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .btn-jump.coach { animation: none; outline: 4px solid var(--yellow); } }
