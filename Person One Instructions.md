@@ -3367,5 +3367,31 @@ The results screen sets state to result before offering Retry. The existing star
 
 ---
 
+### REQ-031 — Clear the drag tutorial when the boss starts
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-008
+- **What I need:** Apply this in its own PR and confirm that the drag tip disappears when a level 1 run enters the boss approach with the tutorial still visible.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/main.js`, find exactly:
+
+```js
+    if (state === 'playing' && player.d >= level.length) {
+      state = 'boss';
+```
+
+Replace with:
+
+```js
+    if (state === 'playing' && player.d >= level.length) {
+      state = 'boss';
+      tutorial.stop();
+```
+
+The tutorial updates only while playing. Stop it at the transition to clear its UI without marking the tutorial as completed. Check a retry and a replay with the tutorial already completed.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
