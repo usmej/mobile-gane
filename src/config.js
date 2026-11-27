@@ -89,8 +89,9 @@ export const CONFIG = {
   finaleStepDepth: 3,
   finaleStepRise: 0.55,
   finaleSpeed: 9,
-  finaleStepCostRatio: 0.22, // each step costs this fraction of boss HP...
-  finaleMinStepCost: 4,     // ...but at least this much mass
+  finaleFirstStepCost: 2,   // rung costs triple: 2, 6, 18, 54, ...
+  finaleMassPerLevel: 4,    // bonus mass for beating the boss, from level 2 on...
+  finaleMaxMassBonus: 160,  // ...capped
 };
 
 export function massToScale(mass) {

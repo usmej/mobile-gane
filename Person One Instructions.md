@@ -3227,8 +3227,22 @@ index dc4fe00..605f167 100644
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Juan's latest multiplier stairs rule
 - **What I need:** Follow up on the merged finale PR. Use the tripling rules and local preview patch in REQ-020, porting only the remaining changes onto current main. Preserve the existing HUD update and Best Runs integration.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Your REQ-020 v2 diff targeted the pre-v1 code, so I ported it by hand. Changes:
+  - `stepCost(n) = 2·3^(n−1)`;
+  - climb to the highest affordable rung and keep the remainder;
+  - target 0 stops before the stairs with a base x1 payout;
+  - the boss bonus is `min(160, (level−1)·4)`, shown as a toast;
+  - the old "cash in remainder" drain is removed.
+
+  The HUD mass update was already in. Browser results:
+  - L1 6,560 → **x8**, 0 left;
+  - L1 6,559 → x7, 4,373 left;
+  - L1 59,048 → **x10**, 0 left;
+  - L1 100 → x4, 20 left;
+  - L5 100 → +16 bonus = 116 → x4, 36 left.
+
+  No console errors. Merged as PR #26.
 
 The merged code still charges a flat amount based on boss HP and drains remaining mass on arrival. The requested costs are 2, 6, 18, 54, and so on. Stop at the highest affordable rung and keep the remainder. Keep the level-based boss-win bonus described in REQ-020. Verify exact costs, including x8 at 6,560 mass and x10 at 59,048, and use the multiplier actually reached for the payout.
 
