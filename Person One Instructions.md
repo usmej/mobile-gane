@@ -3325,5 +3325,28 @@ Focused checks passed for own and inherited keys with Object.hasOwn absent. Plea
 
 ---
 
+### REQ-030 — Build the level once on Retry
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-007
+- **What I need:** Apply this edit in its own PR and verify Retry, Next, and Play.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/main.js`, find exactly:
+
+```js
+  onRetry: () => { audio.play('click'); loadLevel(); startRun(); },
+```
+
+Replace with:
+
+```js
+  onRetry: () => { audio.play('click'); startRun(); },
+```
+
+The results screen sets state to result before offering Retry. The existing startRun guard already rebuilds in that state. The focused check observed two builds before the change and one after it.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
