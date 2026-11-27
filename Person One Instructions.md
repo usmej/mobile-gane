@@ -3397,8 +3397,23 @@ The tutorial updates only while playing. Stop it at the transition to clear its 
 - **From:** Person 2 / ChatGPT
 - **Blocking:** REQ-026, Phase A
 - **What I need:** Apply and playtest this patch separately. Check the HUD is compatible with the current UI pass before merging.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:**
+  - **How I applied it:** the `config.js` and `levels.js` hunks applied with `patch -F3` (the markdown copy had lost blank context lines). The `ui.js` hunks targeted the pre-redesign HUD, so I wired `worldLabel(save.level)` through the new `ui.updateHUD({ worldLabel })` hook instead. Same result.
+  - **Node, L1–60:**
+    - L1–3 are byte-identical;
+    - boss HP climbs smoothly (24 → 631 by L30) with **0 big drops**, where main had 9 in L1–30;
+    - lengths are 244 / 300 / 405 / 615 / 1035 / 1400 for L1 / 5 / 10 / 20 / 40 / 60;
+    - every level is winnable with good play, and there is no NaN;
+    - the recovery gate appears on 32 of L1–300.
+  - **Browser:**
+    - **early world:** L2 shows "1-2", WIN;
+    - **recovery gate:** L5, `+9 | ÷2` took 74 to 83 against HP 82, then WIN;
+    - **late world:** L40 shows "8-5", length 1035, HP 1128, WIN;
+    - **natural-speed autopilot:** L6 WIN (174 against 88). L12 LOSS, but the autopilot smashes walls instead of dodging and ignores pads.
+  - **The L12 trace exposed BUG-012:** 4 of the last 5 gates are double-red. Logged in CHAT.
+
+  No console errors. Merged as PR #30.
 
 Groups of five levels, world labels in the HUD, longer later tracks up to 1,400 units, and modest per-world addition bonuses. Levels 1–3 are byte-identical. From level 4, deterministic samples use the actual gate math and combo bonus. A bounded HP band limits seed-to-seed swings. For a low-mass layout, the strong route's double-subtraction losses are capped, and a final recovery gate is added only when the planned HP exceeds the strong gate route. These are gate-only estimates. Browser playtesting still needs to account for hazards, pickups and player steering. The HP band can make some seeds easier when gate outcomes are unusually generous.
 

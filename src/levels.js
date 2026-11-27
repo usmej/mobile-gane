@@ -36,7 +36,9 @@ function goodGate(rng, level, mass) {
     return { op: 'x', value };
   }
   const extra = Math.min(12, Math.max(0, level - 1));
-  return { op: '+', value: rng.int(3, 8 + level + extra) + Math.floor(mass * 0.15) };
+  const worldBonus = Math.min(CONFIG.maxGateWorldBonus,
+    Math.floor((level - 1) / CONFIG.levelsPerWorld) * CONFIG.gateAddPerWorld);
+  return { op: '+', value: rng.int(3, 8 + level + extra) + Math.floor(mass * 0.15) + worldBonus };
 }
 function badGate(rng, level, mass) {
   const roll = rng();
@@ -59,10 +61,42 @@ function badGate(rng, level, mass) {
  *  { type:'pad',    d, x }
  *  { type:'wall',  d, x, width, value }
  */
+export function worldLabel(level) {
+  const index = Math.max(0, level - 1);
+  return 'WORLD ' + (Math.floor(index / CONFIG.levelsPerWorld) + 1) + '-' + (index % CONFIG.levelsPerWorld + 1);
+}
+
+function sampleGateRoutes(items, level, onStrongGate) {
+  const gates = items.filter((item) => item.type === 'gate').sort((a, b) => a.d - b.d);
+  const rng = makeRng(level + 39521);
+  const survivors = [];
+  let strong = 0;
+  for (let route = 0; route <= CONFIG.routeBalance.samples; route++) {
+    let mass = CONFIG.startMass, combo = 0;
+    for (const gate of gates) {
+      if (route === 0 && onStrongGate) onStrongGate(gate, mass);
+      const options = [gate.left, gate.right].map(({ op, value }) => {
+        const streak = isGoodOp(op) ? combo + 1 : 0;
+        return { streak, mass: applyOp(mass, op, value) + (streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
+      }).sort((a, b) => a.mass - b.mass);
+      const next = options[route === 0 || rng() < CONFIG.routeBalance.preferStrongGate ? 1 : 0];
+      mass = next.mass;
+      combo = next.streak;
+      if (mass <= 0) break;
+    }
+    if (route === 0) strong = Math.max(0, mass);
+    else if (mass > 0) survivors.push(mass);
+  }
+  survivors.sort((a, b) => a - b);
+  return { typical: survivors[Math.floor(survivors.length / 2)] ?? 0, strong };
+}
+
 export function generateLevel(level) {
   const rng = makeRng(level * 9973 + 17);
   const theme = themeForLevel(level);
-  const length = Math.min(CONFIG.levelLengthMax, CONFIG.levelLengthBase + level * CONFIG.levelLengthPerLevel);
+  const world = Math.ceil(level / CONFIG.levelsPerWorld);
+  const length = Math.min(CONFIG.levelLengthMax,
+    CONFIG.levelLengthBase + level * CONFIG.levelLengthPerLevel + (world - 1) * CONFIG.lengthBonusPerWorld);
   const W = CONFIG.trackHalfWidth - 0.6;
   const items = [];
 
@@ -155,7 +189,31 @@ export function generateLevel(level) {
     items.push({ type: 'magnet', d: coin ? coin.d - lead : CONFIG.firstItemAt - lead, x: coin ? coin.x : 0 });
   }
 
-  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+  let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+  const balance = CONFIG.routeBalance;
+  if (level >= balance.firstLevel) {
+    const { typical, strong } = sampleGateRoutes(items, level, (gate, mass) => {
+      const cap = Math.floor(mass * CONFIG.doubleBad.maxLossRatio);
+      if (gate.doubleBad && gate.left.op === '-' && gate.right.op === '-') {
+        gate.left.value = Math.min(cap, gate.left.value);
+        gate.right.value = Math.min(cap, gate.right.value);
+      }
+    });
+    const offset = level - balance.firstLevel;
+    const floor = Math.min(balance.maxHpFloor, Math.round(
+      balance.firstBossHp + offset * balance.hpPerLevel + offset ** 2 * balance.hpCurve
+    ));
+    const target = Math.round(typical + Math.max(0, strong - typical) * balance.strongRouteWeight);
+    const ceiling = Math.floor(floor * balance.hpBand);
+    bossHp = Math.max(floor, Math.min(ceiling, target, strong));
+    if (strong < bossHp) {
+      items.push({
+        type: 'gate', d: length - balance.recoveryGateGap,
+        left: { op: '+', value: bossHp - strong + balance.recoveryMassMargin },
+        right: { op: '÷', value: 2 },
+      });
+    }
+  }
   return {
     level,
     theme,
