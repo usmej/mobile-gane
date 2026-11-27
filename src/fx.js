@@ -117,7 +117,7 @@ export class FX {
       el,
       anchor: typeof position === 'function' ? position : position.clone(),
       age: 0,
-      rot: (this._tilt = -(this._tilt || 4)), // alternate -4 / +4, not random
+      rot: -3, // fixed subtle tilt
       x: -9999,
       y: -9999,
       visible: false,

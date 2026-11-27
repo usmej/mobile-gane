@@ -65,22 +65,24 @@ export class UI {
     this.sound = save.sound !== false;
     const el = this._mount('panel-layer menu', `
       <div class="menu-top">${this._currencyBar(save)}
-        <button class="btn btn-sq btn-sound" aria-label="Toggle sound">${this.sound ? I.speakerOn() : I.speakerOff()}</button>
+        <div class="top-stack">
+          <button class="btn btn-sq btn-round btn-sound" aria-label="Toggle sound">${this.sound ? I.speakerOn() : I.speakerOff()}</button>
+          ${canClaim(save) ? `<button type="button" class="btn btn-sq btn-round btn-daily" aria-label="Daily reward">${I.gift()}<i class="notif-dot"></i></button>` : ''}
+        </div>
       </div>
       <div class="menu-mid">
         <h1 class="title" aria-label="Mass Dash">
-          <span class="t-line t1">${[...'MASS'].map((c, i) => `<i style="--r:${[2, -3, 1, -2][i]}deg">${c}</i>`).join('')}</span>
-          <span class="t-line t2"><span class="speed-wrap"><svg class="speed" viewBox="0 0 40 30" width="40" height="30" aria-hidden="true" stroke="#1B1420" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5h24" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M12 5h24" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M4 15h28" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M4 15h28" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M14 25h20" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M14 25h20" fill="none" stroke-width="3" stroke="#FFF4E0"/></svg></span>${[...'DASH'].map((c, i) => `<i style="--r:${[-2, 3, -1, 2][i]}deg">${c}</i>`).join('')}</span>
+          <span class="t-line t1">${[...'MASS'].map((c) => `<i>${c}</i>`).join('')}</span>
+          <span class="t-line t2"><span class="speed-wrap"><svg class="speed" viewBox="0 0 40 30" width="40" height="30" aria-hidden="true" stroke="#1B1420" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5h24" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M12 5h24" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M4 15h28" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M4 15h28" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M14 25h20" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M14 25h20" fill="none" stroke-width="3" stroke="#FFF4E0"/></svg></span>${[...'DASH'].map((c) => `<i>${c}</i>`).join('')}</span>
         </h1>
-        <div class="level-tag">LV ${save.level}</div>
+        <div class="level-tag">Level ${save.level}</div>
       </div>
       <div class="menu-bottom">
-        ${canClaim(save) ? '<button type="button" class="btn btn-md btn-daily"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false" stroke="#1B1420" stroke-width="3" stroke-linejoin="round"><path d="M3 10a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v9H3z" fill="#FFD23F"/><path d="M3 10h18"/><path d="M10 9h4v5h-4z" fill="#FFF4E0"/></svg> Daily reward</button>' : ''}
         <button class="btn btn-play">PLAY</button>
         <div class="menu-secondary">
-          <button class="btn btn-shop btn-md">SKINS</button>
-          <button class="btn btn-md btn-badges">BADGES</button>
-          <button class="btn btn-md btn-records">BEST RUNS</button>
+          <button class="btn btn-tile btn-shop"><span class="tile-ico">${I.skin()}</span><span class="tile-label">Skins</span></button>
+          <button class="btn btn-tile btn-badges"><span class="tile-ico">${I.medal()}</span><span class="tile-label">Badges</span></button>
+          <button class="btn btn-tile btn-records"><span class="tile-ico">${I.trophy()}</span><span class="tile-label">Best runs</span></button>
         </div>
       </div>`);
     this._on(el, '.btn-play', () => this._call('onPlay'));
@@ -99,31 +101,50 @@ export class UI {
   showHUD(save, showDragHint = true) {
     const el = this._mount('hud', `
       <div class="hud-top">
-        <div class="chip chip-coin hud-coins"><span class="chip-ico">${I.coin()}</span><b data-k="coins">0</b></div>
-        <div class="hud-mid">
-          <div class="level-tag hud-level">LV <b data-k="level">${save.level}</b></div>
-          <div class="prog"><div class="prog-fill" data-k="fill"></div><span class="prog-boss">${I.bossFace()}</span></div>
+        <div class="prog">
+          <span class="prog-lv"><b data-k="level">${save.level}</b></span>
+          <div class="prog-bar"><div class="prog-fill" data-k="fill"></div></div>
+          <span class="prog-boss">${I.bossFace()}</span>
         </div>
-        <div class="chip chip-gem hud-gems" data-k="gemchip"><span class="chip-ico">${I.gem()}</span><b data-k="gems">0</b></div>
+        <div class="hud-cur">
+          <div class="chip chip-coin hud-coins"><span class="chip-ico">${I.coin()}</span><b data-k="coins">0</b></div>
+          <div class="chip chip-gem hud-gems" data-k="gemchip"><span class="chip-ico">${I.gem()}</span><b data-k="gems">0</b></div>
+        </div>
       </div>
-      ${showDragHint ? `<div class="hint">${I.hand()}${I.arrows()}<span>DRAG</span></div>` : ''}`);
+      ${showDragHint ? `<div class="hint"><div class="hint-row">${I.hand()}${I.arrows()}</div><span>Drag</span></div>` : ''}
+      <button type="button" class="btn-jump" aria-label="Jump" hidden>JUMP</button>`);
     const q = (k) => el.querySelector(`[data-k="${k}"]`);
     this.hud = {
       level: q('level'), coins: q('coins'), gems: q('gems'), gemchip: q('gemchip'), fill: q('fill'),
       hint: el.querySelector('.hint'),
-      last: { level: null, coins: null, gems: null, progress: -1 },
+      jump: el.querySelector('.btn-jump'),
+      lv: el.querySelector('.prog-lv'),
+      last: { level: null, coins: null, gems: null, progress: -1, worldLabel: null },
     };
+    // Jump button: its touch must never become the steering finger (see main.js pointers).
+    const jb = this.hud.jump;
+    jb.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); this._call('onJump'); });
+    // Keyboard activation (Enter/Space on the focused button) fires click with detail 0; touches already fired on pointerdown.
+    jb.addEventListener('click', (e) => { if (e.detail === 0) this._call('onJump'); });
     this.hud.gemchip.style.display = 'none';
     if (this.hud.hint) {
       this.hintTimer = setTimeout(() => this.hud?.hint?.classList.add('hide'), 2500);
     }
   }
 
-  updateHUD({ level, mass, coins, gems, progress } = {}) {
+  updateHUD({ level, mass, coins, gems, progress, worldLabel } = {}) {
     const h = this.hud;
     if (!h) return;
     const l = h.last;
-    if (level !== undefined && level !== l.level) { l.level = level; h.level.textContent = level; }
+    if (worldLabel !== undefined && worldLabel !== l.worldLabel) {
+      // e.g. "WORLD 2-3": shown as "2-3" in the level circle, full text for screen readers
+      l.worldLabel = worldLabel;
+      const short = String(worldLabel).replace(/^WORLD\s*/i, '');
+      h.level.textContent = short; l.level = short;
+      h.lv.classList.toggle('wide', short.length > 2);
+      h.lv.setAttribute('aria-label', String(worldLabel));
+    }
+    if (level !== undefined && l.worldLabel === null && level !== l.level) { l.level = level; h.level.textContent = level; }
     if (coins !== undefined && coins !== l.coins) {
       if (l.coins !== null) { h.coins.parentNode.classList.remove('bump'); void h.coins.parentNode.offsetWidth; h.coins.parentNode.classList.add('bump'); }
       l.coins = coins; h.coins.textContent = fmt(coins);
@@ -141,18 +162,20 @@ export class UI {
 
   // ---------- win ----------
   showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null, winner = 'YOU' } = {}) {
-    const ord = (n) => n === 1 ? 'YOUR BEST RUN EVER' : `${n}${n === 2 ? 'ND' : n === 3 ? 'RD' : 'TH'} BEST RUN EVER`;
+    const verb = String(winner).trim().toUpperCase() === 'YOU' ? 'CLEAR' : 'CLEARS';
+    const sticker = bestRank === null ? '' : `<div class="sticker">${bestRank === 1 ? 'NEW BEST!' : `#${esc(bestRank)} BEST RUN`}</div>`;
     const el = this._mount('panel-layer result win', `
       <div class="card card-win">
-        <div class="res-head">LEVEL ${level}</div>
-        <div class="winner">${esc(winner)} WINS</div>
-        <div class="meme meme-win">${esc(pickMeme('win'))}</div>
+        ${sticker}
+        <h2 class="res-title">${esc(winner)} ${verb} LEVEL ${esc(level)}!</h2>
+        <p class="res-sub">${esc(pickMeme('win'))}</p>
         <div class="earn-row">
-          <div class="earn-coins"><span class="chip-ico big">${I.coin()}</span><b class="count" data-k="coins">0</b></div>
-          <div class="mult-tag">x${multiplier}</div>
+          <div class="earn-main">
+            <div class="earn-coins"><span class="earn-ico">${I.coin()}</span><b class="count" data-k="coins">0</b></div>
+            <div class="mult-tag">\u00d7${multiplier}</div>
+          </div>
+          ${gemsEarned > 0 ? `<div class="earn-gems"><span class="earn-ico">${I.gem()}</span><b class="count" data-k="gems">0</b></div>` : ''}
         </div>
-        ${gemsEarned > 0 ? `<div class="earn-gems"><span class="chip-ico">${I.gem()}</span><b class="count" data-k="gems">0</b></div>` : ''}
-        ${bestRank !== null ? `<div class="record-highlight">${ord(bestRank)}</div>` : ''}
         <button class="btn btn-next">NEXT</button>
       </div>`);
     this._on(el, '.btn-next', () => this._call('onNext'));
@@ -171,16 +194,25 @@ export class UI {
   }
 
   // ---------- lose ----------
-  showLose({ level, reason = '' } = {}) {
+  showLose({ level, reason = '', progress } = {}) {
+    const sentence = (str) => {
+      const t = String(str).trim();
+      return t && t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t;
+    };
+    const hasProg = progress !== undefined && progress !== null && Number.isFinite(Number(progress));
+    const pc = hasProg ? Math.round(Math.max(0, Math.min(1, Number(progress))) * 100) : 0;
+    const hasMenu = !!(this.h && typeof this.h.onMenu === 'function');
     const el = this._mount('panel-layer result lose', `
       <div class="card card-lose">
-        <div class="res-head">LEVEL ${level}</div>
-        <div class="stamp">FAILED</div>
-        <div class="meme meme-lose">${esc(pickMeme('lose'))}</div>
-        ${reason ? `<div class="reason">${esc(reason)}</div>` : ''}
+        <div class="res-level">Level ${esc(level)}</div>
+        <h2 class="res-title res-reason">${esc(sentence(reason) || 'Not this time!')}</h2>
+        <p class="res-sub">${esc(pickMeme('lose'))}</p>
+        ${hasProg ? `<div class="lose-prog"><span>You made it ${pc}% of the way</span><div class="bar"><i style="width:${pc}%"></i></div></div>` : ''}
         <button class="btn btn-retry">RETRY</button>
+        ${hasMenu ? '<button class="btn-link btn-menu">Menu</button>' : ''}
       </div>`);
     this._on(el, '.btn-retry', () => this._call('onRetry'));
+    this._on(el, '.btn-menu', () => this._call('onMenu'));
   }
 
   // ---------- shop ----------
@@ -195,13 +227,13 @@ export class UI {
       const can = eligible && have >= s.price;
       const ico = gem ? I.gem() : I.coin();
       let btn;
-      if (equipped) btn = `<button class="btn btn-sm btn-equipped" disabled>EQUIPPED</button>`;
-      else if (isOwned) btn = `<button class="btn btn-sm btn-equip" data-act="equip" data-id="${esc(s.id)}">EQUIP</button>`;
-      else if (!eligible) btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>BEAT LV ${s.unlockLevel}</span></button>`;
+      if (equipped) btn = `<button class="btn btn-sm btn-equipped" disabled>Equipped</button>`;
+      else if (isOwned) btn = `<button class="btn btn-sm btn-equip" data-act="equip" data-id="${esc(s.id)}">Equip</button>`;
+      else if (!eligible) btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>Beat level ${s.unlockLevel}</span></button>`;
       else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
-      else btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>NEED ${fmt(s.price)}</span></button>`;
+      else btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>Need ${fmt(s.price)}</span></button>`;
       return `<div class="skin-card${equipped ? ' is-eq' : ''}${!isOwned && !can ? ' is-locked' : ''}">
-        ${equipped ? '<span class="on-tag">ON</span>' : ''}
+        ${equipped ? `<span class="eq-check" aria-label="Equipped">${I.check()}</span>` : ''}
         <div class="swatch" style="background:${skinSwatchCSS(s)}"><i class="spec"></i></div>
         <div class="skin-name">${esc(s.name)}</div>
         ${btn}
@@ -212,7 +244,7 @@ export class UI {
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
         <button class="btn btn-close" aria-label="Close">${I.closeX()}</button>
-        <div class="shop-head"><span class="shop-title">SKINS</span></div>
+        <h2 class="panel-title">Skins</h2>
         ${this._currencyBar(save)}
         <div class="skin-grid">${cards}</div>
         
@@ -233,13 +265,13 @@ export class UI {
       return `<div class="badge-card${unlocked ? ' is-unlocked' : ''}">
         <div class="badge-name">${esc(badge.name)}</div>
         <div>${esc(badge.desc)}</div>
-        <span class="badge-status">${unlocked ? 'UNLOCKED' : 'LOCKED'}</span>
+        <span class="badge-status">${unlocked ? 'Unlocked' : 'Locked'}</span>
       </div>`;
     }).join('');
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
         <button class="btn btn-close" aria-label="Close badges">${I.closeX()}</button>
-        <div class="shop-head"><span class="shop-title">BADGES</span></div>
+        <h2 class="panel-title">Badges</h2>
         <div class="skin-grid badge-grid">${cards}</div>
       </div>`);
     this._on(el, '.btn-close', () => this._call('onCloseBadges'));
@@ -257,7 +289,7 @@ export class UI {
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
         <button class="btn btn-close" aria-label="Close best runs">${I.closeX()}</button>
-        <div class="shop-head"><span class="shop-title">BEST RUNS</span></div>
+        <h2 class="panel-title">Best runs</h2>
         ${rows
           ? `<ol class="skin-grid record-list" role="list">${rows}</ol>`
           : '<div class="badge-card">Win a level to record your first run.</div>'}
@@ -268,6 +300,24 @@ export class UI {
   // ---------- misc ----------
   hideAll() {
     this._reset();
+  }
+
+  // Show or hide the on-screen Jump button (bottom-right thumb zone).
+  showJumpButton(visible) {
+    if (this.hud?.jump) this.hud.jump.hidden = !visible;
+  }
+
+  // One-line "NEW!" banner that introduces a mechanic. Auto-hides after ~2 s.
+  cue(text) {
+    clearTimeout(this.cueTimer);
+    this.cueBox?.remove();
+    const c = document.createElement('div');
+    c.className = 'cue';
+    c.innerHTML = `<span class="cue-new">NEW!</span><span class="cue-text"></span>`;
+    c.querySelector('.cue-text').textContent = text;
+    this.root.appendChild(c);
+    this.cueBox = c;
+    this.cueTimer = setTimeout(() => { c.classList.add('out'); setTimeout(() => c.remove(), 300); }, 2000);
   }
 
   toast(text) {
