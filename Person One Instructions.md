@@ -3563,5 +3563,182 @@ Across 500 seeds, every level had a simulated gate route that reached boss HP an
 
 ---
 
+### REQ-033 — Progression Phase B: timed jump barriers
+- **From:** Person 2 / ChatGPT
+- **Blocking:** REQ-023, Phase B timed jump introduction
+- **What I need:** Apply after Phase A or independently if preferred. This first Phase B slice adds the World 2 mechanic. Please browser-test before layering in later mechanics.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+World 2 introduces a striped full-width barrier. Jump using touch or Space to clear it. A missed jump costs 24% of current mass, rounded up. Manual jumps reuse the pad arc and leave the pad badge to automatic launches. Placement keeps barriers away from existing hazards, pickups and the final 45 units. The patch leaves boss thresholds unchanged. Rebase the append point in levels.js before any final recovery gate if Phase A lands first.
+
+Simulation checked 500 levels and 1,470 barriers for deterministic placement, separation, and room to reach the arc peak. Levels 1–5 are identical. Browser-check a clear and a miss on level 6, holding steer with one finger while tapping Jump, Space and focused button activation, automatic pads and the badge, Retry, and the boss transition. Determine whether the visual cue gives enough warning at maximum speed.
+
+```diff
+--- a/src/config.js
++++ b/src/config.js
+@@ -40,6 +40,17 @@
+     peak: 3,
+     clearance: 0.5,
+     landingSquash: -0.45,
++  },
++
++  timedJump: {
++    firstLevel: 6,
++    firstDistance: 16,
++    endBuffer: 45,
++    obstacleBuffer: 9,
++    interval: 95,
++    height: 0.7,
++    depth: 1.1,
++    damageRatio: 0.24,
+   },
+ 
+   // Swinging hammer
+--- a/src/levels.js
++++ b/src/levels.js
+@@ -155,6 +155,18 @@
+     items.push({ type: 'magnet', d: coin ? coin.d - lead : CONFIG.firstItemAt - lead, x: coin ? coin.x : 0 });
+   }
+ 
++  const jump = CONFIG.timedJump;
++  if (level >= jump.firstLevel) {
++    const count = Math.min(3, 1 + Math.floor((level - jump.firstLevel) / 5));
++    let placed = 0;
++    for (let pos = jump.firstDistance; pos <= length - jump.endBuffer && placed < count; pos++) {
++      if (items.some(item => Math.abs(item.d - pos) < jump.obstacleBuffer)) continue;
++      items.push({ type: 'barrier', d: pos });
++      placed++;
++      pos += jump.interval - 1;
++    }
++  }
++
+   const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
+   return {
+     level,
+--- a/src/entities.js
++++ b/src/entities.js
+@@ -60,6 +60,22 @@
+         case 'gate': e.obj = this.makeGatePair(it, z, W); break;
+         case 'magnet': e.obj = this.makeMagnet(it.x, z); break;
+         case 'pad': e.obj = this.makeJumpPad(it.x, z); break;
++        case 'barrier': {
++          const { height, depth } = CONFIG.timedJump;
++          const group = new THREE.Group();
++          const rail = new THREE.Mesh(new THREE.BoxGeometry(W * 2, height, depth),
++            new THREE.MeshStandardMaterial({ color: '#D9603F', roughness: 0.85 }));
++          rail.position.y = height / 2;
++          rail.castShadow = true;
++          group.add(rail);
++          const stripe = new THREE.Mesh(new THREE.BoxGeometry(W * 2, height * 0.28, depth * 1.01),
++            new THREE.MeshStandardMaterial({ color: '#FFF4E0' }));
++          stripe.position.y = height * 0.8;
++          group.add(stripe);
++          group.position.z = z;
++          e.obj = group;
++          break;
++        }
+         case 'coin': {
+           const m = new THREE.Mesh(G.coin, G.coinMat);
+           m.rotation.x = Math.PI / 2;
+@@ -416,7 +432,7 @@
+       if (!e.obj) continue;
+       const near = Math.abs(e.d - pd) < 60;
+       // Used gates/pads stay visible; a wall stays visible unless it was smashed.
+-      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'pad' || (e.type === 'wall' && !e.smashed);
++      e.obj.visible = !e.used || e.type === 'barrier' || e.type === 'gate' || e.type === 'pad' || (e.type === 'wall' && !e.smashed);
+ 
+       if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
+       if (e.type === 'gem' && !e.used) { e.obj.rotation.y = time * 2; e.obj.position.y = 1.1 + Math.sin(time * 3) * 0.2; }
+@@ -506,6 +522,17 @@
+           }
+           break;
+         }
++        case 'barrier': {
++          const front = e.d - CONFIG.timedJump.depth / 2;
++          if (prevD < front && pd >= front) {
++            e.used = true;
++            if (player.y < CONFIG.timedJump.height) {
++              const damage = Math.max(1, Math.ceil(player.mass * CONFIG.timedJump.damageRatio));
++              events.push({ type: 'barrier', damage, pos });
++            }
++          }
++          break;
++        }
+         case 'saw':
+           if (!aboveHazards && e.cooldown <= 0 && dd < r * 0.7 + 0.5 && dx < r * 0.8 + 0.8) {
+             e.cooldown = CONFIG.sawDamageCooldown;
+--- a/src/main.js
++++ b/src/main.js
+@@ -82,6 +82,7 @@
+   onPlay: () => { audio.unlock(); audio.play('click'); startRun(); },
+   onNext: () => { audio.play('click'); loadLevel(); showMenu(); },
+   onRetry: () => { audio.play('click'); startRun(); },
++  onJump: () => startManualJump(),
+   onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, SKINS); },
+   onCloseShop: () => { audio.play('click'); showMenu(); },
+   onOpenBadges: () => { audio.play('click'); ui.showBadges(save, BADGES); },
+@@ -138,6 +139,11 @@
+   ui.showMenu(save);
+ }
+ 
++function startManualJump() {
++  if (state !== 'playing' || save.level < CONFIG.timedJump.firstLevel || jumpElapsed !== null) return;
++  jumpElapsed = 0;
++}
++
+ function startRun() {
+   if (state === 'result') loadLevel();
+   combo = 0;
+@@ -145,6 +151,8 @@
+   state = 'playing';
+   player.label.visible = true;
+   ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
++  ui.showJumpButton(save.level >= CONFIG.timedJump.firstLevel);
++  if (save.level === CONFIG.timedJump.firstLevel) ui.cue('Jump over the striped barriers');
+   if (save.level === 1 && !save.tutorialDone) {
+     firstTutorialGate = level.items.find((item) => item.type === 'gate');
+     tutorial.start();
+@@ -281,6 +289,11 @@
+ });
+ window.addEventListener('keydown', (e) => {
+   if (state !== 'playing') return;
++  if (e.code === 'Space' && save.level >= CONFIG.timedJump.firstLevel && !e.target?.closest?.('button')) {
++    e.preventDefault();
++    if (!e.repeat) startManualJump();
++    return;
++  }
+   if (e.key === 'ArrowLeft' || e.key === 'a') {
+     tutorial.addDrag(-40);
+     player.steer(-40);
+@@ -357,6 +370,7 @@
+       fx.burst(ev.pos, '#b04bff', 18);
+       pop('+1 GEM', ev.pos, C.gem, 'gem', true);
+       break;
++    case 'barrier':
+     case 'saw':
+       runTookHit = true;
+       player.setMass(player.mass - ev.damage);
+@@ -366,7 +380,7 @@
+       fx.shake(0.35);
+       audio.play('hit');
+       haptics.buzz([30, 30, 30]);
+-      if (player.mass <= 0) lose('Sawed in half.');
++      if (player.mass <= 0) lose(ev.type === 'barrier' ? 'Missed the jump.' : 'Sawed in half.');
+       break;
+     case 'wall':
+       runTookHit = true;
+@@ -418,6 +432,7 @@
+     player.d += speed * dt * (state === 'boss' ? 0.75 : 1);
+     if (state === 'playing' && player.d >= level.length) {
+       state = 'boss';
++      ui.showJumpButton(false);
+       tutorial.stop();
+       if (jumpElapsed !== null) {
+         jumpElapsed = null;
+```
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
