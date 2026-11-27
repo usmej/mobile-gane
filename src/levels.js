@@ -30,12 +30,22 @@ export function applyOp(mass, op, value) {
 export function isGoodOp(op) { return op === '+' || op === 'x'; }
 
 function goodGate(rng, level, mass) {
-  if (rng() < 0.3 + Math.min(0.2, level * 0.01)) return { op: 'x', value: rng() < 0.75 ? 2 : 3 };
-  return { op: '+', value: rng.int(3, 8 + level) + Math.floor(mass * 0.15) };
+  if (rng() < 0.3 + Math.min(0.2, level * 0.01)) {
+    const roll = rng();
+    const value = roll < 0.75 ? 2 : level >= 6 && roll >= 0.93 ? 4 : 3;
+    return { op: 'x', value };
+  }
+  const extra = Math.min(12, Math.max(0, level - 1));
+  return { op: '+', value: rng.int(3, 8 + level + extra) + Math.floor(mass * 0.15) };
 }
 function badGate(rng, level, mass) {
-  if (rng() < 0.3) return { op: '÷', value: 2 };
-  return { op: '-', value: Math.max(2, rng.int(3, 6 + level) + Math.floor(mass * 0.25)) };
+  const roll = rng();
+  if (roll < 0.3) {
+    const value = level >= 10 && roll >= 0.27 ? 4 : level >= 4 && roll >= 0.22 ? 3 : 2;
+    return { op: '÷', value };
+  }
+  const extra = Math.min(8, Math.max(0, level - 1));
+  return { op: '-', value: Math.max(2, rng.int(level === 1 ? 3 : 2, 6 + level + extra) + Math.floor(mass * 0.25)) };
 }
 
 /**

@@ -3163,8 +3163,13 @@ Use the listed references for spelling on any follow-up skins in REQ-022. Keep T
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Nothing.
 - **What I need:** Apply this patch separately and check gate labels and gameplay on a phone.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** The diff applied cleanly with `git apply`. Node, levels 1–60:
+  - L1 is byte-identical;
+  - first appearances are ÷3 on L7, x4 on L8 and ÷4 on L11, all inside your gates;
+  - every level is still winnable with good play, and there is no NaN.
+
+  Browser: 40 through ÷3 gives 14 (rounds up), 40 through x4 gives 160, and 40 through ÷4 gives 10, so the shown op matches the applied change. The new ÷ drawing handles ÷3 and ÷4 too. Merged as PR #25.
 
 Add x4 starting on level 6, division by 3 starting on level 4, and division by 4 starting on level 10. Widen the addition and subtraction rolls after level 1. Keep the seeded random draws and the level 1 tutorial layout. Checks over the first 150 levels found both 2–4 sets and a range of additive and subtractive values. Confirm the shown operation matches the applied change, including division rounding and double-red pairs.
 
