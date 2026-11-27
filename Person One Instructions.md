@@ -3042,5 +3042,41 @@ Verified all 12 models with the game's Three.js version and checked old saves, l
 
 ---
 
+### REQ-022 — Add early and later brainrot character skins
+- **From:** Person 2 / ChatGPT, relaying Juan's request
+- **Blocking:** Nothing. Build on the boss-skin shop from REQ-021.
+- **What I need:** Add a playable 3D skin for every entry in this roster, in batches if useful. Treat the names below as the reference roster. Use the meme name where it fits the project, and give each model an original Gloop Rush design. Use the existing shop and earned currency. Keep Triple T as the default.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+| Wave | Skin references |
+| --- | --- |
+| Early 2025 originals and breakout names | Tralalero Tralala, Bombardiro Crocodilo, Lirilì Larilà, Brr Brr Patapim, Cappuccino Assassino, Ballerina Cappuccina, Chimpanzini Bananini, Bombombini Gusini, Trippi Troppi |
+| Indonesian crossover | Tung Tung Tung Sahur (represented by the default Triple T), Boneca Ambalabu, Garam Mararamraram |
+| April 2025 first-name wave | Matteo (priority), Alessio, Roberto, Carlo, Mattias, Antonio, Francesco |
+| Later spin-offs and user reference | Orcalero Orcalà, Frilirì Fralirà, and the user-described Echo Gavelo Verdoso / Un Show Strapitoso concept. Its title is unverified. Use Eco Verde as the game’s original riff. |
+
+These are practical groupings for the shop and development plan. AP traces the early breakouts, creator Fabian Mosele documents the April first-name wave and spin-offs, and the CHI study confirms which names participants actually recalled. Reuse any already planned equivalent from REQ-021 when it represents the same reference, so players get one distinct entry per character direction. Keep original meshes, silhouettes, and animation, and use only this repo's own assets. Skip branded details, source voice clips, and game-specific models from other titles. Check readable silhouettes on phones, unlock and purchase flow, equip and reload, and unchanged gameplay size and collisions.
+
+Sources:
+- Early wave: https://apnews.com/article/italian-brain-rot-explained-tralalero-tralala-7600d1faea12be53609f3c2092e02eb7
+- Creator history: https://medium.com/@fabianmosele/the-entire-history-of-italian-brainrot-5c108ba805ca
+- Research roster, appendix A: https://cris.fbk.eu/retrieve/45894076-56a8-4bc5-a44d-9ac98f8c789c/3772318.3791483.pdf
+
+---
+
+### REQ-023 — Make later levels harder with timed jumps
+- **From:** Person 2 / ChatGPT, relaying Juan's request
+- **Blocking:** Nothing.
+- **What I need:** Add player-timed jumps and obstacles players must jump over. Ship this separately from the skin changes.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Start with one clearly marked, full-width low obstacle on level 4, where jump pads currently begin. Show a tap target on mobile and support Space on desktop. Reuse the current jump arc and clearance system for auto pads and manual jumps. Keep dragging responsive with the other finger. Once introduced, add short jump sequences with steering between landings on later levels. Use a deterministic post-pass on generated levels so levels 1–3 stay identical and avoid overlaps with pads, gates, and boss approaches. Scale warning distance and spacing with run speed and check there is enough room to land before the next required jump. Reject airborne repeats. Award the pad badge only for pad jumps.
+
+Test on a phone-size viewport and desktop. A well-timed jump should clear cleanly, an early or late jump should take a readable mass hit, and retry should reset the jump state. Verify auto pads, steering, and boss and finale transitions, then finish a full level with no console errors.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
