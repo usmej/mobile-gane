@@ -21,10 +21,15 @@ function shared() {
   G.brocMat = new THREE.MeshStandardMaterial({ color: 0x3fd64f, roughness: 0.6, flatShading: true });
   G.stem = new THREE.CylinderGeometry(0.12, 0.16, 0.5, 8);
   G.stemMat = new THREE.MeshStandardMaterial({ color: 0x9be37a });
-  G.bun = new THREE.SphereGeometry(0.45, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-  G.bunMat = new THREE.MeshStandardMaterial({ color: 0xd98a3a, roughness: 0.6 });
-  G.patty = new THREE.CylinderGeometry(0.47, 0.47, 0.16, 16);
-  G.pattyMat = new THREE.MeshStandardMaterial({ color: 0x5a2d14, roughness: 0.8 });
+  G.apple = new THREE.IcosahedronGeometry(0.42, 1);
+  G.appleMat = new THREE.MeshStandardMaterial({ color: 0x7A6A2E, roughness: 0.9, flatShading: true });
+  G.moldGeo = new THREE.IcosahedronGeometry(0.11, 0);
+  G.moldPaleMat = new THREE.MeshStandardMaterial({ color: 0xA8D46F, roughness: 0.9, flatShading: true });
+  G.moldGreyMat = new THREE.MeshStandardMaterial({ color: 0x6E8B4E, roughness: 0.9, flatShading: true });
+  G.appleStem = new THREE.CylinderGeometry(0.035, 0.05, 0.16, 6);
+  G.appleStemMat = new THREE.MeshStandardMaterial({ color: 0x3B2A14, roughness: 0.9 });
+  G.stink = new THREE.SphereGeometry(0.1, 8, 6);
+  G.stinkMat = new THREE.MeshStandardMaterial({ color: 0x9CCC4A, roughness: 1, transparent: true, opacity: 0.5 });
   G.saw = new THREE.CylinderGeometry(0.9, 0.9, 0.18, 12);
   G.sawMat = new THREE.MeshStandardMaterial({ color: 0xc9d1d9, metalness: 0.9, roughness: 0.25 });
   G.tooth = new THREE.ConeGeometry(0.16, 0.4, 4);
@@ -67,7 +72,7 @@ export class Entities {
           m.position.set(it.x, 1.1, z);
           e.obj = m; break;
         }
-        case 'food': e.obj = it.good ? this.makeBroccoli() : this.makeBurger(); e.obj.position.set(it.x, 0, z); break;
+        case 'food': e.obj = it.good ? this.makeBroccoli() : this.makeMoldyApple(); e.obj.position.set(it.x, 0, z); break;
         case 'hammer':
           e.obj = this.makeHammer(z, W);
           break;
@@ -187,13 +192,36 @@ export class Entities {
     return g;
   }
 
-  makeBurger() {
+  makeMoldyApple() {
     const g = new THREE.Group();
-    const bottom = new THREE.Mesh(G.patty, G.bunMat); bottom.position.y = 0.2;
-    const patty = new THREE.Mesh(G.patty, G.pattyMat); patty.position.y = 0.36;
-    const top = new THREE.Mesh(G.bun, G.bunMat); top.position.y = 0.44;
-    top.castShadow = true;
-    g.add(bottom, patty, top);
+    // squashed body, bottom sits on the floor (y = 0)
+    const body = new THREE.Mesh(G.apple, G.appleMat);
+    body.scale.set(1, 0.9, 1);
+    body.position.y = 0.378;
+    body.castShadow = true;
+    g.add(body);
+    // fuzzy mold spots stuck to the surface
+    const dirs = [[0.8, 0.3, 0.5], [-0.6, 0.5, 0.6], [0.2, 0.2, -0.95], [-0.9, -0.1, -0.3], [0.5, -0.4, 0.75], [-0.2, 0.85, -0.4]];
+    dirs.forEach((d, i) => {
+      const n = new THREE.Vector3(...d).normalize();
+      const spot = new THREE.Mesh(G.moldGeo, i % 2 ? G.moldGreyMat : G.moldPaleMat);
+      spot.position.set(n.x * 0.4, 0.378 + n.y * 0.36, n.z * 0.4);
+      spot.lookAt(spot.position.clone().add(n));
+      spot.scale.set(1, 1, 0.5);
+      g.add(spot);
+    });
+    // droopy stem
+    const stem = new THREE.Mesh(G.appleStem, G.appleStemMat);
+    stem.position.set(0.03, 0.78, 0);
+    stem.rotation.z = -0.6;
+    g.add(stem);
+    // little green stink puffs floating above
+    [[0.26, 0.72, 0.1, 0.09], [-0.2, 0.8, -0.12, 0.075], [0.05, 0.86, -0.05, 0.06]].forEach(([x, y, z, r]) => {
+      const puff = new THREE.Mesh(G.stink, G.stinkMat);
+      puff.position.set(x, y, z);
+      puff.scale.setScalar(r / 0.1);
+      g.add(puff);
+    });
     return g;
   }
 
