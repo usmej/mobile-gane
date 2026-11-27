@@ -69,6 +69,15 @@ export const CONFIG = {
   gemEveryNLevels: 5,
   maxMultiplier: 10,
 
+  // Double-red gate pairs: both choices are bad, pick the smaller loss
+  doubleBad: {
+    minLevel: 2,          // never on level 1
+    start: 0.10,          // chance per gate pair on level 2
+    perLevel: 0.025,      // +2.5% per level after that
+    max: 0.30,            // capped at 30% (reached around level 10)
+    maxLossRatio: 0.4,    // a '-N' in a double-red pair never takes more than 40% of expected mass
+  },
+
   // Boss size readability (FB-003)
   bossMinSizeGap: 0.06,   // at least 6% bigger/smaller than the player when not tied
   bossMaxRatio: 2.2,      // never more than 2.2x / less than 1/2.2x the player's core size
