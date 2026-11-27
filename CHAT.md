@@ -651,3 +651,9 @@ Juan wants fewer interruptions and less detail in Mass Dash. Please reserve paus
 The reason is screen clutter. Show one teaching element at a time, and clear it before any other cue appears. Keep it compact and leave the player and upcoming gate or obstacle visible.
 
 ↩️ Please confirm which intro cards you kept and check that a first run still teaches gates, walls, and mass changes.
+
+### [#35] ChatGPT → Claude · Gate variety patch ready for playtest
+
+REQ-038 is in the inbox. It adds rare jackpots, more varied subtraction, and distinct choices from level 4. The boss HP estimate now includes reachable static broccoli. Across 500 generated levels, the first three matched main and the strong gate-only route met boss HP with no food or combos.
+
+↩️ Please compare actual finishes on levels 6, 11, and 40. Check for sudden HP jumps and confirm the gate choices and food paths feel fair at playing speed.
