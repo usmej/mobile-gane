@@ -4,6 +4,7 @@ import { getPortrait } from './portraits.js';
 import { pickMeme } from './memes.js';
 import * as I from './icons.js';
 import { canClaim } from './daily.js';
+import { shareRunCard } from './runcard.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
@@ -162,7 +163,7 @@ export class UI {
   }
 
   // ---------- win ----------
-  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null, winner = 'YOU' } = {}) {
+  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null, winner = 'YOU', skinId = null } = {}) {
     const verb = String(winner).trim().toUpperCase() === 'YOU' ? 'CLEAR' : 'CLEARS';
     const sticker = bestRank === null ? '' : `<div class="sticker">${bestRank === 1 ? 'NEW BEST!' : `#${esc(bestRank)} BEST RUN`}</div>`;
     const el = this._mount('panel-layer result win', `
@@ -178,8 +179,10 @@ export class UI {
           ${gemsEarned > 0 ? `<div class="earn-gems"><span class="earn-ico">${I.gem()}</span><b class="count" data-k="gems">0</b></div>` : ''}
         </div>
         <button class="btn btn-next">NEXT</button>
+        <button class="btn btn-share"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false" fill="none" stroke="#1B1420" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span>Share</span></button>
       </div>`);
     this._on(el, '.btn-next', () => this._call('onNext'));
+    this._on(el, '.btn-share', () => shareRunCard({ winner, level, coinsEarned, multiplier, skinId }));
     const cEl = el.querySelector('[data-k="coins"]');
     const gEl = el.querySelector('[data-k="gems"]');
     const t0 = performance.now();
@@ -195,7 +198,7 @@ export class UI {
   }
 
   // ---------- lose ----------
-  showLose({ level, reason = '', progress } = {}) {
+  showLose({ level, reason = '', progress, tip = '', continueCost = 0, gems = 0 } = {}) {
     const sentence = (str) => {
       const t = String(str).trim();
       return t && t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t;
@@ -207,12 +210,15 @@ export class UI {
       <div class="card card-lose">
         <div class="res-level">Level ${esc(level)}</div>
         <h2 class="res-title res-reason">${esc(sentence(reason) || 'Not this time!')}</h2>
-        <p class="res-sub">${esc(pickMeme('lose'))}</p>
-        ${hasProg ? `<div class="lose-prog"><span>You made it ${pc}% of the way</span><div class="bar"><i style="width:${pc}%"></i></div></div>` : ''}
-        <button class="btn btn-retry">RETRY</button>
+        ${tip ? `<p class="res-tip">${esc(tip)}</p>` : `<p class="res-sub">${esc(pickMeme('lose'))}</p>`}
+        ${hasProg && !tip ? `<div class="lose-prog"><span>You made it ${pc}% of the way</span><div class="bar"><i style="width:${pc}%"></i></div></div>` : ''}
+        ${continueCost > 0 ? `<button class="btn btn-continue"${gems < continueCost ? ' disabled' : ''}>KEEP GOING <span class="cont-cost">${I.gem()}<b>${fmt(continueCost)}</b></span></button>
+        ${gems < continueCost ? `<p class="cont-need">You have ${fmt(gems)} gems</p>` : ''}` : ''}
+        <button class="btn btn-retry">TRY AGAIN</button>
         ${hasMenu ? '<button class="btn-link btn-menu">Menu</button>' : ''}
       </div>`);
     this._on(el, '.btn-retry', () => this._call('onRetry'));
+    this._on(el, '.btn-continue', () => this._call('onContinue'));
     this._on(el, '.btn-menu', () => this._call('onMenu'));
   }
 
@@ -247,7 +253,7 @@ export class UI {
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
         <button class="btn btn-close" aria-label="Close">${I.closeX()}</button>
-        <h2 class="panel-title">Characters</h2>
+        <h2 class="panel-title">Characters <span class="collect-count">${skins.filter((s) => owned.has(s.id)).length}/${skins.length}</span></h2>
         ${this._currencyBar(save)}
         <div class="skin-grid">${cards}</div>
         
@@ -320,7 +326,7 @@ export class UI {
     back.setAttribute('aria-modal', 'true');
     back.innerHTML = `<div class="intro-card">
       ${intro.icon ? `<div class="intro-icon"></div>` : ''}
-      <div class="intro-new">NEW!</div>
+      <div class="intro-new">${esc(intro.badge || 'NEW!')}</div>
       <h2 class="intro-title"></h2>
       <p class="intro-how"></p>
       <button type="button" class="btn btn-next intro-btn">Got it</button>

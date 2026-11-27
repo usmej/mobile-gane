@@ -28,7 +28,7 @@ Juan's goal: make kids **want to come back and keep playing**. This plan does th
 | Relatedness (kid-safe, no chat) | **Run card:** a shareable picture of your best run (character, level, mass) that a parent can share | Social pride, with no data collection. |
 | Relatedness | **Ghost race:** race a faint ghost of your own best run | Self-competition with no strangers. |
 | Feel | More **juice**: sounds, haptics, combo meter, boss reactions | Moment-to-moment fun. |
-| Wellbeing | **Break prompt** after ~20 min ("Great run! Stretch break?"), dismissible | Required good practice for kids (ICO). |
+| Competence | **Keep going (gems):** after a loss, pay gems to continue from where you fell. The price grows with level and character size, and doubles each time in the same run. TRY AGAIN restarts for free. | A loss near the end isn't a full reset. Gems get a real use. |
 | Returning | **Daily mission** (e.g. "eat 30 broccoli") with a small reward, which **never punishes missed days** | Return motivation without anxiety. |
 
 ## ❌ Don't (harmful and/or legal risk)
@@ -41,7 +41,19 @@ Juan's goal: make kids **want to come back and keep playing**. This plan does th
 - **Notifications that guilt kids** ("Triple T misses you 😢"), and endless play with no natural stopping points.
 - **Collecting personal data** from kids. COPPA applies to under-13s, so keep everything local.
 
+## 🔬 More research to use (round 2)
+
+| Finding | What it means for Mass Dash |
+|---|---|
+| **Goal-gradient effect:** people speed up as a goal gets close ([Kivetz, Urminsky & Zheng 2006](https://doi.org/10.1509/jmkr.43.1.39)) | Show progress toward the **next character unlock** and the **world's boss** on the menu ("2 levels to the boss!"). |
+| **Endowed progress:** a goal that already looks partly done gets finished more often ([Nunes & Drèze 2006](https://doi.org/10.1086/500480)) | Start each world's challenge card with the first box already ticked for reaching the world. |
+| **Flow:** fun is when challenge matches skill ([Csikszentmihalyi](https://en.wikipedia.org/wiki/Flow_(psychology))) | Keep difficulty rising slowly. After 3 losses in a row on one level, quietly add one extra blue gate (an assist, never announced as "easy mode"). |
+| **Curiosity and open loops:** an unfinished set keeps pulling you back | Album silhouettes plus "next world" teasers. End each world on a reveal of the next one. |
+| **Gamification works when tied to real goals, and fades when it's just points** ([Hamari, Koivisto & Sarsa 2014](https://doi.org/10.1109/HICSS.2014.377)) | Every reward unlocks something you can *see or use* (a character, a costume, a new world), not a bare number. |
+
 ## 💳 Before payments (next phase)
+
+- **Keep going must stay fair:** if gems ever become buyable, a paid continue turns into pay-to-win. Either keep gems **earn-only**, or let continues use only earned gems. Decide before payments ship.
 
 - **Parental gate** before any purchase screen (e.g. an adult math question or a hold-to-confirm), with a clear price in real currency.
 - Use **App Store / Google Play in-app purchase** systems (required for digital goods in apps), or Stripe with a parent account on the web. **Never store card details ourselves.**
@@ -52,4 +64,6 @@ Juan's goal: make kids **want to come back and keep playing**. This plan does th
 ## Who builds what
 
 - **🟦 ChatGPT** (gameplay and logic): stars per level (REQ-039), world challenges (REQ-040), daily missions and the non-punishing daily-chest change (REQ-041), weekly silly-level modifier (REQ-042), plus REQ-037 (level picker, which shows the stars).
-- **🟧 Claude** (UI and feel): character album, "So close!" feedback, break prompt, run-card share image, juice pass, world-map teaser, ghost race.
+- **🟧 Claude** (UI and feel): character album, "So close!" feedback, Keep going (gems), run-card share image, juice pass, world-map teaser, ghost race.
+
+_Juan's call (2026-11-27): no stretch-break prompt, so players aren't pulled out of the game. Natural stopping points (end of each level and world) stay._

@@ -101,6 +101,9 @@ let runGems = 0;
 let endTimer = 0;
 let endResult = null;
 let time = 0;
+let massBeforeHit = 0;        // size right before the latest pickup/hit (revive size for "Keep going")
+let continuesUsed = 0;        // gem continues bought this run (each one costs double)
+let lostAt = null;            // where the run ended: 'track' | 'boss'
 let introReturn = 'playing';   // state to resume after an intro card
 let introToken = 0;
 let jumpCoach = null;        // first barrier after its intro: show a JUMP NOW! prompt at the right moment
@@ -154,6 +157,7 @@ const ui = new UI(document.getElementById('ui'), {
   onPlay: () => { audio.unlock(); audio.play('click'); startRun(); },
   onNext: () => { audio.play('click'); loadLevel(); showMenu(); },
   onRetry: () => { audio.play('click'); startRun(); },
+  onContinue: () => keepGoing(),
   onJump: () => startManualJump(),
   onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, shopSkins()); },
   onCloseShop: () => { audio.play('click'); showMenu(); },
@@ -227,6 +231,7 @@ function startRun() {
   if (state === 'result') loadLevel();
   combo = 0;
   runTookHit = false;
+  continuesUsed = 0;
   state = 'playing';
   player.label.visible = true;
   ui.showHUD(save, !(save.level === 1 && !save.tutorialDone));
@@ -272,6 +277,15 @@ function setHudVisible(v) {
 
 const fightPoint = new THREE.Vector3();
 function beginBossFight(b) {
+  // Smaller than the boss: no fight, the boss just flattens you.
+  if (player.mass < b.hp) {
+    fx.burst(player.position.clone().setY(1.5), '#FF3B5C', 30);
+    fx.shake(0.6);
+    audio.play('hit');
+    haptics.buzz([60, 30, 90]);
+    lose(`Boss had ${b.hp}. You had ${player.mass}.`);
+    return;
+  }
   if (!save.seenIntros.includes('bossFight') && getIntro('bossFight')) {
     openIntro('bossFight', 'boss', () => beginBossFight(b));
     return;
@@ -307,7 +321,8 @@ function beginBossFight(b) {
         }
         defeatBoss();
       } else {
-        lose(`Boss had ${b.hp}. You had ${player.mass}.`);
+        setHudVisible(true);
+        lose(res.timedOut ? 'Too slow! The boss still had HP left.' : `Boss had ${b.hp}. You had ${player.mass}.`);
       }
     },
   });
@@ -325,7 +340,7 @@ function finishRun(won) {
     const coinsEarned = (runCoins + CONFIG.winBaseCoins + save.level * CONFIG.winCoinsPerLevel) * mult;
     const gemsEarned = runGems + (save.level % CONFIG.gemEveryNLevels === 0 ? 2 : 0);
     const bestRank = addRun(save, { level: save.level, coinsEarned, multiplier: mult, date: new Date().toISOString() });
-    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank, winner: getSkin(save.skin).name.toUpperCase() };
+    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank, winner: getSkin(save.skin).name.toUpperCase(), skinId: save.skin };
     save.coins += coinsEarned;
     save.gems += gemsEarned;
     save.level += 1;
@@ -338,7 +353,20 @@ function finishRun(won) {
     // keep what you picked up — losing shouldn't feel like a total L
     save.coins += runCoins;
     save.gems += runGems;
-    endResult = { won, level: save.level, reason: lossReason, progress: Math.min(1, player.d / Math.max(1, level.length)) };
+    const progress = Math.min(1, player.d / Math.max(1, level.length));
+    // "So close!" feedback: say exactly how near the player was and one concrete thing to try.
+    let tip = '';
+    const b = entities.boss;
+    if (b && player.d >= level.length - 1 && player.mass >= b.hp) {
+      tip = 'You were big enough! Tap the yellow weak spots faster to empty the boss bar.';
+    } else if (b && player.d >= level.length - 1) {
+      const short = Math.max(1, b.hp - player.mass);
+      tip = short <= b.hp * 0.25 ? `So close! Only ${short} short. Pick one more blue gate next time.` : `You need ${short} more. Grab healthy food and the bigger gates.`;
+    } else if (progress >= 0.6) {
+      tip = `So close! You made it ${Math.round(progress * 100)}% of the way.`;
+    }
+    const cost = continueCost();
+    endResult = { won, level: save.level, reason: lossReason, progress, tip, continueCost: cost, gems: save.gems };
     player.group.visible = false;
     fx.burst(player.position.clone().setY(1), getSkin(save.skin).color, 50);
     fx.popText(pickMeme('lose') || 'L', player.position.clone().setY(2.5), '#FF3B5C', 1.6);
@@ -353,7 +381,55 @@ let lossReason = '';
 function lose(reason) {
   if (state !== 'playing' && state !== 'boss' && state !== 'fight') return;
   lossReason = reason;
+  lostAt = state === 'playing' ? 'track' : 'boss';
   finishRun(false);
+}
+
+// Gem price to keep going from where you lost. Higher level and a bigger character cost more;
+// every extra continue in the same run doubles it.
+function reviveMass() {
+  const b = entities.boss;
+  if (lostAt === 'boss' && b) return Math.max(b.hp, Math.round(player.mass));   // a boss continue gives at least the boss's size
+  return Math.max(CONFIG.continue.minMass, Math.round(massBeforeHit));
+}
+function continueCost() {
+  const K = CONFIG.continue;
+  const raw = (K.base + save.level * K.perLevel + reviveMass() * K.perMass) * Math.pow(2, continuesUsed);
+  return Math.min(K.maxCost, Math.ceil(raw));
+}
+
+function keepGoing() {
+  if (state !== 'result' || !endResult || endResult.won) return;
+  const cost = continueCost();
+  if (save.gems < cost) { ui.toast(`Need ${cost} gems`); return; }
+  save.gems -= cost;
+  continuesUsed += 1;
+  writeSave(save);
+  audio.play('gem');
+  // run coins/gems were already banked when the run ended
+  runCoins = 0;
+  runGems = 0;
+  endResult = null;
+  player.setMass(reviveMass());
+  player.group.visible = true;
+  player.label.visible = true;
+  jumpElapsed = null;
+  player.y = 0;
+  combo = 0;
+  ui.showHUD(save, false);
+  setHudVisible(true);
+  audio.startMusic(save.level);
+  fx.burst(player.position.clone().setY(1.5), '#B04BFF', 40);
+  fx.popText('KEEP GOING!', player.position.clone().setY(4), '#B04BFF', 1.2);
+  const b = entities.boss;
+  if (lostAt === 'boss' && b && !b.dead) {
+    state = 'boss';
+    ui.showJumpButton(false);
+    beginBossFight(b);
+  } else {
+    state = 'playing';
+    ui.showJumpButton(save.level >= CONFIG.timedJump.firstLevel);
+  }
 }
 
 function buySkin(id) {
@@ -452,6 +528,7 @@ function pop(numberText, pos, color, memeCat, big = false) {
 }
 
 function handleEvent(ev) {
+  massBeforeHit = player.mass;
   switch (ev.type) {
     case 'magnet':
       magnetTime = CONFIG.magnet.duration;

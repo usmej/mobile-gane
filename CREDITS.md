@@ -2,7 +2,7 @@
 
 **Three.js** — MIT License — https://threejs.org (loaded from the jsDelivr CDN).
 
-**Bungee** font by David Jonathan Ross — SIL Open Font License 1.1 — served by Google Fonts.
+**Lilita One** font by Juan Montoreano and **Nunito** font by Vernon Adams — SIL Open Font License 1.1 — served by Google Fonts.
 
 ## Characters & names
 

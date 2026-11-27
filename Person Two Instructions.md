@@ -5,6 +5,38 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ---
 
+## 📝 Patch notes (newest first). Read these before you build on the code
+
+### Patch notes 2026-11-27 (PR: retention UI, Keep going, boss rules, new font)
+- **Boss rules changed (Juan):**
+  - **Mass < boss HP:** no fight. `beginBossFight` calls `lose()` right away ("Boss had X. You had Y.").
+  - **Mass ≥ HP:** the fight starts, but you must **empty the boss bar before time runs out**. Timing out is a loss: `bossfight.js` resolves `{ won:false, timedOut:true }`, the verdict reads "TOO SLOW!", and the lose reason is "Too slow! The boss still had HP left."
+  - `CONFIG.bossFight.duration` went from 5.5 to **7** (100 HP ÷ 14 per hit = 8 taps).
+  - The canWin=false fight path still exists but main.js no longer starts it.
+  - **For your Phase C (two-phase bosses):** keep this rule. Every phase's bar must hit 0 inside its timer.
+- **Keep going (gems), `main.js` `keepGoing()`:**
+  - **Placement:** the lose screen shows a purple **KEEP GOING 💎N** button above **TRY AGAIN**. TRY AGAIN restarts from the beginning.
+  - **Price:** `continueCost()` = `ceil(base + level*perLevel + size*perMass)`, × 2 for each continue already used this run, capped at `maxCost`.
+    - Config: `CONFIG.continue = { base:1, perLevel:0.25, perMass:0.02, maxCost:60, minMass:10 }`.
+    - "size" is your mass right before the fatal hit (`massBeforeHit`, set at the top of `handleEvent`), or for a boss loss `max(bossHp, mass)`.
+  - **Track revive:** at the same spot, with the size you had just before the fatal hit. Used items stay used, so nothing re-triggers.
+  - **Boss revive:** mass becomes at least the boss's HP and the fight restarts (you still have to tap it down).
+  - **Banking:** run coins and gems were already banked on loss, so `runCoins`/`runGems` reset to 0 on revive.
+  - **State:** new vars are `continuesUsed` (reset in `startRun`) and `lostAt` ('track' | 'boss').
+  - **UI:** `ui.showLose()` takes `continueCost` and `gems`, and adds an `onContinue` handler. The button is disabled with "You have N gems" if you can't afford it.
+- **Lose-screen tips:** `endResult.tip` reads, depending on the loss:
+  - "So close! Only N short…";
+  - "You were big enough! Tap … faster";
+  - "So close! You made it N% of the way".
+- **Run card:** new **`src/runcard.js`** exports `shareRunCard({ winner, level, coinsEarned, multiplier, skinId })`. It draws a 1080×1350 PNG and shares it via `navigator.share`, or downloads it. No network. The win screen has a Share button, and `endResult` now includes `skinId`.
+- **Shop title:** shows a collection count `Characters 3/13` (`.collect-count`).
+- **Intro card:** takes an optional `badge` (default "NEW!").
+- **Removed (Juan):** the stretch-break reminder. Please don't add one.
+- **New font:** **Lilita One** for display (was Bungee) and **Nunito** for body (was Fredoka). `labels.js` `FONT`, `fx.js`, `intros.js` and `runcard.js` all use Lilita One. Use `var(--font)` / `var(--body)` in CSS, never a hard-coded family.
+- **`docs/RETENTION.md`:** the break prompt is removed; Keep going and a "research round 2" table are added (goal-gradient, endowed progress, flow and a quiet assist after 3 losses, open loops). It also notes that **gems must stay earn-only, or continues must use only earned gems, before payments**.
+
+---
+
 ## 📨 Messages from Claude (newest first)
 
 > **NEW: we now talk in [`CHAT.md`](CHAT.md), a running Claude ⇄ ChatGPT chat. Read it first.** Older messages below are kept for history.

@@ -104,7 +104,7 @@ export class FX {
     s.top = '0';
     s.pointerEvents = 'none';
     s.whiteSpace = 'nowrap';
-    s.font = `400 ${px}px 'Bungee', 'Arial Black', sans-serif`;
+    s.font = `400 ${px}px 'Lilita One', 'Arial Black', sans-serif`;
     s.color = color;
     s.webkitTextStroke = `${Math.max(4, px * 0.16)}px #1B1420`;
     s.paintOrder = 'stroke fill';
