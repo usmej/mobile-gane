@@ -2538,5 +2538,509 @@ Replace with:
 
 ---
 
+### REQ-020 — Let Triple T spend their mass on the multiplier stairs
+- **From:** Person 2 / ChatGPT
+- **Blocking:** Juan's requested finale bug fix
+- **What I need:** Apply and playtest this fix in its own PR.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Use the actual displayed post-fight mass, retain free x1, and spend mass on each extra rung. The cost is 22% of boss HP rounded up, with the existing minimum of 4. Cash in any remainder on arrival so the display reaches zero. Payout reflects the rung reached, with x10 as the cap.
+
+In `src/finale.js`, find exactly:
+
+```js
+    this.massLeft = Math.max(0, player.mass - bossHp);
+    this.target = Math.min(CONFIG.finaleSteps, 1 + Math.floor(this.massLeft / this.stepCost));
+```
+
+Replace with:
+
+```js
+    this.target = Math.min(this.steps.length, CONFIG.maxMultiplier, 1 + Math.floor(player.mass / this.stepCost));
+```
+
+In `src/finale.js`, find exactly:
+
+```js
+      this.current = on;
+      stepped = on;
+      // each step after the first eats mass, so the blob visibly shrinks while it climbs
+      if (on > 1) p.setMass(Math.max(1, p.mass - this.stepCost));
+```
+
+Replace with:
+
+```js
+      const paidSteps = on - Math.max(1, this.current);
+      if (paidSteps > 0) p.setMass(p.mass - paidSteps * this.stepCost);
+      this.current = on;
+      stepped = on;
+```
+
+In `src/finale.js`, find exactly:
+
+```js
+      this.t += dt;
+```
+
+Replace with:
+
+```js
+      // Cash in any remainder without awarding a rung the player could not afford.
+      if (p.mass > 0) p.setMass(0);
+      this.t += dt;
+```
+
+In `src/main.js`, find exactly:
+
+```js
+    if (done) finishRun(true);
+  }
+```
+
+Replace with:
+
+```js
+    ui.updateHUD({ mass: player.mass });
+    if (done) finishRun(true);
+  }
+```
+
+In `src/config.js`, find exactly:
+
+```js
+  finaleStepCostRatio: 0.3, // each step costs this fraction of boss HP...
+```
+
+Replace with:
+
+```js
+  finaleStepCostRatio: 0.22, // each step costs this fraction of boss HP...
+```
+
+Seven simulation cases passed. For a 50 HP boss, 87 mass yields x8, 88 yields x9, and 99 yields x10. Each ends at zero. Please verify the HUD, pop-ups, payout, and zero-mass win flow in a full browser run.
+
+---
+
+### REQ-021 — Sell defeated boss skins and expand the brainrot roster
+- **From:** Person 2 / ChatGPT
+- **Blocking:** Juan's requested shop expansion
+- **What I need:** Apply this after the finale patch in a separate PR. Preserve concurrent Best Runs edits.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+All eight bosses use their existing 3D models as playable skins. Defeat the boss to make its skin purchasable with earned coins. Unlocks follow boss identity through the rotation. Older saves can replay bosses to earn the unlock because they do not store per-boss victory history. Triple T stays the default. The existing shark and crocodile are included, plus four new original character models: Eco Verde, El Saltarín, Radio Rospo, Biscotto Cosmico, and Spaghetto Turbo. Skin swaps use the same gameplay scale and collision radius.
+
+In `src/bosses.js`, find exactly:
+
+```js
+const DESIGNS = [
+  [squaloScarpettone, 'Squalo Scarpettone'],
+  [coccodrilloBombardone, 'Coccodrillo Bombardone'],
+  [tazzinaBallerina, 'Tazzina Ballerina'],
+  [scimmiaBananosa, 'Scimmia Bananosa'],
+  [cactofante, 'Cactofante'],
+  [frigocammello, 'Frigocammello'],
+  [ochettaEsplosiva, 'Ochetta Esplosiva'],
+  [alberelloScarpato, 'Alberello Scarpato'],
+];
+```
+
+Replace with:
+
+```js
+const DESIGNS = [
+  [squaloScarpettone, 'Squalo Scarpettone', 'boss-squalo', '#368BDC', '#FFF4E0', 250],
+  [coccodrilloBombardone, 'Coccodrillo Bombardone', 'boss-coccodrillo', '#617D39', '#E8AA45', 400],
+  [tazzinaBallerina, 'Tazzina Ballerina', 'boss-tazzina', '#FA8EBD', '#FFF4E0', 550],
+  [scimmiaBananosa, 'Scimmia Bananosa', 'boss-scimmia', '#FFD23F', '#764827', 700],
+  [cactofante, 'Cactofante', 'boss-cactofante', '#47B572', '#EF81AB', 850],
+  [frigocammello, 'Frigocammello', 'boss-frigocammello', '#BFE7F3', '#BE8F53', 1000],
+  [ochettaEsplosiva, 'Ochetta Esplosiva', 'boss-ochetta', '#FFF4E0', '#EF7043', 1200],
+  [alberelloScarpato, 'Alberello Scarpato', 'boss-alberello', '#498747', '#8C562B', 1400],
+];
+
+export const BOSS_SKINS = DESIGNS.map(([, name, id, color, color2, price], index) => ({
+  id, name, color, color2, price, currency: 'coins', pattern: 'stripes',
+  shape: 'boss', unlockLevel: index + 1,
+}));
+
+function ecoVerde(size) {
+  const c = mk(size);
+  const body = c.sph('#48C874', 0.85, 0, 1.1, 0);
+  c.cyl('#274562', 0.45, 0.45, 0.12, 0, 1.6, 0.57, { rot: [Math.PI / 2, 0, 0] });
+  for (const side of [-1, 1]) {
+    c.eye(side * 0.32, 1.32, 0.82);
+    c.box('#274562', 0.54, 0.24, 0.8, side * 0.62, 0.12, 0.17, { rot: [0, side * 0.3, 0] });
+  }
+  for (const x of [-0.18, 0, 0.18]) c.box(INK, 0.05, 0.25, 0.04, x, 0.85, 0.8);
+  return { group: c.g, body };
+}
+
+function radioRospo(size) {
+  const c = mk(size);
+  const body = c.box('#F4BD47', 1.65, 1.25, 0.85, 0, 1.02, 0);
+  c.box('#7E3161', 1.35, 0.5, 0.1, 0, 0.84, 0.48);
+  for (const side of [-1, 1]) {
+    c.eye(side * 0.46, 1.47, 0.53, 0.2);
+    c.sph('#7E3161', 0.35, side * 0.64, 0.24, 0.15, { scale: [1, 0.65, 1.5] });
+  }
+  c.cyl(INK, 0.045, 0.055, 0.75, 0.55, 1.91, 0, { rot: [0, 0, -0.38] });
+  return { group: c.g, body };
+}
+
+function biscottoCosmico(size) {
+  const c = mk(size);
+  const body = c.cyl('#BE82E9', 0.85, 0.85, 0.48, 0, 1.05, 0, { rot: [Math.PI / 2, 0, 0] });
+  c.box('#FFF1A8', 2.22, 0.13, 0.48, 0, 0.85, 0.1, { rot: [0, 0, 0.33] });
+  c.eye(-0.29, 1.34, 0.29);
+  c.eye(0.29, 1.34, 0.29);
+  for (const [x, y] of [[-0.49, 0.63], [0.47, 1.56], [0.21, 0.51]]) {
+    c.sph('#502B79', 0.1, x, y, 0.25);
+  }
+  return { group: c.g, body };
+}
+
+function spaghettoTurbo(size) {
+  const c = mk(size);
+  const body = c.sph('#ED6C43', 0.78, 0, 0.94, 0, { scale: [1.1, 1, 0.9] });
+  for (const side of [-1, 1]) {
+    c.eye(side * 0.29, 1.19, 0.75);
+    c.cyl(INK, 0.28, 0.28, 0.35, side * 0.78, 0.29, 0, { rot: [0, 0, Math.PI / 2] });
+  }
+  for (const [x, z] of [[-0.46, -0.22], [-0.24, 0.31], [0.08, -0.15], [0.38, 0.19]]) {
+    c.cap('#F6D46B', 0.1, 0.61, x, 1.64, z, { rot: [0, 0, x * 1.6] });
+  }
+  return { group: c.g, body };
+}
+
+const CHARACTER_MODELS = {
+  'echo-verdoso': ecoVerde,
+  'radio-rospo': radioRospo,
+  'biscotto-cosmico': biscottoCosmico,
+  'spaghetto-turbo': spaghettoTurbo,
+};
+
+export function makeCharacterSkinMesh(id) {
+  const design = DESIGNS.find(([, , skinId]) => skinId === id);
+  const build = design?.[0] ?? CHARACTER_MODELS[id];
+  return build(1);
+}
+```
+
+In `src/bosses.js`, find exactly:
+
+```js
+  const [build, name] = DESIGNS[idx];
+  return { ...build(size), name };
+```
+
+Replace with:
+
+```js
+  const [build, name, skinId] = DESIGNS[idx];
+  return { ...build(size), name, skinId };
+```
+
+In `src/entities.js`, find exactly:
+
+```js
+    const { group: g, body, height, name } = makeBossMesh(levelData.level || 1, 1);
+```
+
+Replace with:
+
+```js
+    const { group: g, body, height, name, skinId } = makeBossMesh(levelData.level || 1, 1);
+```
+
+In `src/entities.js`, find exactly:
+
+```js
+    this.boss = { group: g, body, label: lab, banner, bannerBase, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
+```
+
+Replace with:
+
+```js
+    this.boss = { group: g, body, label: lab, banner, bannerBase, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, skinId, dead: false };
+```
+
+In `src/skins.js`, find exactly:
+
+```js
+import * as THREE from 'three';
+```
+
+Replace with:
+
+```js
+import * as THREE from 'three';
+import { BOSS_SKINS } from './bosses.js';
+```
+
+In `src/skins.js`, find exactly:
+
+```js
+// shape (optional, default 'blob'): 'blob' | 'log'
+```
+
+Replace with:
+
+```js
+// shape (optional, default 'blob'): 'blob' | 'log' | 'boss' | 'character'
+```
+
+In `src/skins.js`, find exactly:
+
+```js
+  { id: 'drum', name: 'Triple T', price: 0, currency: 'coins', color: '#A0662E', color2: '#6E4220', pattern: 'solid', shape: 'log' },
+];
+```
+
+Replace with:
+
+```js
+  { id: 'drum', name: 'Triple T', price: 0, currency: 'coins', color: '#A0662E', color2: '#6E4220', pattern: 'solid', shape: 'log' },
+  { id: 'echo-verdoso', name: 'Eco Verde, El Saltarín', price: 480, currency: 'coins', color: '#48C874', color2: '#274562', pattern: 'glow', shape: 'character' },
+  { id: 'radio-rospo', name: 'Radio Rospo', price: 720, currency: 'coins', color: '#F4BD47', color2: '#7E3161', pattern: 'checker', shape: 'character' },
+  { id: 'biscotto-cosmico', name: 'Biscotto Cosmico', price: 950, currency: 'coins', color: '#BE82E9', color2: '#FFF1A8', pattern: 'dots', shape: 'character' },
+  { id: 'spaghetto-turbo', name: 'Spaghetto Turbo', price: 1250, currency: 'coins', color: '#ED6C43', color2: '#F6D46B', pattern: 'stripes', shape: 'character' },
+  ...BOSS_SKINS,
+];
+```
+
+In `src/skins.js`, find exactly:
+
+```js
+export function getSkin(id) {
+```
+
+Replace with:
+
+```js
+export function canUnlockSkin(save, skin) {
+  return skin.shape !== 'boss' || save.defeatedBossSkins?.includes(skin.id) === true;
+}
+
+export function getSkin(id) {
+```
+
+In `src/save.js`, find exactly:
+
+```js
+  ownedSkins: ['drum', 'classic'],
+```
+
+Replace with:
+
+```js
+  ownedSkins: ['drum', 'classic'],
+  defeatedBossSkins: [],
+```
+
+In `src/save.js`, find exactly:
+
+```js
+      if (key === 'stats' || key === 'achievements') {
+```
+
+Replace with:
+
+```js
+      if (key === 'defeatedBossSkins') {
+        if (Array.isArray(value)) base.defeatedBossSkins = value.filter((id) => typeof id === 'string');
+      } else if (key === 'stats' || key === 'achievements') {
+```
+
+In `src/main.js`, find exactly:
+
+```js
+import { SKINS, getSkin, makeSkinMaterial } from './skins.js';
+```
+
+Replace with:
+
+```js
+import { SKINS, canUnlockSkin, getSkin, makeSkinMaterial } from './skins.js';
+```
+
+In `src/main.js`, find exactly:
+
+```js
+  state = 'finale';
+```
+
+Replace with:
+
+```js
+  state = 'finale';
+  if (!save.defeatedBossSkins.includes(b.skinId)) {
+    save.defeatedBossSkins.push(b.skinId);
+    writeSave(save);
+    ui.toast(`${getSkin(b.skinId).name} is now available in Skins`);
+  }
+```
+
+In `src/main.js`, find exactly:
+
+```js
+  const skin = getSkin(id);
+  if (save.ownedSkins.includes(id)) return equipSkin(id);
+```
+
+Replace with:
+
+```js
+  const skin = getSkin(id);
+  if (skin.id !== id) return;
+  if (save.ownedSkins.includes(id)) return equipSkin(id);
+  if (!canUnlockSkin(save, skin)) {
+    ui.toast(`Defeat ${skin.name} first`);
+    return;
+  }
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+import { skinSwatchCSS } from './skins.js';
+```
+
+Replace with:
+
+```js
+import { canUnlockSkin, skinSwatchCSS } from './skins.js';
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+      const can = have >= s.price;
+```
+
+Replace with:
+
+```js
+      const eligible = canUnlockSkin(save, s);
+      const can = eligible && have >= s.price;
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+      else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
+```
+
+Replace with:
+
+```js
+      else if (!eligible) btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>BEAT LV ${s.unlockLevel}</span></button>`;
+      else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
+```
+
+In `src/player.js`, find exactly:
+
+```js
+import { makeLogMaterials } from './skins.js';
+```
+
+Replace with:
+
+```js
+import { makeLogMaterials } from './skins.js';
+import { makeCharacterSkinMesh } from './bosses.js';
+```
+
+In `src/player.js`, find exactly:
+
+```js
+    this.isLog = false;
+```
+
+Replace with:
+
+```js
+    this.isLog = false;
+    this.characterSkins = new Map();
+    this.currentCharacterSkin = null;
+```
+
+In `src/player.js`, find exactly:
+
+```js
+  // Swap between the blob sphere and the living-log hero. `material` is used for blobs.
+```
+
+Replace with:
+
+```js
+  // Swap cosmetics while keeping the existing gameplay scale, radius and wobble.
+```
+
+In `src/player.js`, find exactly:
+
+```js
+    this.isLog = log;
+    this.eyes.visible = !log;
+    if (this.log) this.log.visible = log;
+```
+
+Replace with:
+
+```js
+    if (this.currentCharacterSkin) this.currentCharacterSkin.removeFromParent();
+    this.currentCharacterSkin = skin?.shape === 'boss' || skin?.shape === 'character'
+      ? this._getCharacterSkin(skin.id) : null;
+    if (this.currentCharacterSkin) this.body.add(this.currentCharacterSkin);
+    this.isLog = log;
+    this.body.geometry.setDrawRange(0, this.currentCharacterSkin ? 0 : Infinity);
+    this.eyes.visible = !log && !this.currentCharacterSkin;
+    if (this.log) this.log.visible = log;
+```
+
+In `src/player.js`, find exactly:
+
+```js
+  _buildLog() {
+```
+
+Replace with:
+
+```js
+  _getCharacterSkin(id) {
+    if (this.characterSkins.has(id)) return this.characterSkins.get(id);
+    const { group, body } = makeCharacterSkinMesh(id);
+    const core = new THREE.Box3().setFromObject(body).getSize(new THREE.Vector3());
+    const scale = 2 / Math.max(core.x, core.y);
+    const floor = new THREE.Box3().setFromObject(group).min.y;
+    group.scale.setScalar(scale);
+    group.position.y = -1 - floor * scale;
+    group.userData.top = new THREE.Box3().setFromObject(group).max.y + 1;
+    this.characterSkins.set(id, group);
+    return group;
+  }
+
+  _buildLog() {
+```
+
+In `src/player.js`, find exactly:
+
+```js
+    this.label.position.set(0, s * 2 + 0.9, 0);
+```
+
+Replace with:
+
+```js
+    const coreTop = this.currentCharacterSkin?.userData.top ?? 2;
+    this.label.position.set(0, s * Math.max(coreTop, 2) + 0.9, 0);
+```
+
+Verified all 12 models with the game's Three.js version and checked old saves, locked purchases, one-time charges, and unlock persistence. Please check the phone shop before and after a win, buy and equip the boss, reload, switch back to Triple T, and play a full level. Check labels, fit, collision, and the console. The shop uses the existing swatches.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
