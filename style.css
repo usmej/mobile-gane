@@ -290,6 +290,9 @@ html, body {
 }
 .skin-card.is-eq { border-width: 4px; border-color: var(--green); padding: 11px 7px; }
 .skin-card.is-locked .swatch { opacity: .75; }
+.portrait { width: 88px; height: 88px; object-fit: contain; display: block; }
+.skin-card.is-locked .portrait { opacity: .85; }
+.skin-card .portrait.is-gated { filter: grayscale(1) brightness(.8); opacity: .8; }
 .swatch { position: relative; width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--ink); background-size: cover; }
 .spec { position: absolute; left: 14px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: #fff; opacity: .6; }
 .skin-name { font: 700 15px/1.1 var(--body); min-height: 1.1em; }

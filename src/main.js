@@ -8,7 +8,7 @@ import { FX } from './fx.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { haptics } from './haptics.js';
-import { SKINS, canUnlockSkin, getSkin, makeSkinMaterial } from './skins.js';
+import { SKINS, shopSkins, canUnlockSkin, getSkin, makeSkinMaterial } from './skins.js';
 import { loadSave, writeSave, resetSave } from './save.js';
 import { claim } from './daily.js';
 import { BADGES, track } from './achievements.js';
@@ -29,6 +29,27 @@ if (params.has('reset')) resetSave();
 const save = loadSave();
 // FB-002: everyone owns the drum mascot. Existing saves keep the skin they already had equipped.
 if (!save.ownedSkins.includes('drum')) { save.ownedSkins.unshift('drum'); writeSave(save); }
+// Gloops retired: refund owned retired skins once (ids are removed, so this is idempotent) and move off a retired equip.
+const skinRefund = { coins: 0, gems: 0 };
+{
+  let dirty = false;
+  const keep = [];
+  for (const id of save.ownedSkins) {
+    const sk = SKINS.find((x) => x.id === id);
+    if (sk && sk.retired) {
+      if (sk.price > 0) skinRefund[sk.currency === 'gems' ? 'gems' : 'coins'] += sk.price;
+      dirty = true;
+    } else keep.push(id);
+  }
+  if (dirty) {
+    save.ownedSkins = keep;
+    save.coins += skinRefund.coins;
+    save.gems += skinRefund.gems;
+  }
+  const cur = SKINS.find((x) => x.id === save.skin);
+  if (!cur || cur.retired) { save.skin = 'drum'; dirty = true; }
+  if (dirty) writeSave(save);
+}
 if (params.has('level')) {
   const n = parseInt(params.get('level'), 10);
   if (n >= 1) { save.level = n; writeSave(save); }
@@ -85,7 +106,7 @@ const ui = new UI(document.getElementById('ui'), {
   onNext: () => { audio.play('click'); loadLevel(); showMenu(); },
   onRetry: () => { audio.play('click'); startRun(); },
   onJump: () => startManualJump(),
-  onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, SKINS); },
+  onOpenShop: () => { audio.unlock(); audio.play('click'); ui.showShop(save, shopSkins()); },
   onCloseShop: () => { audio.play('click'); showMenu(); },
   onOpenBadges: () => { audio.play('click'); ui.showBadges(save, BADGES); },
   onCloseBadges: () => { audio.play('click'); showMenu(); },
@@ -302,7 +323,7 @@ function equipSkin(id) {
   trail.setColor(getSkin(id).color);
   writeSave(save);
   audio.play('click');
-  ui.showShop(save, SKINS);
+  ui.showShop(save, shopSkins());
 }
 
 // ---------- input: drag anywhere to steer ----------
@@ -605,6 +626,12 @@ function frame(now) {
 
 loadLevel();
 showMenu();
+if (skinRefund.coins || skinRefund.gems) {
+  const parts = [];
+  if (skinRefund.coins) parts.push(`+${skinRefund.coins.toLocaleString()} coins`);
+  if (skinRefund.gems) parts.push(`+${skinRefund.gems.toLocaleString()} gems`);
+  ui.toast(`Old skins retired: ${parts.join(' and ')} refunded`);
+}
 recordBadgeEvent({ type: 'sync' });
 requestAnimationFrame(frame);
 

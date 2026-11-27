@@ -1,5 +1,6 @@
 // DOM UI: menu, HUD, shop, win/lose screens, toasts.
 import { canUnlockSkin, skinSwatchCSS } from './skins.js';
+import { getPortrait } from './portraits.js';
 import { pickMeme } from './memes.js';
 import * as I from './icons.js';
 import { canClaim } from './daily.js';
@@ -217,6 +218,7 @@ export class UI {
 
   // ---------- shop ----------
   showShop(save, skins = []) {
+    skins = skins.filter((s) => !s.retired);
     const owned = new Set(save.ownedSkins || []);
     const cards = skins.map((s) => {
       const isOwned = owned.has(s.id);
@@ -232,9 +234,10 @@ export class UI {
       else if (!eligible) btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>Beat level ${s.unlockLevel}</span></button>`;
       else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
       else btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>Need ${fmt(s.price)}</span></button>`;
+      const portrait = getPortrait(s);
       return `<div class="skin-card${equipped ? ' is-eq' : ''}${!isOwned && !can ? ' is-locked' : ''}">
         ${equipped ? `<span class="eq-check" aria-label="Equipped">${I.check()}</span>` : ''}
-        <div class="swatch" style="background:${skinSwatchCSS(s)}"><i class="spec"></i></div>
+        ${portrait ? `<img class="portrait${eligible ? '' : ' is-gated'}" src="${portrait}" alt="${esc(s.name)}">` : `<div class="swatch" style="background:${skinSwatchCSS(s)}"><i class="spec"></i></div>`}
         <div class="skin-name">${esc(s.name)}</div>
         ${btn}
       </div>`;
@@ -244,7 +247,7 @@ export class UI {
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
         <button class="btn btn-close" aria-label="Close">${I.closeX()}</button>
-        <h2 class="panel-title">Skins</h2>
+        <h2 class="panel-title">Characters</h2>
         ${this._currencyBar(save)}
         <div class="skin-grid">${cards}</div>
         
