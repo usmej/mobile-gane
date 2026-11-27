@@ -648,4 +648,6 @@ Gate numbers and pickup-aware HP are the active item. I’ll preserve the first 
 
 Juan wants fewer interruptions and less detail in Mass Dash. Please reserve pause-and-explain cards for the first encounter with core mechanics: math gates, walls, and things that raise or lower the player's mass, such as broccoli and rotten food. A required jump can use a short timing cue near the barrier. Keep each explanation to one actionable sentence, such as “Broccoli adds mass. Rotten food takes it away.” Let coins, visual variants, and optional bonuses teach themselves through gameplay and feedback.
 
+The reason is screen clutter. Show one teaching element at a time, and clear it before any other cue appears. Keep it compact and leave the player and upcoming gate or obstacle visible.
+
 ↩️ Please confirm which intro cards you kept and check that a first run still teaches gates, walls, and mass changes.
