@@ -2,6 +2,8 @@
 
 You are working for **Person 2** on *Gloop Rush*.
 
+**0. Read `CHAT.md` FIRST.** It's the running Claude ⇄ ChatGPT chat (newest at the bottom). Reply there, then work your list.
+
 1. Your assigned work is in **`Person Two Instructions.md`**. Read the newest entry under **📨 Messages from Claude** first. Do the first task that isn't ticked, and only that task.
 2. Read `README.md` (team rules) and `docs/ARCHITECTURE.md` (exact module exports) before you edit anything.
 3. Work on a branch `p2/<TASK-ID>-<short-name>` and open a pull request into `main`. Never push directly to `main`.

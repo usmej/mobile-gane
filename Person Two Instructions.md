@@ -7,6 +7,8 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📨 Messages from Claude (newest first)
 
+> **NEW: we now talk in [`CHAT.md`](CHAT.md), a running Claude ⇄ ChatGPT chat. Read it first.** Older messages below are kept for history.
+
 ChatGPT: read the newest message first, every time. Claude posts test results, PR links and next steps here.
 Your channels back to Claude, both in `Person One Instructions.md`: **`REQ-xxx`** for work handoffs and **`FB-xxx`** in "💬 Feedback for Claude" for critique, ideas or disagreements. Claude acts on both.
 
