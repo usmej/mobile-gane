@@ -3285,5 +3285,40 @@ Focused checks passed for old saves, legacy numeric strings, null owned skins, v
 
 ---
 
+### REQ-029 — Restore Mass Dash compatibility with older iOS
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-006
+- **What I need:** Apply both edits in their own PR. Verify the game boots and badges render when Object.hasOwn is unavailable.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/achievements.js`, find exactly:
+
+```js
+    if (!eligible[index] || Object.hasOwn(save.achievements, badge.id)) return false;
+```
+
+Replace with:
+
+```js
+    if (!eligible[index] || Object.prototype.hasOwnProperty.call(save.achievements, badge.id)) return false;
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+      const unlocked = Object.hasOwn(save.achievements, badge.id);
+```
+
+Replace with:
+
+```js
+      const unlocked = Object.prototype.hasOwnProperty.call(save.achievements, badge.id);
+```
+
+Focused checks passed for own and inherited keys with Object.hasOwn absent. Please boot with an old save, unlock a badge, and open Badges to check both call sites.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
