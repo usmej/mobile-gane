@@ -72,8 +72,32 @@ export class FX {
 
     const el = document.createElement('div');
     el.className = 'pop-text';
-    el.textContent = text;
     const px = 28 * size;
+    if (typeof text === 'string' && text.startsWith('÷')) {
+      const h = px * 0.8;
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('width', h);
+      svg.setAttribute('height', h);
+      svg.style.cssText = 'display:inline-block;vertical-align:middle;margin-right:0.12em;overflow:visible';
+      const add = (tag, attrs) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        n.setAttribute('fill', '#FFF4E0');
+        n.setAttribute('stroke', '#1B1420');
+        n.setAttribute('stroke-width', '2');
+        n.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(n);
+      };
+      add('rect', { x: 3, y: 9.6, width: 18, height: 4.8, rx: 1 });
+      add('circle', { cx: 12, cy: 3.6, r: 3.6 });
+      add('circle', { cx: 12, cy: 20.4, r: 3.6 });
+      el.appendChild(svg);
+      el.appendChild(document.createTextNode(text.slice(1)));
+    } else {
+      el.textContent = text;
+    }
     const s = el.style;
     s.position = 'absolute';
     s.left = '0';

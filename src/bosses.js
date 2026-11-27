@@ -79,7 +79,7 @@ function squaloScarpettone(size) {
 // 2. Green crocodile whose body is a fat bomber plane.
 function coccodrilloBombardone(size) {
   const c = mk(size);
-  const green = '#4FAE4B', dark = '#2E7D3A';
+  const green = '#C9D33A', dark = '#6E7A1E', snout = '#4FAE4B';
   const body = c.sph(green, 0.8, 0, 1.0, 0, { scale: [1, 1, 1.5] });
   c.sph(CREAM, 0.6, 0, 0.82, 0.2, { scale: [0.8, 0.8, 1.3] });
   // wings, tail plane, tail fin
@@ -89,8 +89,8 @@ function coccodrilloBombardone(size) {
   // wheels
   for (const s of [-1, 1]) c.cyl(INK, 0.2, 0.2, 0.16, s * 0.45, 0.2, 0.3, { rot: [0, 0, Math.PI / 2] });
   // croc snout with teeth
-  c.box(green, 0.9, 0.3, 1.0, 0, 1.0, 1.15);
-  c.box(dark, 0.8, 0.2, 0.95, 0, 0.74, 1.1);
+  c.box(snout, 0.9, 0.3, 1.0, 0, 1.0, 1.15);
+  c.box('#2E7D3A', 0.8, 0.2, 0.95, 0, 0.74, 1.1);
   c.box(INK, 0.78, 0.05, 0.9, 0, 0.86, 1.12, { shadow: false });
   for (let i = -3; i <= 3; i++) {
     c.cone(CREAM, 0.06, 0.16, i * 0.12, 0.93, 1.55, { rot: [Math.PI, 0, 0], shadow: false });
