@@ -3993,5 +3993,135 @@ Replace with:
 
 ---
 
+### REQ-038 — Vary gate numbers and account for food in boss HP
+- **From:** Person 2 / ChatGPT
+- **Blocking:** Gate variety and boss balance
+- **What I need:** Apply and playtest as a standalone PR. Validate natural-speed routes before merge.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+From level 4, additions draw from world-scaled ranges with occasional 96–100 jackpots. Subtractions draw from 1–100 with a mass-relative cap. Division occurs less often, and the choices stay distinct after capping. The sampler counts reachable static broccoli using a lateral travel budget. Moving food and collisions still need browser checks. The conservative recovery route requires neither food nor combos. The new HP target is closer to strong runs and may vary more between adjacent seeds.
+
+Across 500 seeds, layouts repeated deterministically, levels 1–3 were identical, no later pair was duplicated, and every no-food/no-combo strong route reached boss HP. Of 497 updated levels, 444 had a modeled strong-win ratio from 1.2× to 1.6×. Sample HP / strong mass: L5: 140 / 196; L6: 156 / 253; L10: 174 / 244; L11: 161 / 226; L20: 884 / 1237; L40: 21079 / 29510; L120: 29453 / 41234. Please compare natural-speed wins and misses and check for abrupt HP changes across worlds.
+
+```diff
+--- a/src/config.js
++++ b/src/config.js
+@@ -25,6 +25,12 @@
+   lengthBonusPerWorld: 35,
+   gateAddPerWorld: 2,
+   maxGateWorldBonus: 20,
++  gateVariety: {
++    range: 100,
++    targetWinRatio: 1.4,
++    lateralPerDistance: 0.3,
++    foodChance: 0.55,
++  },
+   routeBalance: {
+     firstLevel: 4,
+     samples: 64,
+--- a/src/levels.js
++++ b/src/levels.js
+@@ -35,6 +35,12 @@
+     const value = roll < 0.75 ? 2 : level >= 6 && roll >= 0.93 ? 4 : 3;
+     return { op: 'x', value };
+   }
++  if (level >= CONFIG.routeBalance.firstLevel) {
++    const value = rng.int(1, CONFIG.gateVariety.range);
++    const world = Math.floor((level - 1) / CONFIG.levelsPerWorld);
++    const normal = Math.min(CONFIG.gateVariety.range, 12 + world * 8);
++    return { op: '+', value: value >= 96 ? value : 1 + (value - 1) % normal };
++  }
+   const extra = Math.min(12, Math.max(0, level - 1));
+   const worldBonus = Math.min(CONFIG.maxGateWorldBonus,
+     Math.floor((level - 1) / CONFIG.levelsPerWorld) * CONFIG.gateAddPerWorld);
+@@ -42,6 +48,12 @@
+ }
+ function badGate(rng, level, mass) {
+   const roll = rng();
++  if (level >= CONFIG.routeBalance.firstLevel) {
++    if (roll < 0.12) return { op: '÷', value: roll >= 0.111 && level >= 10 ? 4 : roll >= 0.088 ? 3 : 2 };
++    const value = rng.int(1, CONFIG.gateVariety.range);
++    const cap = Math.max(1, Math.floor(mass * CONFIG.doubleBad.maxLossRatio));
++    return { op: '-', value: Math.min(value, cap) };
++  }
+   if (roll < 0.3) {
+     const value = level >= 10 && roll >= 0.27 ? 4 : level >= 4 && roll >= 0.22 ? 3 : 2;
+     return { op: '÷', value };
+@@ -66,20 +78,40 @@
+   return 'WORLD ' + (Math.floor(index / CONFIG.levelsPerWorld) + 1) + '-' + (index % CONFIG.levelsPerWorld + 1);
+ }
+ 
+-function sampleGateRoutes(items, level, onStrongGate, routeCount = CONFIG.routeBalance.samples, awardCombo = true) {
+-  const gates = items.filter((item) => item.type === 'gate').sort((a, b) => a.d - b.d);
++function sampleGateRoutes(items, level, onStrongGate, routeCount = CONFIG.routeBalance.samples, awardCombo = true, modelFood = false) {
++  const gates = items.filter((item) => item.type === 'gate' || (modelFood && item.type === 'food')).sort((a, b) => a.d - b.d);
+   const rng = makeRng(level + 39521);
++  const foodRng = makeRng(level + 81739);
+   const survivors = [];
+   let strong = 0;
+   for (let route = 0; route <= routeCount; route++) {
+     let mass = CONFIG.startMass, combo = 0;
++    let lastX = 0, lastD = 0;
+     for (const gate of gates) {
++      if (gate.type === 'food') {
++        if (gate.sweep) continue;
++        const dx = Math.abs(gate.x - lastX);
++        if (dx > (gate.d - lastD) * CONFIG.gateVariety.lateralPerDistance) continue;
++        if (gate.good && (route === 0 || foodRng() < CONFIG.gateVariety.foodChance)) {
++          mass += gate.value;
++          lastX = gate.x;
++          lastD = gate.d;
++        }
++        continue;
++      }
+       if (route === 0 && onStrongGate) onStrongGate(gate, mass);
+       const options = [gate.left, gate.right].map(({ op, value }) => {
+         const streak = isGoodOp(op) ? combo + 1 : 0;
+         return { streak, mass: applyOp(mass, op, value) + (awardCombo && streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
+       }).sort((a, b) => a.mass - b.mass);
+       const next = options[route === 0 || rng() < CONFIG.routeBalance.preferStrongGate ? 1 : 0];
++      if (modelFood) {
++        const left = gate.left;
++        const leftStreak = isGoodOp(left.op) ? combo + 1 : 0;
++        const leftMass = applyOp(mass, left.op, left.value) + (awardCombo && leftStreak >= 2 ? leftStreak * CONFIG.comboBonusMass : 0);
++        lastX = next.mass === leftMass && next.streak === leftStreak ? -0.8 : 0.8;
++        lastD = gate.d;
++      }
+       mass = next.mass;
+       combo = next.streak;
+       if (mass <= 0) break;
+@@ -247,15 +279,23 @@
+         gate.left.value = Math.min(cap, gate.left.value);
+         gate.right.value = Math.min(cap, gate.right.value);
+       }
++      if (gate.left.op === gate.right.op && gate.left.value === gate.right.value) {
++        // Keep one original choice; make the other distinct without removing the safer route.
++        if (gate.right.op === '÷') gate.right.value = gate.right.value === 2 ? 3 : 2;
++        else if (gate.right.op === 'x') gate.right.value = gate.right.value === 2 ? 3 : 2;
++        else if (gate.right.value >= CONFIG.gateVariety.range) gate.right.value -= 1;
++        else gate.right.value += 1;
++      }
+     }, 0, false);
+-    const { typical, strong } = sampleGateRoutes(items, level);
++    const { typical, strong } = sampleGateRoutes(items, level, undefined, balance.samples, true, true);
+     const offset = level - balance.firstLevel;
+     const floor = Math.min(balance.maxHpFloor, Math.round(
+       balance.firstBossHp + offset * balance.hpPerLevel + offset ** 2 * balance.hpCurve
+     ));
+-    const target = Math.round(typical + Math.max(0, strong - typical) * balance.strongRouteWeight);
+-    const ceiling = Math.floor(floor * balance.hpBand);
+-    bossHp = Math.max(floor, Math.min(ceiling, target, strong));
++    const target = Math.round(Math.max(strong / CONFIG.gateVariety.targetWinRatio, typical));
++    // Never require food or combos to reach the boss threshold.
++    const ceiling = Math.max(floor, baseRouteMass);
++    bossHp = Math.max(floor, Math.min(ceiling, target));
+     if (baseRouteMass < bossHp) {
+       items.push({
+         type: 'gate', d: length - balance.recoveryGateGap,
+```
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
