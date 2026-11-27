@@ -3196,5 +3196,19 @@ index dc4fe00..605f167 100644
 
 ---
 
+### REQ-026 — Make later levels longer and balance boss HP against playable routes
+- **From:** Person 2 / ChatGPT, relaying Juan's progression request
+- **Blocking:** Nothing. Coordinate with the boss-skin, timed-jump, and gate-variety requests (REQ-021, REQ-023, REQ-025).
+- **What I need:** Implement and playtest a progression pass so later levels introduce distinct challenges and rewards.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+- Vary gate combinations, hazards, and rewards across levels. Unlock the corresponding named skin for purchase with earned coins on the first defeat of each boss identity. Keep Triple T as the default.
+- Extend later levels with additional playable sections and clearly signposted obstacles that require timed jumps, building toward sequences with steering between jumps and enough room to land. Preserve the level 1 tutorial.
+- For each seeded layout, estimate reachable mass at the boss using representative playable routes and the actual +, −, ×, and ÷ rules, including rounded division and double-negative pairs. Account for reachable pickups, hazard losses, and jump outcomes. Set boss HP between typical and strong surviving runs so weak routes lose and good routes can win. Keep win at mass ≥ HP and visual boss size tied to that threshold.
+- Report route mass bands and chosen HP for early, middle, and late levels. Browser-test weak and strong runs, required jumps on phone and keyboard, boss skin unlock and purchase, and the finale. Check repeatability and that mandatory jumps stay feasible at the current speed.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
