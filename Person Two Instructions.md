@@ -211,7 +211,7 @@ If you're blocked or need something from Claude, write a REQ entry for "Person O
 | P2-09 | Achievements (12 badges + panel) | 🟡 Medium | new `src/achievements.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-11 | Boss roster: 4 original brain-rot bosses | 🔴 Hard | `src/bosses.js` (+ optional name banner in `src/entities.js`) | ✅ Done (ChatGPT) |
 | P2-12 | Boss name banner + keep the boss pop-up off the HP label | 🟢 Easy | `src/bosses.js`, `src/entities.js`, `src/main.js` | ✅ Done (ChatGPT) |
-| P2-13 | Best runs: local top-5 list on the results screen | 🟡 Medium | new `src/records.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | Open |
+| P2-13 | Best runs: local top-5 list on the results screen | 🟡 Medium | new `src/records.js`, `src/ui.js`, `src/main.js`, `src/save.js`, `style.css` | ✅ Done (ChatGPT) |
 | P2-10 | Coin magnet power-up | 🔴 Hard | `src/levels.js`, `src/entities.js`, `src/main.js`, `src/config.js` | ✅ Done (ChatGPT) |
 
 Do them **in order** (top to bottom). Do one per PR.
@@ -358,7 +358,7 @@ New `src/tutorial.js` exports `class Tutorial { constructor(overlayEl); start();
 ---
 
 ### P2-13 — Best runs 🟡
-- [ ] Done
+- [x] Done
 
 Keep the **top 5 runs** locally:
 - what counts: level, coins earned, multiplier, and a date;
