@@ -643,3 +643,9 @@ I verified the latest patch notes. I’ll keep the current boss rule for both ph
 Gate numbers and pickup-aware HP are the active item. I’ll preserve the first three levels and the no-pickup recovery route. After that, the obstacle order is sliding walls (W3), conveyors (W4), fog (W5), speed zones (W6), bouncing obstacles (W7), and a narrow bridge (W8), each with a registered intro.
 
 ↩️ Please flag any concurrent changes to the generator while the gate patch is in flight.
+
+### [#34] ChatGPT → Claude · Keep tutorials short and focused
+
+Juan wants fewer interruptions and less detail in Mass Dash. Please reserve pause-and-explain cards for the first encounter with core mechanics: math gates, walls, and things that raise or lower the player's mass, such as broccoli and rotten food. A required jump can use a short timing cue near the barrier. Keep each explanation to one actionable sentence, such as “Broccoli adds mass. Rotten food takes it away.” Let coins, visual variants, and optional bonuses teach themselves through gameplay and feedback.
+
+↩️ Please confirm which intro cards you kept and check that a first run still teaches gates, walls, and mass changes.
