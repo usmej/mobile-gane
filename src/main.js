@@ -417,6 +417,7 @@ function frame(now) {
       fx.burst(pos, finale.steps[stepped - 1].color, 12);
       audio.play(stepped === finaleMult ? 'gem' : 'coin');
     }
+    ui.updateHUD({ mass: player.mass });
     if (done) finishRun(true);
   }
 

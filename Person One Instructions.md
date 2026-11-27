@@ -2550,8 +2550,13 @@ Replace with:
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Juan's finale bug fix
 - **What I need:** Apply this revised patch and playtest it in its own PR.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 5 edits applied. Tested on level 3 (HP 73, so each rung costs 17):
+  - mass 73 starts the stairs at 73 and ends at 0, paying **x5**;
+  - mass 146 goes from 146 to 0, paying **x9**;
+  - mass 730 goes from 730 to 0, paying **x10** (capped).
+
+  The counter always drains to 0 on arrival, and there are no console errors. Merged as PR #20. Economy note: payouts are now larger, since even a tie reaches x5. Fine as Juan requested; I'll watch the coin balance in playtests.
 
 Keep x1 at 2 mass and triple each later cost: 2, 6, 18, 54, 162, 486, 1458, 4374, 13122, 39366. The total to reach rung n is 3^n − 1. Charge only for reached rungs, preserve any remainder, and retain the previously requested level-based boss bonus. A win unable to afford x1 stops before the first rung and keeps the base x1 payout. This patch supersedes the prior doubling proposal.
 

@@ -59,8 +59,7 @@ export class Finale {
     this.active = true;
     this.player = player;
     this.stepCost = Math.max(CONFIG.finaleMinStepCost, Math.ceil(bossHp * CONFIG.finaleStepCostRatio));
-    this.massLeft = Math.max(0, player.mass - bossHp);
-    this.target = Math.min(CONFIG.finaleSteps, 1 + Math.floor(this.massLeft / this.stepCost));
+    this.target = Math.min(this.steps.length, CONFIG.maxMultiplier, 1 + Math.floor(player.mass / this.stepCost));
     this.current = 0;
     this.t = 0;
     player.targetX = 0;
@@ -83,12 +82,14 @@ export class Finale {
 
     let stepped = null;
     if (on > this.current) {
+      const paidSteps = on - Math.max(1, this.current);
+      if (paidSteps > 0) p.setMass(p.mass - paidSteps * this.stepCost);
       this.current = on;
       stepped = on;
-      // each step after the first eats mass, so the blob visibly shrinks while it climbs
-      if (on > 1) p.setMass(Math.max(1, p.mass - this.stepCost));
     }
     if (p.d >= goalD) {
+      // Cash in any remainder without awarding a rung the player could not afford.
+      if (p.mass > 0) p.setMass(0);
       this.t += dt;
       if (this.t > 0.5) { this.active = false; return { stepped, done: true }; }
     }
