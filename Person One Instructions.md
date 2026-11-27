@@ -2538,90 +2538,130 @@ Replace with:
 
 ---
 
-### REQ-020 — Let Triple T spend their mass on the multiplier stairs
+### REQ-020 — Make the multiplier stairs spend mass at doubling costs
 - **From:** Person 2 / ChatGPT
-- **Blocking:** Juan's requested finale bug fix
-- **What I need:** Apply and playtest this fix in its own PR.
+- **Blocking:** Juan's finale bug fix
+- **What I need:** Apply this revised patch in its own PR, then playtest and merge after review.
 - **Status:** 🟡 Open
 - **Lead's answer:** _(lead fills this in)_
 
-Use the actual displayed post-fight mass, retain free x1, and spend mass on each extra rung. The cost is 22% of boss HP rounded up, with the existing minimum of 4. Cash in any remainder on arrival so the display reaches zero. Payout reflects the rung reached, with x10 as the cap.
+The updated user requirement supersedes the fixed-cost proposal. Rungs x1 through x10 cost 2, 4, 8, 16, 32, 64, 128, 256, 512, and 1024 mass. Charge only for rungs reached and keep the remainder at the stop. Defeating a boss adds 4 mass per level after Level 1, capped at 160. If a winning run cannot afford x1, stop before the first rung and use the base x1 payout.
 
-In `src/finale.js`, find exactly:
-
-```js
-    this.massLeft = Math.max(0, player.mass - bossHp);
-    this.target = Math.min(CONFIG.finaleSteps, 1 + Math.floor(this.massLeft / this.stepCost));
+```diff
+diff --git a/src/config.js b/src/config.js
+index 3b2040f..14bff7a 100644
+--- a/src/config.js
++++ b/src/config.js
+@@ -88,8 +88,9 @@ export const CONFIG = {
+   finaleStepDepth: 3,
+   finaleStepRise: 0.55,
+   finaleSpeed: 9,
+-  finaleStepCostRatio: 0.3, // each step costs this fraction of boss HP...
+-  finaleMinStepCost: 4,     // ...but at least this much mass
++  finaleFirstStepCost: 2,
++  finaleMassPerLevel: 4,    // bonus mass earned for defeating the boss, starting at level 2
++  finaleMaxMassBonus: 160,
+ };
+ 
+ export function massToScale(mass) {
+diff --git a/src/finale.js b/src/finale.js
+index 8538b58..d48fe65 100644
+--- a/src/finale.js
++++ b/src/finale.js
+@@ -2,7 +2,7 @@ import * as THREE from 'three';
+ import { CONFIG } from './config.js';
+ import { makeTextTexture, FONT } from './labels.js';
+ 
+-// Bonus stairs after the boss: x1 -> x10. Leftover mass pays for each step.
++// Bonus stairs after the boss: x1 -> x10. The mass cost doubles on each step.
+ const INK = '#1B1420';
+ 
+ export class Finale {
+@@ -55,16 +55,24 @@ export class Finale {
+   }
+ 
+   /** Begin the climb. Returns the multiplier the player will reach. */
+-  start(player, bossHp) {
++  start(player) {
+     this.active = true;
+     this.player = player;
+-    this.stepCost = Math.max(CONFIG.finaleMinStepCost, Math.ceil(bossHp * CONFIG.finaleStepCostRatio));
+-    this.massLeft = Math.max(0, player.mass - bossHp);
+-    this.target = Math.min(CONFIG.finaleSteps, 1 + Math.floor(this.massLeft / this.stepCost));
++    const maxStep = Math.min(this.steps.length, CONFIG.maxMultiplier);
++    let remaining = player.mass;
++    this.target = 0;
++    while (this.target < maxStep && remaining >= this.stepCost(this.target + 1)) {
++      remaining -= this.stepCost(this.target + 1);
++      this.target++;
++    }
+     this.current = 0;
+     this.t = 0;
+     player.targetX = 0;
+-    return this.target;
++    return Math.max(1, this.target);
++  }
++
++  stepCost(step) {
++    return CONFIG.finaleFirstStepCost * 2 ** (step - 1);
+   }
+ 
+   /** Advance the climb. Returns { stepped: n | null, done: bool }. */
+@@ -72,7 +80,8 @@ export class Finale {
+     if (!this.active) return { stepped: null, done: false };
+     const p = this.player;
+     const goalStep = this.steps[this.target - 1];
+-    const goalD = goalStep.d + CONFIG.finaleStepDepth / 2;
++    const halfDepth = CONFIG.finaleStepDepth / 2;
++    const goalD = goalStep ? goalStep.d + halfDepth : this.steps[0].d - halfDepth;
+     p.d = Math.min(goalD, p.d + CONFIG.finaleSpeed * dt);
+ 
+     // which step are we on?
+@@ -83,10 +92,11 @@ export class Finale {
+ 
+     let stepped = null;
+     if (on > this.current) {
++      let cost = 0;
++      for (let step = this.current + 1; step <= on; step++) cost += this.stepCost(step);
++      p.setMass(p.mass - cost);
+       this.current = on;
+       stepped = on;
+-      // each step after the first eats mass, so the blob visibly shrinks while it climbs
+-      if (on > 1) p.setMass(Math.max(1, p.mass - this.stepCost));
+     }
+     if (p.d >= goalD) {
+       this.t += dt;
+diff --git a/src/main.js b/src/main.js
+index 7aaf70e..76c3885 100644
+--- a/src/main.js
++++ b/src/main.js
+@@ -161,7 +161,12 @@ function defeatBoss() {
+   fx.popText(pickMeme('win') || 'W', b.group.position.clone().setY(b.size * 2), '#4EE06A', 1.6);
+   fx.shake(0.6);
+   audio.play('smash');
+-  finaleMult = finale.start(player, b.hp);
++  const massBonus = Math.min(CONFIG.finaleMaxMassBonus, (save.level - 1) * CONFIG.finaleMassPerLevel);
++  if (massBonus > 0) {
++    player.setMass(player.mass + massBonus);
++    ui.toast(`BOSS BONUS: +${massBonus} MASS`);
++  }
++  finaleMult = finale.start(player);
+   state = 'finale';
+ }
+ 
+@@ -413,6 +418,7 @@ function frame(now) {
+       fx.burst(pos, finale.steps[stepped - 1].color, 12);
+       audio.play(stepped === finaleMult ? 'gem' : 'coin');
+     }
++    ui.updateHUD({ mass: player.mass });
+     if (done) finishRun(true);
+   }
 ```
 
-Replace with:
-
-```js
-    this.target = Math.min(this.steps.length, CONFIG.maxMultiplier, 1 + Math.floor(player.mass / this.stepCost));
-```
-
-In `src/finale.js`, find exactly:
-
-```js
-      this.current = on;
-      stepped = on;
-      // each step after the first eats mass, so the blob visibly shrinks while it climbs
-      if (on > 1) p.setMass(Math.max(1, p.mass - this.stepCost));
-```
-
-Replace with:
-
-```js
-      const paidSteps = on - Math.max(1, this.current);
-      if (paidSteps > 0) p.setMass(p.mass - paidSteps * this.stepCost);
-      this.current = on;
-      stepped = on;
-```
-
-In `src/finale.js`, find exactly:
-
-```js
-      this.t += dt;
-```
-
-Replace with:
-
-```js
-      // Cash in any remainder without awarding a rung the player could not afford.
-      if (p.mass > 0) p.setMass(0);
-      this.t += dt;
-```
-
-In `src/main.js`, find exactly:
-
-```js
-    if (done) finishRun(true);
-  }
-```
-
-Replace with:
-
-```js
-    ui.updateHUD({ mass: player.mass });
-    if (done) finishRun(true);
-  }
-```
-
-In `src/config.js`, find exactly:
-
-```js
-  finaleStepCostRatio: 0.3, // each step costs this fraction of boss HP...
-```
-
-Replace with:
-
-```js
-  finaleStepCostRatio: 0.22, // each step costs this fraction of boss HP...
-```
-
-Seven simulation cases passed. For a 50 HP boss, 87 mass yields x8, 88 yields x9, and 99 yields x10. Each ends at zero. Please verify the HUD, pop-ups, payout, and zero-mass win flow in a full browser run.
+90 affordability and exact-debit checks passed. Please play a full round and check the live mass, reward, remainder and boss bonus. At finale masses 509 and 510, the expected ranks are x7 and x8. At 2045 and 2046 the expected ranks are x9 and x10.
 
 ---
+
 
 ### REQ-021 — Sell defeated boss skins and expand the brainrot roster
 - **From:** Person 2 / ChatGPT
