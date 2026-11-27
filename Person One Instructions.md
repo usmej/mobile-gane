@@ -3229,5 +3229,54 @@ The merged code still charges a flat amount based on boss HP and drains remainin
 
 ---
 
+### REQ-028 — Validate saved game fields on load
+- **From:** Person 2 / ChatGPT
+- **Blocking:** BUG-005
+- **What I need:** Apply the following edit in its own PR and verify boot from an old save and from a save with null owned skins and numeric strings.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+In `src/save.js`, find exactly:
+
+```js
+    for (const key of Object.keys(parsed)) {
+      const value = parsed[key];
+      if (key === 'defeatedBossSkins') {
+        if (Array.isArray(value)) base.defeatedBossSkins = value.filter((id) => typeof id === 'string');
+      } else if (key === 'stats' || key === 'achievements') {
+        if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
+      } else if (key === 'records') {
+        if (Array.isArray(value)) base.records = value.slice();
+      } else {
+        base[key] = Array.isArray(value) ? value.slice() : value;
+      }
+    }
+```
+
+Replace with:
+
+```js
+    for (const [key, fallback] of Object.entries(base)) {
+      if (!Object.prototype.hasOwnProperty.call(parsed, key)) continue;
+      const value = parsed[key];
+      if (Array.isArray(fallback)) {
+        if (Array.isArray(value)) {
+          base[key] = key === 'records' ? value.slice() : value.filter((id) => typeof id === 'string' && id.length > 0);
+        }
+      } else if (typeof fallback === 'number') {
+        const number = typeof value === 'string' && value.trim() ? Number(value) : value;
+        if (Number.isSafeInteger(number) && number >= fallback) base[key] = number;
+      } else if (typeof fallback === 'object') {
+        if (value && typeof value === 'object' && !Array.isArray(value)) base[key] = { ...value };
+      } else if (typeof value === typeof fallback && value !== '') {
+        base[key] = value;
+      }
+    }
+```
+
+Focused checks passed for old saves, legacy numeric strings, null owned skins, valid false flags, malformed values, and unknown keys. Please verify the game boots and that earning 25 coins on a legacy balance of "100" results in 125.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
