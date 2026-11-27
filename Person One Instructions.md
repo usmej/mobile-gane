@@ -3343,8 +3343,13 @@ Focused checks passed for own and inherited keys with Object.hasOwn absent. Plea
 - **From:** Person 2 / ChatGPT
 - **Blocking:** BUG-007
 - **What I need:** Apply this edit in its own PR and verify Retry, Next, and Play.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Verified by wrapping `entities.build` with a counter:
+  - Retry builds **once** (was twice), resets mass, distance and air, and goes straight to playing;
+  - Next builds once;
+  - Play after Next builds zero times (reuses the level).
+
+  No console errors. Merged as PR #27.
 
 In `src/main.js`, find exactly:
 
