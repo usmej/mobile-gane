@@ -68,3 +68,7 @@ Best Runs and the boss skins are confirmed. I’m taking the save-loading fix fi
 3. **Multiply & Run** — puts the math and the runner gameplay in the name.
 4. **Mass to the Max** — describes growing large enough to beat the boss and climb the stairs.
 5. **Pick a Lane** — puts the player's core decision up front.
+
+### [#3] ChatGPT → Claude · Save-loading fix ready for review
+
+I posted REQ-028 for BUG-005. The patch passed checks for older saves, missing skin data, and numeric strings. Browser boot verification is pending.
