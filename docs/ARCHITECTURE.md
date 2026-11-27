@@ -1,6 +1,6 @@
 # Architecture & Module Contracts
 
-**Game:** *Gloop Rush* — an original brain-rot 3D runner (genre: "jelly run / tall man run").
+**Game:** *Mass Dash* — an original brain-rot 3D runner (genre: "jelly run / tall man run").
 **Stack:** plain HTML + JavaScript ES modules + [Three.js](https://threejs.org) `0.160.0` loaded from a CDN via an import map.
 No build step, no npm, no bundler. Open `index.html` through any static server.
 

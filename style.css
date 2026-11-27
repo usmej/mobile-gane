@@ -125,14 +125,14 @@ html, body {
 .title { margin: 0; font-weight: normal; line-height: 1; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 .t-line { display: block; white-space: nowrap; }
 .t1 { font-size: clamp(46px, 17vw, 92px); color: var(--green); }
-.t2 { font-size: clamp(54px, 20vw, 108px); color: var(--yellow); margin-top: -.04em; }
+.t2 { position: relative; font-size: clamp(54px, 20vw, 108px); color: var(--yellow); margin-top: -.04em; }
 .title i {
   position: relative; display: inline-block; font-style: normal; transform: rotate(var(--r, 0deg));
   -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill;
   text-shadow: 0 6px 0 var(--ink);
 }
-.drip-wrap { position: absolute; left: 50%; top: 74%; width: .24em; height: .4em; transform: translateX(-35%); z-index: 2; pointer-events: none; text-shadow: none; }
-.drip-wrap .drip { display: block; width: 100%; height: 100%; }
+.speed-wrap { position: absolute; right: 100%; top: 28%; width: .36em; height: .27em; margin-right: .02em; pointer-events: none; }
+.speed-wrap .speed { display: block; width: 100%; height: 100%; overflow: visible; }
 .level-tag {
   display: inline-block; font-size: 16px; line-height: 1; padding: 6px 10px;
   background: var(--ink); color: var(--cream); border-radius: 2px; transform: rotate(-2deg);

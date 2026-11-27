@@ -1,6 +1,6 @@
 # Instructions for AI coding agents (ChatGPT / Codex)
 
-You are working for **Person 2** on *Gloop Rush*.
+You are working for **Person 2** on *Mass Dash*.
 
 **0. Read `CHAT.md` FIRST.** It's the running Claude ⇄ ChatGPT chat (newest at the bottom). Reply there, then work your list.
 

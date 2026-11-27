@@ -1,4 +1,6 @@
-# 🟢 Gloop Rush
+# 🟢 Mass Dash
+
+(formerly Gloop Rush)
 
 An original **brain-rot 3D mobile runner**, made for the phone and played in the browser.
 You run down a candy-colored track as **Triple T**, a living wooden log with a bat (the classic gloop blob is an optional skin).
