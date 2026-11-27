@@ -2320,5 +2320,223 @@ I checked that each full-line anchor matches once on main, parsed all five patch
 
 ---
 
+### REQ-019 — Apply and playtest local best runs (P2-13)
+- **From:** Person 2 / ChatGPT
+- **Blocking:** P2-13
+- **What I need:** Apply this patch on a dedicated P2-13 branch, then playtest and tick P2-13 in that PR. Report the test result and PR link in Person Two Instructions.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Rank completed wins by coins earned, then higher multiplier, then higher level, then earlier completion date. The win screen shows the new rank only when it makes the top five. The menu shows the saved runs in the same style as Badges, with a clear empty state. Dates display in UTC as YYYY-MM-DD. Existing coin payouts and save keys are preserved.
+
+Create `src/records.js` with:
+
+```js
+const MAX_RECORDS = 5;
+
+function isRun(run) {
+  return run && Number.isInteger(run.level) && run.level > 0
+    && Number.isFinite(run.coinsEarned) && run.coinsEarned >= 0
+    && Number.isFinite(run.multiplier) && run.multiplier >= 1
+    && typeof run.date === 'string' && Number.isFinite(Date.parse(run.date));
+}
+
+function compareRuns(a, b) {
+  return b.coinsEarned - a.coinsEarned
+    || b.multiplier - a.multiplier
+    || b.level - a.level
+    || Date.parse(a.date) - Date.parse(b.date);
+}
+
+export function topRuns(save) {
+  if (!Array.isArray(save.records)) return [];
+  return save.records.filter(isRun).sort(compareRuns).slice(0, MAX_RECORDS);
+}
+
+export function addRun(save, run) {
+  if (!isRun(run)) return null;
+  const entry = { level: run.level, coinsEarned: run.coinsEarned, multiplier: run.multiplier, date: run.date };
+  save.records = [...topRuns(save), entry].sort(compareRuns).slice(0, MAX_RECORDS);
+  const index = save.records.indexOf(entry);
+  return index === -1 ? null : index + 1;
+}
+```
+
+In `src/save.js`, find exactly:
+
+```js
+  tutorialDone: false,
+```
+
+Replace with:
+
+```js
+  tutorialDone: false,
+  records: [],
+```
+
+In `src/save.js`, find exactly:
+
+```js
+      } else {
+        base[key] = Array.isArray(value) ? value.slice() : value;
+```
+
+Replace with:
+
+```js
+      } else if (key === 'records') {
+        if (Array.isArray(value)) base.records = value.slice();
+      } else {
+        base[key] = Array.isArray(value) ? value.slice() : value;
+```
+
+In `src/main.js`, find exactly:
+
+```js
+import { BADGES, track } from './achievements.js';
+```
+
+Replace with:
+
+```js
+import { BADGES, track } from './achievements.js';
+import { addRun, topRuns } from './records.js';
+```
+
+In `src/main.js`, find exactly:
+
+```js
+  onCloseBadges: () => { audio.play('click'); showMenu(); },
+```
+
+Replace with:
+
+```js
+  onCloseBadges: () => { audio.play('click'); showMenu(); },
+  onOpenRecords: () => { audio.play('click'); ui.showRecords(topRuns(save)); },
+  onCloseRecords: () => { audio.play('click'); showMenu(); },
+```
+
+In `src/main.js`, find exactly:
+
+```js
+    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult };
+```
+
+Replace with:
+
+```js
+    const bestRank = addRun(save, { level: save.level, coinsEarned, multiplier: mult, date: new Date().toISOString() });
+    endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank };
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+          <button class="btn btn-md btn-badges">BADGES</button>
+```
+
+Replace with:
+
+```js
+          <button class="btn btn-md btn-badges">BADGES</button>
+          <button class="btn btn-md btn-records">BEST RUNS</button>
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+    this._on(el, '.btn-badges', () => this._call('onOpenBadges'));
+```
+
+Replace with:
+
+```js
+    this._on(el, '.btn-badges', () => this._call('onOpenBadges'));
+    this._on(el, '.btn-records', () => this._call('onOpenRecords'));
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1 } = {}) {
+```
+
+Replace with:
+
+```js
+  showWin({ level, coinsEarned = 0, gemsEarned = 0, multiplier = 1, bestRank = null } = {}) {
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+        <button class="btn btn-next">NEXT</button>
+```
+
+Replace with:
+
+```js
+        ${bestRank !== null ? `<div class="record-highlight">NEW BEST #${bestRank}</div>` : ''}
+        <button class="btn btn-next">NEXT</button>
+```
+
+In `src/ui.js`, find exactly:
+
+```js
+  // ---------- misc ----------
+```
+
+Replace with:
+
+```js
+  showRecords(runs) {
+    const rows = runs.map((run, index) => {
+      const date = new Date(run.date).toISOString().slice(0, 10);
+      return `<li class="badge-card record-row">
+        <div class="badge-name">#${index + 1} · LV ${run.level}</div>
+        <div>${fmt(run.coinsEarned)} coins · x${run.multiplier}</div>
+        <time datetime="${date}">${date}</time>
+      </li>`;
+    }).join('');
+    const el = this._mount('panel-layer shop', `
+      <div class="card card-shop">
+        <button class="btn btn-close" aria-label="Close best runs">${I.closeX()}</button>
+        <div class="shop-head"><span class="shop-title">BEST RUNS</span></div>
+        ${rows
+          ? `<ol class="skin-grid record-list" role="list">${rows}</ol>`
+          : '<div class="badge-card">Win a level to record your first run.</div>'}
+      </div>`);
+    this._on(el, '.btn-close', () => this._call('onCloseRecords'));
+  }
+
+  // ---------- misc ----------
+```
+
+In `style.css`, find exactly:
+
+```css
+.badge-status { display: block; margin-top: 6px; font-size: 10px; }
+```
+
+Replace with:
+
+```css
+.badge-status { display: block; margin-top: 6px; font-size: 10px; }
+.skin-grid.record-list {
+  grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0 4px 4px; list-style: none;
+}
+.record-row { display: grid; gap: 2px; }
+.record-highlight {
+  align-self: center; padding: 6px 10px; color: var(--cream);
+  background: var(--ink); border-radius: 2px; font: 14px var(--font);
+}
+```
+
+**Verification:** I checked all 11 full-line anchors, parsed the JavaScript, and ran focused ranking, cutoff, tie, old-save, malformed-save, reload, reset, and UI markup checks. Please play a full winning run at phone width and confirm the correct rank, coin payout, and date. Reload, open and close Best Runs, and confirm records persist. With five higher scores seeded, check that an unranked win shows no badge and a loss does not change records. Check that the menu buttons fit and that there are no console errors.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
