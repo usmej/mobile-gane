@@ -55,15 +55,26 @@ export class Finale {
   }
 
   /** Begin the climb. Returns the multiplier the player will reach. */
-  start(player, bossHp) {
+  start(player) {
     this.active = true;
     this.player = player;
-    this.stepCost = Math.max(CONFIG.finaleMinStepCost, Math.ceil(bossHp * CONFIG.finaleStepCostRatio));
-    this.target = Math.min(this.steps.length, CONFIG.maxMultiplier, 1 + Math.floor(player.mass / this.stepCost));
+    // Costs triple each rung: 2, 6, 18, 54, ... (total to reach rung n is 3^n - 1).
+    // Climb to the highest rung you can afford and keep the remainder.
+    const maxStep = Math.min(this.steps.length, CONFIG.maxMultiplier);
+    let remaining = player.mass;
+    this.target = 0;
+    while (this.target < maxStep && remaining >= this.stepCost(this.target + 1)) {
+      remaining -= this.stepCost(this.target + 1);
+      this.target++;
+    }
     this.current = 0;
     this.t = 0;
     player.targetX = 0;
-    return this.target;
+    return Math.max(1, this.target); // can't afford x1 -> still the base x1 payout
+  }
+
+  stepCost(step) {
+    return CONFIG.finaleFirstStepCost * 3 ** (step - 1);
   }
 
   /** Advance the climb. Returns { stepped: n | null, done: bool }. */
@@ -71,7 +82,8 @@ export class Finale {
     if (!this.active) return { stepped: null, done: false };
     const p = this.player;
     const goalStep = this.steps[this.target - 1];
-    const goalD = goalStep.d + CONFIG.finaleStepDepth / 2;
+    const halfDepth = CONFIG.finaleStepDepth / 2;
+    const goalD = goalStep ? goalStep.d + halfDepth : this.steps[0].d - halfDepth; // target 0: stop before the stairs
     p.d = Math.min(goalD, p.d + CONFIG.finaleSpeed * dt);
 
     // which step are we on?
@@ -82,14 +94,13 @@ export class Finale {
 
     let stepped = null;
     if (on > this.current) {
-      const paidSteps = on - Math.max(1, this.current);
-      if (paidSteps > 0) p.setMass(p.mass - paidSteps * this.stepCost);
+      let cost = 0;
+      for (let step = this.current + 1; step <= on; step++) cost += this.stepCost(step);
+      p.setMass(p.mass - cost);
       this.current = on;
       stepped = on;
     }
     if (p.d >= goalD) {
-      // Cash in any remainder without awarding a rung the player could not afford.
-      if (p.mass > 0) p.setMass(0);
       this.t += dt;
       if (this.t > 0.5) { this.active = false; return { stepped, done: true }; }
     }

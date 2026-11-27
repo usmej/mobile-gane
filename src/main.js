@@ -165,7 +165,12 @@ function defeatBoss() {
   fx.popText(pickMeme('win') || 'W', b.group.position.clone().setY(b.size * 2), '#4EE06A', 1.6);
   fx.shake(0.6);
   audio.play('smash');
-  finaleMult = finale.start(player, b.hp);
+  const massBonus = Math.min(CONFIG.finaleMaxMassBonus, (save.level - 1) * CONFIG.finaleMassPerLevel);
+  if (massBonus > 0) {
+    player.setMass(player.mass + massBonus);
+    ui.toast(`BOSS BONUS: +${massBonus} MASS`);
+  }
+  finaleMult = finale.start(player);
   state = 'finale';
   if (!save.defeatedBossSkins.includes(b.skinId)) {
     save.defeatedBossSkins.push(b.skinId);
