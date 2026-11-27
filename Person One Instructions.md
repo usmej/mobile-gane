@@ -3800,5 +3800,136 @@ The post-pass keeps the original seeded draws and changes only the disallowed ga
 
 ---
 
+### REQ-034 — Add longer, varied pickup paths
+- **From:** Person 2 / ChatGPT
+- **Blocking:** Pickup variety
+- **What I need:** Apply the changes in their own PR and test varied paths and airborne coins at phone width.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Seeded pickup rows weave between lanes starting on level 4. Level 6 adds wave paths and airborne coins above barriers. From level 11 some food sweeps laterally. Steering and timing improve pickup rewards. The row keeps its original food count and mass values. Existing gate-only HP simulations still reach boss HP without relying on pickup timing. Please collect food along representative paths in the browser to verify the difficulty with actual pickups.
+
+In `src/config.js`, find exactly:
+
+```js
+  pickupRadius: 0.9,
+```
+
+Replace with:
+
+```js
+  pickupRadius: 0.9,
+  pickupPaths: {
+    firstLevel: 4, waveLevel: 6, motionLevel: 11,
+    spacing: 3.6, swing: 0.55, cycleDistance: 27,
+    jumpCoinClearance: 0.9, jumpCoinHeight: 1.8,
+  },
+```
+
+In `src/levels.js`, find exactly:
+
+```js
+      best += n * 2;
+      for (let i = 0; i < 5; i++) items.push({ type: 'coin', d: d - 4 + i * 2.2, x: 0 });
+```
+
+Replace with:
+
+```js
+      best += n * 2;
+      for (let i = 0; i < 5; i++) items.push({ type: 'coin', d: d - 4 + i * 2.2, x: 0 });
+      if (level >= CONFIG.pickupPaths.firstLevel) {
+        const pathRng = makeRng(Math.floor(d * 1000) + level * 7919);
+        const patterns = level >= CONFIG.pickupPaths.motionLevel ? 4 : level >= CONFIG.pickupPaths.waveLevel ? 3 : 2;
+        const pattern = pathRng.int(0, patterns - 1);
+        const row = items.slice(-(2 * n + 5));
+        const { spacing, swing } = CONFIG.pickupPaths;
+        const lane = (i, count) => {
+          if (pattern === 0) return healthySide * [-1, 0, 1, 0][i % 4];
+          if (pattern === 1) return healthySide * [0, 1, 0, -1][i % 4];
+          if (pattern === 2) return healthySide * Math.sin(i / (count - 1) * Math.PI * 2);
+          return healthySide * (2 * i / (count - 1) - 1);
+        };
+        const span = W - swing;
+        row.forEach((item, index) => {
+          const food = item.type === 'food';
+          const i = food ? Math.floor(index / 2) : index - 2 * n;
+          const x = lane(i, food ? n : 5) * span;
+          item.d = d - 5 + i * spacing + (food && !item.good ? 1.1 : 0);
+          item.x = food && !item.good ? (x >= 0 ? -span : span) : x;
+          if (pattern === 3 && food) item.sweep = (item.good ? 1 : -1) * swing;
+        });
+      }
+```
+
+In `src/levels.js`, find exactly:
+
+```js
+      items.push({ type: 'barrier', d: pos });
+```
+
+Replace with:
+
+```js
+      items.push({ type: 'barrier', d: pos });
+      items.push({ type: 'coin', d: pos, x: 0, jumpReward: true });
+```
+
+In `src/entities.js`, find exactly:
+
+```js
+          m.position.set(it.x, 0.9, z);
+```
+
+Replace with:
+
+```js
+          m.position.set(it.x, it.jumpReward ? CONFIG.pickupPaths.jumpCoinHeight : 0.9, z);
+```
+
+In `src/entities.js`, find exactly:
+
+```js
+      if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
+```
+
+Replace with:
+
+```js
+      if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
+      if (e.sweep && near && !e.used) {
+        e.obj.position.x = e.x + e.sweep * Math.sin((pd - e.d) / CONFIG.pickupPaths.cycleDistance * 2 * Math.PI + Math.PI / 2);
+      }
+```
+
+In `src/entities.js`, find exactly:
+
+```js
+      if (e.type === 'coin' && (magnetActive || e.magnetPulled)) {
+```
+
+Replace with:
+
+```js
+      if (e.jumpReward && player.y < CONFIG.pickupPaths.jumpCoinClearance) continue;
+      if (e.type === 'coin' && !e.jumpReward && (magnetActive || e.magnetPulled)) {
+```
+
+In `src/entities.js`, find exactly:
+
+```js
+(e.type === 'saw' ? e.obj.position.x : e.x ?? 0)
+```
+
+Replace with:
+
+```js
+(e.type === 'saw' || e.sweep ? e.obj.position.x : e.x ?? 0)
+```
+
+500 seeded layouts reproduced identically on repeat. Levels 1–3 match the original, moving food stays inside track bounds, and each of the 1,470 jump coins is paired with a barrier. Browser-check a grounded miss and an airborne pickup, magnet interaction, movement and pickup alignment, and a full run to the boss.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
