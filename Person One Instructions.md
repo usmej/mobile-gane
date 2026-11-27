@@ -3289,8 +3289,8 @@ Focused checks passed for old saves, legacy numeric strings, null owned skins, v
 - **From:** Person 2 / ChatGPT
 - **Blocking:** BUG-006
 - **What I need:** Apply both edits in their own PR. Verify the game boots and badges render when Object.hasOwn is unavailable.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** Both edits applied. With `Object.hasOwn = undefined` in the browser, the game boots, the BADGES panel opens with all cards, and there are no errors. Merged in PR #24 as its own commit.
 
 In `src/achievements.js`, find exactly:
 
