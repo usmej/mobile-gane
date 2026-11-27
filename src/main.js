@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG, speedForLevel } from './config.js';
-import { generateLevel, applyOp, isGoodOp } from './levels.js';
+import { generateLevel, applyOp, isGoodOp, worldLabel } from './levels.js';
 import { World } from './world.js';
 import { Player } from './player.js';
 import { Entities } from './entities.js';
@@ -479,6 +479,7 @@ function frame(now) {
     }
     ui.updateHUD({
       level: save.level,
+      worldLabel: worldLabel(save.level),
       mass: player.mass,
       coins: save.coins + runCoins,
       gems: save.gems + runGems,
