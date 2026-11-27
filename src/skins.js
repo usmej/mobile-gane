@@ -3,7 +3,7 @@ import { BOSS_SKINS } from './bosses.js';
 
 // pattern: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'
 // shape (optional, default 'blob'): 'blob' | 'log' | 'boss' | 'character'
-export const SKINS = [
+const ALL_SKINS = [
   { id: 'classic',  name: 'Gloop', price: 0,   currency: 'coins', color: '#5be37a', color2: '#2fae4f', pattern: 'solid' },
   { id: 'bubble',   name: 'Bubblegum', price: 50,  currency: 'coins', color: '#ff8ad8', color2: '#ff4fb8', pattern: 'solid' },
   { id: 'sus',      name: 'Traffic Cone',      price: 90,  currency: 'coins', color: '#ff4d4d', color2: '#a81f2d', pattern: 'stripes' },
@@ -33,12 +33,19 @@ export const SKINS = [
   ...BOSS_SKINS,
 ];
 
+// Gloops are retired: plain blob skins stay in the list (old saves / getSkin keep working) but are hidden from the shop.
+export const SKINS = ALL_SKINS.map((s) => (!s.shape || s.shape === 'blob') ? { ...s, retired: true } : s);
+
+export function shopSkins() {
+  return SKINS.filter((s) => !s.retired);
+}
+
 export function canUnlockSkin(save, skin) {
   return skin.shape !== 'boss' || save.defeatedBossSkins?.includes(skin.id) === true;
 }
 
 export function getSkin(id) {
-  return SKINS.find((s) => s.id === id) || SKINS[0];
+  return SKINS.find((s) => s.id === id) || SKINS.find((s) => s.id === 'drum') || SKINS[0];
 }
 
 const textureCache = new Map();

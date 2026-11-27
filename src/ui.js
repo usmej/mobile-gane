@@ -217,6 +217,7 @@ export class UI {
 
   // ---------- shop ----------
   showShop(save, skins = []) {
+    skins = skins.filter((s) => !s.retired);
     const owned = new Set(save.ownedSkins || []);
     const cards = skins.map((s) => {
       const isOwned = owned.has(s.id);
@@ -244,7 +245,7 @@ export class UI {
     const el = this._mount('panel-layer shop', `
       <div class="card card-shop">
         <button class="btn btn-close" aria-label="Close">${I.closeX()}</button>
-        <h2 class="panel-title">Skins</h2>
+        <h2 class="panel-title">Characters</h2>
         ${this._currencyBar(save)}
         <div class="skin-grid">${cards}</div>
         
