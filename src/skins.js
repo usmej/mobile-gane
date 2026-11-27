@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import { BOSS_SKINS } from './bosses.js';
 
 // pattern: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'
-// shape (optional, default 'blob'): 'blob' | 'log'
+// shape (optional, default 'blob'): 'blob' | 'log' | 'boss' | 'character'
 export const SKINS = [
   { id: 'classic',  name: 'Gloop', price: 0,   currency: 'coins', color: '#5be37a', color2: '#2fae4f', pattern: 'solid' },
   { id: 'bubble',   name: 'Bubblegum', price: 50,  currency: 'coins', color: '#ff8ad8', color2: '#ff4fb8', pattern: 'solid' },
@@ -25,7 +26,16 @@ export const SKINS = [
   { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
   { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
   { id: 'drum', name: 'Triple T', price: 0, currency: 'coins', color: '#A0662E', color2: '#6E4220', pattern: 'solid', shape: 'log' },
+  { id: 'echo-verdoso', name: 'Eco Verde, El Saltarín', price: 480, currency: 'coins', color: '#48C874', color2: '#274562', pattern: 'glow', shape: 'character' },
+  { id: 'radio-rospo', name: 'Radio Rospo', price: 720, currency: 'coins', color: '#F4BD47', color2: '#7E3161', pattern: 'checker', shape: 'character' },
+  { id: 'biscotto-cosmico', name: 'Biscotto Cosmico', price: 950, currency: 'coins', color: '#BE82E9', color2: '#FFF1A8', pattern: 'dots', shape: 'character' },
+  { id: 'spaghetto-turbo', name: 'Spaghetto Turbo', price: 1250, currency: 'coins', color: '#ED6C43', color2: '#F6D46B', pattern: 'stripes', shape: 'character' },
+  ...BOSS_SKINS,
 ];
+
+export function canUnlockSkin(save, skin) {
+  return skin.shape !== 'boss' || save.defeatedBossSkins?.includes(skin.id) === true;
+}
 
 export function getSkin(id) {
   return SKINS.find((s) => s.id === id) || SKINS[0];

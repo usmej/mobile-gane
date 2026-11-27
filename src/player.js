@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CONFIG, massToScale } from './config.js';
 import { makeLabel } from './labels.js';
 import { makeLogMaterials } from './skins.js';
+import { makeCharacterSkinMesh } from './bosses.js';
 
 // The gloop blob. Owns its mesh, mass label, steering and jelly wobble.
 export class Player {
@@ -29,6 +30,8 @@ export class Player {
     this.blobGeo = geo;
     this.log = null;      // built lazily by setSkin
     this.isLog = false;
+    this.characterSkins = new Map();
+    this.currentCharacterSkin = null;
 
     this.label = makeLabel('10', { color: '#ffffff', height: 0.9 });
     this.group.add(this.body, this.label);
@@ -52,7 +55,7 @@ export class Player {
 
   setMaterial(mat) { this.body.material = mat; }
 
-  // Swap between the blob sphere and the living-log hero. `material` is used for blobs.
+  // Swap cosmetics while keeping the existing gameplay scale, radius and wobble.
   setSkin(skin, material) {
     const log = !!skin && skin.shape === 'log';
     if (log) {
@@ -63,9 +66,27 @@ export class Player {
       this.body.geometry = this.blobGeo;
       this.body.material = material;
     }
+    if (this.currentCharacterSkin) this.currentCharacterSkin.removeFromParent();
+    this.currentCharacterSkin = skin?.shape === 'boss' || skin?.shape === 'character'
+      ? this._getCharacterSkin(skin.id) : null;
+    if (this.currentCharacterSkin) this.body.add(this.currentCharacterSkin);
     this.isLog = log;
-    this.eyes.visible = !log;
+    this.body.geometry.setDrawRange(0, this.currentCharacterSkin ? 0 : Infinity);
+    this.eyes.visible = !log && !this.currentCharacterSkin;
     if (this.log) this.log.visible = log;
+  }
+
+  _getCharacterSkin(id) {
+    if (this.characterSkins.has(id)) return this.characterSkins.get(id);
+    const { group, body } = makeCharacterSkinMesh(id);
+    const core = new THREE.Box3().setFromObject(body).getSize(new THREE.Vector3());
+    const scale = 2 / Math.max(core.x, core.y);
+    const floor = new THREE.Box3().setFromObject(group).min.y;
+    group.scale.setScalar(scale);
+    group.position.y = -1 - floor * scale;
+    group.userData.top = new THREE.Box3().setFromObject(group).max.y + 1;
+    this.characterSkins.set(id, group);
+    return group;
   }
 
   _buildLog() {
@@ -167,7 +188,8 @@ export class Player {
     this.body.rotation.z = THREE.MathUtils.clamp(-vx * 0.03, -0.35, 0.35);
 
     this.group.position.set(this.x, this.y, -this.d);
-    this.label.position.set(0, s * 2 + 0.9, 0);
+    const coreTop = this.currentCharacterSkin?.userData.top ?? 2;
+    this.label.position.set(0, s * Math.max(coreTop, 2) + 0.9, 0);
     const ls = 0.9 + s * 0.25;
     this.label.scale.set(ls * 2, ls, 1);
   }

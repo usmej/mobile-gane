@@ -1,5 +1,5 @@
 // DOM UI: menu, HUD, shop, win/lose screens, toasts.
-import { skinSwatchCSS } from './skins.js';
+import { canUnlockSkin, skinSwatchCSS } from './skins.js';
 import { pickMeme } from './memes.js';
 import * as I from './icons.js';
 import { canClaim } from './daily.js';
@@ -189,11 +189,13 @@ export class UI {
       const equipped = save.skin === s.id;
       const gem = s.currency === 'gems';
       const have = gem ? save.gems : save.coins;
-      const can = have >= s.price;
+      const eligible = canUnlockSkin(save, s);
+      const can = eligible && have >= s.price;
       const ico = gem ? I.gem() : I.coin();
       let btn;
       if (equipped) btn = `<button class="btn btn-sm btn-equipped" disabled>EQUIPPED</button>`;
       else if (isOwned) btn = `<button class="btn btn-sm btn-equip" data-act="equip" data-id="${esc(s.id)}">EQUIP</button>`;
+      else if (!eligible) btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>BEAT LV ${s.unlockLevel}</span></button>`;
       else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
       else btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>NEED ${fmt(s.price)}</span></button>`;
       return `<div class="skin-card${equipped ? ' is-eq' : ''}${!isOwned && !can ? ' is-locked' : ''}">

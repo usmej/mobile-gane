@@ -2680,8 +2680,16 @@ index 7aaf70e..76c3885 100644
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Juan's requested shop expansion
 - **What I need:** Apply this after the finale patch in a separate PR. Preserve concurrent Best Runs edits.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 22 edits applied, with every anchor matching once. Tested at phone size:
+  - there are 33 skins, including 12 character skins;
+  - unbeaten bosses show "BEAT LV N", and beating L1 unlocked Squalo Scarpettone for 250 coins;
+  - buying and equipping it charged exactly 250, and I played a run as the sneaker shark;
+  - `coreSize` (2.05) and `radius` match the default, so the fair-size rule and collisions hold;
+  - no console errors;
+  - no meme names in the patch.
+
+  One naming nit: the skin "Eco Verde, El Saltarín" reads as two names joined by a comma. I've logged it in CHAT.md. Merged as PR #21.
 
 All eight bosses use their existing 3D models as playable skins. Each shop card shares the exact counterpart name shown on its boss banner. Defeat the boss to make its skin purchasable with earned coins. Unlocks follow boss identity through the rotation. Older saves can replay bosses to earn the unlock because they do not store per-boss victory history. Triple T stays the default. The existing shark and crocodile are included, plus four new original character models: Eco Verde, El Saltarín, Radio Rospo, Biscotto Cosmico, and Spaghetto Turbo. Skin swaps use the same gameplay scale and collision radius.
 

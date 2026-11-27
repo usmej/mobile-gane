@@ -294,19 +294,86 @@ function alberelloScarpato(size) {
 }
 
 const DESIGNS = [
-  [squaloScarpettone, 'Squalo Scarpettone'],
-  [coccodrilloBombardone, 'Coccodrillo Bombardone'],
-  [tazzinaBallerina, 'Tazzina Ballerina'],
-  [scimmiaBananosa, 'Scimmia Bananosa'],
-  [cactofante, 'Cactofante'],
-  [frigocammello, 'Frigocammello'],
-  [ochettaEsplosiva, 'Ochetta Esplosiva'],
-  [alberelloScarpato, 'Alberello Scarpato'],
+  [squaloScarpettone, 'Squalo Scarpettone', 'boss-squalo', '#368BDC', '#FFF4E0', 250],
+  [coccodrilloBombardone, 'Coccodrillo Bombardone', 'boss-coccodrillo', '#617D39', '#E8AA45', 400],
+  [tazzinaBallerina, 'Tazzina Ballerina', 'boss-tazzina', '#FA8EBD', '#FFF4E0', 550],
+  [scimmiaBananosa, 'Scimmia Bananosa', 'boss-scimmia', '#FFD23F', '#764827', 700],
+  [cactofante, 'Cactofante', 'boss-cactofante', '#47B572', '#EF81AB', 850],
+  [frigocammello, 'Frigocammello', 'boss-frigocammello', '#BFE7F3', '#BE8F53', 1000],
+  [ochettaEsplosiva, 'Ochetta Esplosiva', 'boss-ochetta', '#FFF4E0', '#EF7043', 1200],
+  [alberelloScarpato, 'Alberello Scarpato', 'boss-alberello', '#498747', '#8C562B', 1400],
 ];
+
+export const BOSS_SKINS = DESIGNS.map(([, name, id, color, color2, price], index) => ({
+  id, name, color, color2, price, currency: 'coins', pattern: 'stripes',
+  shape: 'boss', unlockLevel: index + 1,
+}));
+
+function ecoVerde(size) {
+  const c = mk(size);
+  const body = c.sph('#48C874', 0.85, 0, 1.1, 0);
+  c.cyl('#274562', 0.45, 0.45, 0.12, 0, 1.6, 0.57, { rot: [Math.PI / 2, 0, 0] });
+  for (const side of [-1, 1]) {
+    c.eye(side * 0.32, 1.32, 0.82);
+    c.box('#274562', 0.54, 0.24, 0.8, side * 0.62, 0.12, 0.17, { rot: [0, side * 0.3, 0] });
+  }
+  for (const x of [-0.18, 0, 0.18]) c.box(INK, 0.05, 0.25, 0.04, x, 0.85, 0.8);
+  return { group: c.g, body };
+}
+
+function radioRospo(size) {
+  const c = mk(size);
+  const body = c.box('#F4BD47', 1.65, 1.25, 0.85, 0, 1.02, 0);
+  c.box('#7E3161', 1.35, 0.5, 0.1, 0, 0.84, 0.48);
+  for (const side of [-1, 1]) {
+    c.eye(side * 0.46, 1.47, 0.53, 0.2);
+    c.sph('#7E3161', 0.35, side * 0.64, 0.24, 0.15, { scale: [1, 0.65, 1.5] });
+  }
+  c.cyl(INK, 0.045, 0.055, 0.75, 0.55, 1.91, 0, { rot: [0, 0, -0.38] });
+  return { group: c.g, body };
+}
+
+function biscottoCosmico(size) {
+  const c = mk(size);
+  const body = c.cyl('#BE82E9', 0.85, 0.85, 0.48, 0, 1.05, 0, { rot: [Math.PI / 2, 0, 0] });
+  c.box('#FFF1A8', 2.22, 0.13, 0.48, 0, 0.85, 0.1, { rot: [0, 0, 0.33] });
+  c.eye(-0.29, 1.34, 0.29);
+  c.eye(0.29, 1.34, 0.29);
+  for (const [x, y] of [[-0.49, 0.63], [0.47, 1.56], [0.21, 0.51]]) {
+    c.sph('#502B79', 0.1, x, y, 0.25);
+  }
+  return { group: c.g, body };
+}
+
+function spaghettoTurbo(size) {
+  const c = mk(size);
+  const body = c.sph('#ED6C43', 0.78, 0, 0.94, 0, { scale: [1.1, 1, 0.9] });
+  for (const side of [-1, 1]) {
+    c.eye(side * 0.29, 1.19, 0.75);
+    c.cyl(INK, 0.28, 0.28, 0.35, side * 0.78, 0.29, 0, { rot: [0, 0, Math.PI / 2] });
+  }
+  for (const [x, z] of [[-0.46, -0.22], [-0.24, 0.31], [0.08, -0.15], [0.38, 0.19]]) {
+    c.cap('#F6D46B', 0.1, 0.61, x, 1.64, z, { rot: [0, 0, x * 1.6] });
+  }
+  return { group: c.g, body };
+}
+
+const CHARACTER_MODELS = {
+  'echo-verdoso': ecoVerde,
+  'radio-rospo': radioRospo,
+  'biscotto-cosmico': biscottoCosmico,
+  'spaghetto-turbo': spaghettoTurbo,
+};
+
+export function makeCharacterSkinMesh(id) {
+  const design = DESIGNS.find(([, , skinId]) => skinId === id);
+  const build = design?.[0] ?? CHARACTER_MODELS[id];
+  return build(1);
+}
 
 export function makeBossMesh(level, size) {
   const count = DESIGNS.length;
   const idx = (((level | 0) - 1) % count + count) % count;
-  const [build, name] = DESIGNS[idx];
-  return { ...build(size), name };
+  const [build, name, skinId] = DESIGNS[idx];
+  return { ...build(size), name, skinId };
 }
