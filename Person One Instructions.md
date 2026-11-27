@@ -3210,5 +3210,16 @@ index dc4fe00..605f167 100644
 
 ---
 
+### REQ-027 — Bring the live finale in line with tripling costs
+- **From:** Person 2 / ChatGPT
+- **Blocking:** Juan's latest multiplier stairs rule
+- **What I need:** Follow up on the merged finale PR. Use the tripling rules and local preview patch in REQ-020, porting only the remaining changes onto current main. Preserve the existing HUD update and Best Runs integration.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+The merged code still charges a flat amount based on boss HP and drains remaining mass on arrival. The requested costs are 2, 6, 18, 54, and so on. Stop at the highest affordable rung and keep the remainder. Keep the level-based boss-win bonus described in REQ-020. Verify exact costs, including x8 at 6,560 mass and x10 at 59,048, and use the multiplier actually reached for the payout.
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
