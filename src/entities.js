@@ -151,7 +151,8 @@ export class Entities {
         post.castShadow = true;
         g.add(post);
       }
-      const txt = `${gate.op === '÷' ? '/' : gate.op}${gate.value}`;
+      const isDiv = gate.op === '÷';
+      const txt = isDiv ? `${gate.value}` : `${gate.op}${gate.value}`;
       const tex = makeTextTexture(384, 134, (ctx, w, h) => {
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, w, h);
@@ -159,13 +160,42 @@ export class Entities {
         ctx.fillRect(0, h - 8, w, 8);
         ctx.fillStyle = CREAM;
         ctx.font = `${txt.length > 3 ? 92 : 112}px ${FONT}`;
-        ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.lineJoin = 'round';
         ctx.lineWidth = 10;
         ctx.strokeStyle = INK;
-        ctx.strokeText(txt, w / 2, h / 2 - 3);
-        ctx.fillText(txt, w / 2, h / 2 - 3);
+        const cy = h / 2 - 3;
+        if (!isDiv) {
+          ctx.textAlign = 'center';
+          ctx.strokeText(txt, w / 2, cy);
+          ctx.fillText(txt, w / 2, cy);
+          return;
+        }
+        // hand-drawn division sign: thick bar + two big dots
+        ctx.textAlign = 'left';
+        const numW = ctx.measureText(txt).width;
+        const barW = 58, barT = 14, dotD = barT * 1.6, dotOff = 29;
+        const gap = 16, outline = 10;
+        const signW = barW + outline;
+        const total = signW + gap + numW;
+        const x0 = (w - total) / 2 + outline / 2;
+        const sx = x0 + barW / 2;
+        const shapes = () => {
+          ctx.beginPath();
+          ctx.rect(x0, cy - barT / 2, barW, barT);
+          ctx.moveTo(sx + dotD / 2, cy - dotOff);
+          ctx.arc(sx, cy - dotOff, dotD / 2, 0, Math.PI * 2);
+          ctx.moveTo(sx + dotD / 2, cy + dotOff);
+          ctx.arc(sx, cy + dotOff, dotD / 2, 0, Math.PI * 2);
+        };
+        shapes();
+        ctx.stroke();
+        ctx.fillStyle = CREAM;
+        shapes();
+        ctx.fill();
+        const nx = x0 + barW + outline / 2 + gap;
+        ctx.strokeText(txt, nx, cy);
+        ctx.fillText(txt, nx, cy);
       });
       this.textures.push(tex);
       const face = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 });
@@ -385,7 +415,8 @@ export class Entities {
     for (const e of this.items) {
       if (!e.obj) continue;
       const near = Math.abs(e.d - pd) < 60;
-      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'wall' || e.type === 'pad';
+      // Used gates/pads stay visible; a wall stays visible unless it was smashed.
+      e.obj.visible = !e.used || e.type === 'gate' || e.type === 'pad' || (e.type === 'wall' && !e.smashed);
 
       if (e.type === 'coin' && !e.used) e.obj.rotation.z = time * 4;
       if (e.type === 'gem' && !e.used) { e.obj.rotation.y = time * 2; e.obj.position.y = 1.1 + Math.sin(time * 3) * 0.2; }
@@ -482,7 +513,8 @@ export class Entities {
           }
           break;
         case 'wall':
-          if (!aboveHazards && prevD < e.d - r * 0.5 && pd >= e.d - r * 0.5 && dx < e.width / 2 + r * 0.6) {
+          // Hit reach uses a capped radius so a huge blob can still steer around a centre wall.
+          if (!aboveHazards && prevD < e.d - r * 0.5 && pd >= e.d - r * 0.5 && dx < e.width / 2 + Math.min(r, CONFIG.wallHitRadiusCap) * 0.6) {
             e.used = true;
             events.push({ type: 'wall', value: e.value, pos, wall: e });
           }
@@ -507,6 +539,7 @@ export class Entities {
   }
 
   smashWall(wall) {
+    wall.smashed = true;
     wall.obj.visible = false;
   }
 
