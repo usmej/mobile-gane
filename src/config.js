@@ -88,7 +88,7 @@ export const CONFIG = {
   finaleStepDepth: 3,
   finaleStepRise: 0.55,
   finaleSpeed: 9,
-  finaleStepCostRatio: 0.3, // each step costs this fraction of boss HP...
+  finaleStepCostRatio: 0.22, // each step costs this fraction of boss HP...
   finaleMinStepCost: 4,     // ...but at least this much mass
 };
 
