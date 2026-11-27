@@ -215,12 +215,19 @@ function scooterPigeon(size) {
 }
 
 const DESIGNS = [
-  fridgeDino, toastOctopus, bellCactus, scooterPigeon,
-  hornedGremlin, megaCube, donutTyrant, slimeKing,
+  [fridgeDino, 'Frigorifero Dinosauro'],
+  [toastOctopus, 'Toastopo Croccantino'],
+  [bellCactus, 'Cactusso Campanello'],
+  [scooterPigeon, 'Piccione Monopattino'],
+  [hornedGremlin, 'Horned Gremlin'],
+  [megaCube, 'Mega Cube'],
+  [donutTyrant, 'Donut Tyrant'],
+  [slimeKing, 'Slime King'],
 ];
 
 export function makeBossMesh(level, size) {
   const count = DESIGNS.length;
   const idx = (((level | 0) - 1) % count + count) % count;
-  return DESIGNS[idx](size);
+  const [build, name] = DESIGNS[idx];
+  return { ...build(size), name };
 }

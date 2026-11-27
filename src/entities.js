@@ -201,22 +201,27 @@ export class Entities {
     const hp = levelData.boss.hp;
     // Build at unit size, measure the CORE body (no horns/crowns/eyes), then scale the
     // whole group so the core matches the fight math. See bossCoreTarget().
-    const { group: g, body, height } = makeBossMesh(levelData.level || 1, 1);
+    const { group: g, body, height, name } = makeBossMesh(levelData.level || 1, 1);
     g.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(body);
     const sz = box.getSize(new THREE.Vector3());
     const baseCore = Math.max(sz.x, sz.y);
     const lab = makeLabel(hp, { color: CREAM, bg: '#FF3B5C', height: 1.4 });
     lab.position.set(0, (height || 2) + 0.9, 0);
-    this.labels.push(lab);
-    g.add(lab);
+    const banner = makeLabel(name, { color: CREAM, bg: INK, height: 0.7, fit: true });
+    banner.scale.x = 4.2;
+    const bannerBase = banner.scale.clone();
+    this.labels.push(lab, banner);
+    g.add(lab, banner);
     g.position.set(0, 0, -levelData.boss.d);
     this.group.add(g);
     const startCore = 2 * massToScale(hp); // what a player with mass == HP would measure
     const k = startCore / baseCore;
     g.scale.setScalar(k);
     lab.scale.multiplyScalar(1 / k);
-    this.boss = { group: g, body, label: lab, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
+    banner.scale.copy(bannerBase).multiplyScalar(1 / k);
+    banner.position.set(0, lab.position.y + 1.25 / k, 0);
+    this.boss = { group: g, body, label: lab, banner, bannerBase, labelBase: lab.scale.clone().multiplyScalar(k), hp, baseCore, k, size: (baseCore * k) / 2, d: levelData.boss.d, dead: false };
   }
 
   /**
@@ -466,6 +471,8 @@ export class Entities {
       b.k += (targetK - b.k) * (1 - Math.exp(-12 * dt));
       b.group.scale.setScalar(b.k);
       b.label.scale.copy(b.labelBase).multiplyScalar(1 / b.k); // keep the HP label readable
+      b.banner.scale.copy(b.bannerBase).multiplyScalar(1 / b.k);
+      b.banner.position.y = b.label.position.y + 1.25 / b.k;
       b.size = (b.baseCore * b.k) / 2;
     }
     return events;

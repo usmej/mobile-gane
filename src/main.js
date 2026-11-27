@@ -388,7 +388,11 @@ function frame(now) {
       }
       player.targetX = 0;
       audio.play('boss');
-      fx.popText(pickMeme('boss') || 'BOSS', entities.boss.group.position.clone().setY(entities.boss.size * 2.6), '#FF3B5C', 1.3);
+      const boss = entities.boss;
+      fx.popText(pickMeme('boss') || 'BOSS', (anchor) => {
+        boss.banner.getWorldPosition(anchor);
+        anchor.y += Math.max(1, boss.size * 0.5);
+      }, '#FF3B5C', 1.3);
     }
     if (state === 'boss') {
       player.targetX = 0;

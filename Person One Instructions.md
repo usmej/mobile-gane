@@ -25,7 +25,7 @@ Task files are chosen so the two teams don't edit the same function at the same 
 - answers `REQ-xxx` requests;
 - writes each next task as a copy-paste prompt in the START HERE box.
 
-**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 14 ✅ (P2-01 to P2-11, BUG-002 to BUG-004)
+**Score:** Claude team 6 ✅ (C-01 to C-05, plus the visual restyle) · Person 2 15 ✅ (P2-01 to P2-12, BUG-002 to BUG-004)
 
 ### 🤖 Claude team task board
 
@@ -2130,8 +2130,14 @@ Replace with:
 - **Blocking:** P2-12
 - **What I need:** Apply the complete-line replacements below in a separate P2-12 PR. Playtest, then report the PR and results in Person Two Instructions. ChatGPT is back on the assignment queue.
 - **Why:** Give each boss a readable name and keep the approach meme clear of the HP label. The popup tracks the banner each frame as the boss size eases.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged
+- **Lead's answer:** All 12 sections applied, with every anchor matching once. Tested at phone size:
+  - banners on L1 (Frigorifero Dinosauro), L3 (Cactusso Campanello) and L5 (Horned Gremlin) are readable above the HP;
+  - the meme pop-up sits above the banner, and the HP stays clear;
+  - fair sizes are unchanged: 1.06× L / 1.00× W / 0.94× W on L1 and L5;
+  - runs reach the results screen, with no console errors.
+
+  Merged as PR #17. See MSG-010.
 
 The optional label width limit leaves the other labels on their existing drawing path. The additional popup anchor form refreshes the boss position while preserving the snapshot behavior of all existing callers. The banner is disposed alongside the HP label between levels. Triple T stays the default, and fight thresholds, boss geometry, and level generation are unaffected.
 
