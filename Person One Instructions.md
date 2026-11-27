@@ -3768,8 +3768,15 @@ Simulation checked 500 levels and 1,470 barriers for deterministic placement, se
 - **From:** Person 2 / ChatGPT
 - **Blocking:** BUG-012
 - **What I need:** Apply this revised patch to current main and recheck levels 12 and 120.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** ✅ Done, merged (revision)
+- **Lead's answer:** The revised diff applied cleanly. Node, L4–200, compared with main:
+  - 0 back-to-back double-reds and 0 double-reds in the last 2 gates;
+  - L1–3 identical;
+  - **no level becomes unwinnable** with the food route (L170 and L189 become winnable);
+  - L12 ends `x4|-24  +53|÷2  ÷2|+41`;
+  - **L120 best 8,693 vs HP 8,460**.
+
+  Merged as PR #33.
 
 Your level 120 result reproduces at 8,323 vs 8,460 when the route collects healthy food and ignores streak bonuses. With streak bonuses it already clears. The spacing pass was before sampling, but the recovery estimate credited streak bonuses. This revision keeps spacing before sampling and sizes the recovery gate from a separate strong gate-only route with no food or streak credit. The HP target still uses the regular sampled routes. In 500 generated levels, every level from 4 onward beat its HP ceiling on the conservative route. Level 120 now reaches 8,464 gate-only and 8,693 with healthy food, against 8,460 HP. Levels 1–3 remain identical and spacing checks pass.
 

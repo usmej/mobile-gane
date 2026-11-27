@@ -66,18 +66,18 @@ export function worldLabel(level) {
   return 'WORLD ' + (Math.floor(index / CONFIG.levelsPerWorld) + 1) + '-' + (index % CONFIG.levelsPerWorld + 1);
 }
 
-function sampleGateRoutes(items, level, onStrongGate) {
+function sampleGateRoutes(items, level, onStrongGate, routeCount = CONFIG.routeBalance.samples, awardCombo = true) {
   const gates = items.filter((item) => item.type === 'gate').sort((a, b) => a.d - b.d);
   const rng = makeRng(level + 39521);
   const survivors = [];
   let strong = 0;
-  for (let route = 0; route <= CONFIG.routeBalance.samples; route++) {
+  for (let route = 0; route <= routeCount; route++) {
     let mass = CONFIG.startMass, combo = 0;
     for (const gate of gates) {
       if (route === 0 && onStrongGate) onStrongGate(gate, mass);
       const options = [gate.left, gate.right].map(({ op, value }) => {
         const streak = isGoodOp(op) ? combo + 1 : 0;
-        return { streak, mass: applyOp(mass, op, value) + (streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
+        return { streak, mass: applyOp(mass, op, value) + (awardCombo && streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
       }).sort((a, b) => a.mass - b.mass);
       const next = options[route === 0 || rng() < CONFIG.routeBalance.preferStrongGate ? 1 : 0];
       mass = next.mass;
@@ -224,16 +224,31 @@ export function generateLevel(level) {
     }
   }
 
+  if (level >= CONFIG.routeBalance.firstLevel) {
+    const gates = items.filter(item => item.type === 'gate').sort((a, b) => a.d - b.d);
+    let previousDoubleBad = false;
+    for (const [index, gate] of gates.entries()) {
+      if (gate.doubleBad && (previousDoubleBad || index >= gates.length - 2)) {
+        const side = index % 2 === 0 ? 'left' : 'right';
+        gate[side] = { op: '+', value: Math.max(1, gate[side].value) };
+        delete gate.doubleBad;
+      }
+      previousDoubleBad = Boolean(gate.doubleBad);
+    }
+  }
+
   let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
   const balance = CONFIG.routeBalance;
   if (level >= balance.firstLevel) {
-    const { typical, strong } = sampleGateRoutes(items, level, (gate, mass) => {
+    // Repair the strongest route without assuming food pickups or combo bonuses.
+    const { strong: baseRouteMass } = sampleGateRoutes(items, level, (gate, mass) => {
       const cap = Math.floor(mass * CONFIG.doubleBad.maxLossRatio);
       if (gate.doubleBad && gate.left.op === '-' && gate.right.op === '-') {
         gate.left.value = Math.min(cap, gate.left.value);
         gate.right.value = Math.min(cap, gate.right.value);
       }
-    });
+    }, 0, false);
+    const { typical, strong } = sampleGateRoutes(items, level);
     const offset = level - balance.firstLevel;
     const floor = Math.min(balance.maxHpFloor, Math.round(
       balance.firstBossHp + offset * balance.hpPerLevel + offset ** 2 * balance.hpCurve
@@ -241,10 +256,10 @@ export function generateLevel(level) {
     const target = Math.round(typical + Math.max(0, strong - typical) * balance.strongRouteWeight);
     const ceiling = Math.floor(floor * balance.hpBand);
     bossHp = Math.max(floor, Math.min(ceiling, target, strong));
-    if (strong < bossHp) {
+    if (baseRouteMass < bossHp) {
       items.push({
         type: 'gate', d: length - balance.recoveryGateGap,
-        left: { op: '+', value: bossHp - strong + balance.recoveryMassMargin },
+        left: { op: '+', value: bossHp - baseRouteMass + balance.recoveryMassMargin },
         right: { op: '÷', value: 2 },
       });
     }
