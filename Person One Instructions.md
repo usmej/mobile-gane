@@ -3393,5 +3393,175 @@ The tutorial updates only while playing. Stop it at the transition to clear its 
 
 ---
 
+### REQ-032 — Progression Phase A: worlds, longer tracks, and boss HP
+- **From:** Person 2 / ChatGPT
+- **Blocking:** REQ-026, Phase A
+- **What I need:** Apply and playtest this patch separately. Check the HUD is compatible with the current UI pass before merging.
+- **Status:** 🟡 Open
+- **Lead's answer:** _(lead fills this in)_
+
+Groups of five levels, world labels in the HUD, longer later tracks up to 1,400 units, and modest per-world addition bonuses. Levels 1–3 are byte-identical. From level 4, deterministic samples use the actual gate math and combo bonus. A bounded HP band limits seed-to-seed swings. For a low-mass layout, the strong route's double-subtraction losses are capped, and a final recovery gate is added only when the planned HP exceeds the strong gate route. These are gate-only estimates. Browser playtesting still needs to account for hazards, pickups and player steering. The HP band can make some seeds easier when gate outcomes are unusually generous.
+
+| Level | Length | Boss HP | Median surviving sample | Strong gate route |
+|---|---:|---:|---:|---:|
+| 1 | 244 | 24 | 26 | 59 |
+| 5 | 300 | 82 | 26 | 86 |
+| 10 | 405 | 129 | 103 | 190 |
+| 20 | 615 | 340 | 436 | 2032 |
+| 40 | 1035 | 1128 | 3568 | 16432 |
+
+Across 500 seeds, every level had a simulated gate route that reached boss HP and repeated generation matched exactly. Worst adjacent HP drop from level 4 onward was 10.8%. In 311 of the 497 levels using the new balance, the median surviving route fell short. Browser-check a recovery-gate seed and worlds 1, 2 and 8. Keep timed jumps and boss phases in separate PRs.
+
+```diff
+--- a/src/config.js
++++ b/src/config.js
+@@ -20,7 +20,24 @@
+   // Levels
+   levelLengthBase: 230,
+   levelLengthPerLevel: 14,
+-  levelLengthMax: 520,
++  levelLengthMax: 1400,
++  levelsPerWorld: 5,
++  lengthBonusPerWorld: 35,
++  gateAddPerWorld: 2,
++  maxGateWorldBonus: 20,
++  routeBalance: {
++    firstLevel: 4,
++    samples: 64,
++    preferStrongGate: 0.55,
++    firstBossHp: 76,
++    hpPerLevel: 5,
++    hpCurve: 0.58,
++    maxHpFloor: 12000,
++    hpBand: 1.12,
++    strongRouteWeight: 0.3,
++    recoveryGateGap: 9,
++    recoveryMassMargin: 4,
++  },
+   firstItemAt: 30,
+   rowSpacingMin: 22,
+   rowSpacingMax: 32,
+--- a/src/levels.js
++++ b/src/levels.js
+@@ -36,7 +36,9 @@
+     return { op: 'x', value };
+   }
+   const extra = Math.min(12, Math.max(0, level - 1));
+-  return { op: '+', value: rng.int(3, 8 + level + extra) + Math.floor(mass * 0.15) };
++  const worldBonus = Math.min(CONFIG.maxGateWorldBonus,
++    Math.floor((level - 1) / CONFIG.levelsPerWorld) * CONFIG.gateAddPerWorld);
++  return { op: '+', value: rng.int(3, 8 + level + extra) + Math.floor(mass * 0.15) + worldBonus };
+ }
+ function badGate(rng, level, mass) {
+   const roll = rng();
+@@ -59,10 +61,42 @@
+  *  { type:'pad',    d, x }
+  *  { type:'wall',  d, x, width, value }
+  */
++export function worldLabel(level) {
++  const index = Math.max(0, level - 1);
++  return 'WORLD ' + (Math.floor(index / CONFIG.levelsPerWorld) + 1) + '-' + (index % CONFIG.levelsPerWorld + 1);
++}
++
++function sampleGateRoutes(items, level, onStrongGate) {
++  const gates = items.filter((item) => item.type === 'gate').sort((a, b) => a.d - b.d);
++  const rng = makeRng(level + 39521);
++  const survivors = [];
++  let strong = 0;
++  for (let route = 0; route <= CONFIG.routeBalance.samples; route++) {
++    let mass = CONFIG.startMass, combo = 0;
++    for (const gate of gates) {
++      if (route === 0 && onStrongGate) onStrongGate(gate, mass);
++      const options = [gate.left, gate.right].map(({ op, value }) => {
++        const streak = isGoodOp(op) ? combo + 1 : 0;
++        return { streak, mass: applyOp(mass, op, value) + (streak >= 2 ? streak * CONFIG.comboBonusMass : 0) };
++      }).sort((a, b) => a.mass - b.mass);
++      const next = options[route === 0 || rng() < CONFIG.routeBalance.preferStrongGate ? 1 : 0];
++      mass = next.mass;
++      combo = next.streak;
++      if (mass <= 0) break;
++    }
++    if (route === 0) strong = Math.max(0, mass);
++    else if (mass > 0) survivors.push(mass);
++  }
++  survivors.sort((a, b) => a - b);
++  return { typical: survivors[Math.floor(survivors.length / 2)] ?? 0, strong };
++}
++
+ export function generateLevel(level) {
+   const rng = makeRng(level * 9973 + 17);
+   const theme = themeForLevel(level);
+-  const length = Math.min(CONFIG.levelLengthMax, CONFIG.levelLengthBase + level * CONFIG.levelLengthPerLevel);
++  const world = Math.ceil(level / CONFIG.levelsPerWorld);
++  const length = Math.min(CONFIG.levelLengthMax,
++    CONFIG.levelLengthBase + level * CONFIG.levelLengthPerLevel + (world - 1) * CONFIG.lengthBonusPerWorld);
+   const W = CONFIG.trackHalfWidth - 0.6;
+   const items = [];
+ 
+@@ -155,7 +189,31 @@
+     items.push({ type: 'magnet', d: coin ? coin.d - lead : CONFIG.firstItemAt - lead, x: coin ? coin.x : 0 });
+   }
+ 
+-  const bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
++  let bossHp = Math.max(8, Math.round(best * (0.45 + Math.min(0.15, level * 0.012))));
++  const balance = CONFIG.routeBalance;
++  if (level >= balance.firstLevel) {
++    const { typical, strong } = sampleGateRoutes(items, level, (gate, mass) => {
++      const cap = Math.floor(mass * CONFIG.doubleBad.maxLossRatio);
++      if (gate.doubleBad && gate.left.op === '-' && gate.right.op === '-') {
++        gate.left.value = Math.min(cap, gate.left.value);
++        gate.right.value = Math.min(cap, gate.right.value);
++      }
++    });
++    const offset = level - balance.firstLevel;
++    const floor = Math.min(balance.maxHpFloor, Math.round(
++      balance.firstBossHp + offset * balance.hpPerLevel + offset ** 2 * balance.hpCurve
++    ));
++    const target = Math.round(typical + Math.max(0, strong - typical) * balance.strongRouteWeight);
++    const ceiling = Math.floor(floor * balance.hpBand);
++    bossHp = Math.max(floor, Math.min(ceiling, target, strong));
++    if (strong < bossHp) {
++      items.push({
++        type: 'gate', d: length - balance.recoveryGateGap,
++        left: { op: '+', value: bossHp - strong + balance.recoveryMassMargin },
++        right: { op: '÷', value: 2 },
++      });
++    }
++  }
+   return {
+     level,
+     theme,
+--- a/src/ui.js
++++ b/src/ui.js
+@@ -3,6 +3,7 @@
+ import { pickMeme } from './memes.js';
+ import * as I from './icons.js';
+ import { canClaim } from './daily.js';
++import { worldLabel } from './levels.js';
+ 
+ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+ const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
+@@ -101,7 +102,7 @@
+       <div class="hud-top">
+         <div class="chip chip-coin hud-coins"><span class="chip-ico">${I.coin()}</span><b data-k="coins">0</b></div>
+         <div class="hud-mid">
+-          <div class="level-tag hud-level">LV <b data-k="level">${save.level}</b></div>
++          <div class="level-tag hud-level"><b data-k="level">${worldLabel(save.level)}</b></div>
+           <div class="prog"><div class="prog-fill" data-k="fill"></div><span class="prog-boss">${I.bossFace()}</span></div>
+         </div>
+         <div class="chip chip-gem hud-gems" data-k="gemchip"><span class="chip-ico">${I.gem()}</span><b data-k="gems">0</b></div>
+@@ -123,7 +124,7 @@
+     const h = this.hud;
+     if (!h) return;
+     const l = h.last;
+-    if (level !== undefined && level !== l.level) { l.level = level; h.level.textContent = level; }
++    if (level !== undefined && level !== l.level) { l.level = level; h.level.textContent = worldLabel(level); }
+     if (coins !== undefined && coins !== l.coins) {
+       if (l.coins !== null) { h.coins.parentNode.classList.remove('bump'); void h.coins.parentNode.offsetWidth; h.coins.parentNode.classList.add('bump'); }
+       l.coins = coins; h.coins.textContent = fmt(coins);
+```
+
+---
+
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
