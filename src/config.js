@@ -153,6 +153,9 @@ export const CONFIG = {
     loseDuration: 2.2,       // how long the hopeless fight lasts when too small
     minSpotPx: 64,
   },
+  // Real-money purchases. Off on the website until the app-store build ships (docs/PAYMENTS.md).
+  // Add ?shoptest to the URL to try the whole flow with a fake store (no real money).
+  payments: { enabled: false },
   // Quiet assist (flow research): after N losses in a row on one level, start with extra mass
   // = bossHp * bossHpShare per step (max maxSteps). Never announced.
   assist: { afterLosses: 3, bossHpShare: 0.06, maxSteps: 3 },

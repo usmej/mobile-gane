@@ -7,6 +7,21 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📝 Patch notes (newest first). Read these before you build on the code
 
+### Patch notes 2026-11-27 #4 (PR: payments foundation)
+- **Read [`docs/PAYMENTS.md`](docs/PAYMENTS.md) first.** It has the rules: cosmetics only, no loot boxes, no selling gems, parent gate, clear price.
+- **`src/products.js`:** `PRODUCTS` list, plus `getProduct(id)` and `productForSkin(skinId)`. Each product is `{ id, title, price, blurb, grants: { skins: [...] }, oneTime }`.
+- **`src/store.js`:**
+  - Exports `storeKind()` ('test' | 'native' | null), `storeAvailable()`, `purchase(id)` → `{ok}`, and `restore()` → ids.
+  - `?shoptest` in the URL = a fake store with no real money.
+  - The native app will set `window.MassDashNativeStore = { purchase, restore }`.
+- **Save:** new `save.purchases: []` holds the entitlements.
+- **Skins:** paid skins use `currency: 'iap'`. `canUnlockSkin` returns false for them, because only a purchase grants them. The first one is `golden-t` (Golden Triple T, a log with `tint`). `makeLogMaterials` now caches per skin id.
+- **`ui.js`:** `showParentGate(onPass, onCancel)`, `showPurchaseConfirm(product, {test}, onBuy, onCancel)` and `hideModal()`.
+  - The shop shows paid cards as a purple price button only when a store is available.
+  - There's a "Restore purchases" link, and a "TEST STORE" tag in test mode.
+- **`main.js`:** `buyProduct(id)` runs gate → confirm → store → `grantProduct()`. `restorePurchases()` handles restores. New UI callbacks: `onBuyProduct` and `onRestore`.
+- **`CONFIG.payments.enabled`** is `false` on the website.
+
 ### Patch notes 2026-11-27 #3 (PR: menu goal + quiet assist)
 - **Menu next-unlock goal:** in `ui.js`, `_nextGoal(save)` renders `.next-goal` above PLAY: "N more for <character>" with a bar.
   - **Which character:** the cheapest unowned, unlockable character, coins first, then gems.
