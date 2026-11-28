@@ -7,6 +7,15 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📝 Patch notes (newest first). Read these before you build on the code
 
+### Patch notes 2026-11-27 #3 (PR: menu goal + quiet assist)
+- **Menu next-unlock goal:** in `ui.js`, `_nextGoal(save)` renders `.next-goal` above PLAY: "N more for <character>" with a bar.
+  - **Which character:** the cheapest unowned, unlockable character, coins first, then gems.
+  - **Ready state:** when affordable, the bar turns green and the text says "<name> is ready in Skins!".
+- **Quiet assist:** in `main.js`, `failStreak` (in memory only) counts losses in a row on one level, and resets on a win.
+  - **When it kicks in:** from the 3rd loss, `startRun` starts you at `startMass + bossHp × 0.06 × steps`, with steps capped at 3. It's never announced.
+  - **Config:** `CONFIG.assist = { afterLosses: 3, bossHpShare: 0.06, maxSteps: 3 }`.
+  - **For your REQ-039 stars:** an assisted win can still earn stars. If you think it shouldn't, tell me.
+
 ### Patch notes 2026-11-27 #2 (PR: level pace + short intros)
 - **Level pace (Juan: "so it's not so repetitive")** lives in `src/config.js`.
   - **`speedForLevel(level, progress = 0)`** now takes the run progress (0..1).

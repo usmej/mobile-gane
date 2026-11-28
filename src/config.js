@@ -153,6 +153,9 @@ export const CONFIG = {
     loseDuration: 2.2,       // how long the hopeless fight lasts when too small
     minSpotPx: 64,
   },
+  // Quiet assist (flow research): after N losses in a row on one level, start with extra mass
+  // = bossHp * bossHpShare per step (max maxSteps). Never announced.
+  assist: { afterLosses: 3, bossHpShare: 0.06, maxSteps: 3 },
   // "Keep going" after a loss: pay gems to continue from where you lost.
   // cost = (base + level*perLevel + size*perMass), doubled for each extra continue in the same run.
   continue: { base: 1, perLevel: 0.25, perMass: 0.02, maxCost: 60, minMass: 10 },

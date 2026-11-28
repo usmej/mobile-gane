@@ -102,7 +102,8 @@ let endTimer = 0;
 let endResult = null;
 let time = 0;
 let massBeforeHit = 0;        // size right before the latest pickup/hit (revive size for "Keep going")
-let continuesUsed = 0;        // gem continues bought this run (each one costs double)
+let continuesUsed = 0;
+let failStreak = { level: 0, count: 0 };   // losses in a row on one level (quiet assist)        // gem continues bought this run (each one costs double)
 let lostAt = null;            // where the run ended: 'track' | 'boss'
 let introReturn = 'playing';   // state to resume after an intro card
 let introToken = 0;
@@ -242,6 +243,11 @@ function startRun() {
   } else {
     tutorial.stop();
   }
+  // Quiet assist: after 3 losses in a row on this level, start a little bigger. Never announced.
+  if (failStreak.level === save.level && failStreak.count >= CONFIG.assist.afterLosses && entities.boss) {
+    const steps = Math.min(CONFIG.assist.maxSteps, failStreak.count - CONFIG.assist.afterLosses + 1);
+    player.setMass(CONFIG.startMass + Math.round(entities.boss.hp * CONFIG.assist.bossHpShare * steps));
+  }
   audio.startMusic(save.level);
   const pace = paceForLevel(save.level);
   fx.popText(pace.label || pickMeme('start') || 'GO', player.position.clone().setY(5), pace.label ? '#FFD23F' : '#FFF4E0', 1.2);
@@ -351,6 +357,7 @@ function finishRun(won) {
     endResult = { won, level: save.level, coinsEarned, gemsEarned, multiplier: mult, bestRank, winner: getSkin(save.skin).name.toUpperCase(), skinId: save.skin };
     save.coins += coinsEarned;
     save.gems += gemsEarned;
+    failStreak = { level: 0, count: 0 };
     save.level += 1;
     save.best = Math.max(save.best, save.level);
     recordBadgeEvent({ type: 'win', multiplier: mult, clean: !runTookHit });
@@ -390,6 +397,7 @@ function lose(reason) {
   if (state !== 'playing' && state !== 'boss' && state !== 'fight') return;
   lossReason = reason;
   lostAt = state === 'playing' ? 'track' : 'boss';
+  failStreak = failStreak.level === save.level ? { level: save.level, count: failStreak.count + 1 } : { level: save.level, count: 1 };
   finishRun(false);
 }
 
