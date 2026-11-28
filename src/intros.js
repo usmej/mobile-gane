@@ -45,7 +45,7 @@ const ICON = {
 
 registerIntro('gate', {
   title: 'Math Gates',
-  how: 'Blue gates make you bigger. Red gates make you smaller. Pick the bigger result!',
+  how: 'Pick the gate that makes your number bigger!',
   icon: ICON.gate,
 });
 registerIntro('doubleBad', {
@@ -55,17 +55,17 @@ registerIntro('doubleBad', {
 });
 registerIntro('food', {
   title: 'Healthy Food',
-  how: 'Yummy food makes you bigger. Run into it to eat it!',
+  how: 'Eat healthy food to grow!',
   icon: ICON.food,
 });
 registerIntro('mold', {
   title: 'Moldy Food',
-  how: 'Yuck! Moldy food makes you smaller. Steer around it.',
+  how: 'Moldy food shrinks you. Steer around it!',
   icon: ICON.mold,
 });
 registerIntro('movingFood', {
   title: 'Sliding Food',
-  how: 'This food slides side to side. Line up and catch it!',
+  how: 'This food slides. Line up and catch it!',
   icon: ICON.movingFood,
 });
 registerIntro('coin', {
@@ -75,32 +75,32 @@ registerIntro('coin', {
 });
 registerIntro('gem', {
   title: 'Gems',
-  how: 'Gems are rare and shiny. Grab them for special skins!',
+  how: 'Rare gems buy characters and Keep going.',
   icon: ICON.gem,
 });
 registerIntro('wall', {
   title: 'Big Wall',
-  how: 'Smash it if your number is bigger than the wall. If not, steer around!',
+  how: 'Bigger than the wall? Smash it! Smaller? Go around.',
   icon: ICON.wall,
 });
 registerIntro('saw', {
   title: 'Spinning Saw',
-  how: 'It slides side to side and it hurts. Dodge it!',
+  how: 'Saws hurt. Dodge them!',
   icon: ICON.saw,
 });
 registerIntro('hammer', {
   title: 'Swinging Hammer',
-  how: 'It swings across the track. Time your pass!',
+  how: 'Time your pass under the swing!',
   icon: ICON.hammer,
 });
 registerIntro('pad', {
   title: 'Jump Pad',
-  how: 'Drive over it to launch over the next danger.',
+  how: 'Run over it to fly over danger.',
   icon: ICON.pad,
 });
 registerIntro('barrier', {
   title: 'Striped Barrier',
-  how: 'Tap JUMP or press Space just before the stripes!',
+  how: 'Tap JUMP right before the stripes!',
   icon: ICON.barrier,
 });
 registerIntro('magnet', {
@@ -110,6 +110,6 @@ registerIntro('magnet', {
 });
 registerIntro('bossFight', {
   title: 'Boss Fight!',
-  how: "Tap the yellow weak spots fast and empty the boss's bar before time runs out! Run out of time and the boss wins.",
+  how: "Tap the yellow spots fast to empty the boss's bar before time runs out!",
   icon: ICON.bossFight,
 });
