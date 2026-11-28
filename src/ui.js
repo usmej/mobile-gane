@@ -1,5 +1,5 @@
 // DOM UI: menu, HUD, shop, win/lose screens, toasts.
-import { canUnlockSkin, skinSwatchCSS } from './skins.js';
+import { canUnlockSkin, skinSwatchCSS, shopSkins } from './skins.js';
 import { getPortrait } from './portraits.js';
 import { pickMeme } from './memes.js';
 import * as I from './icons.js';
@@ -55,6 +55,21 @@ export class UI {
     return b;
   }
 
+  // Goal-gradient nudge: show how close the cheapest character you don't own yet is.
+  _nextGoal(save) {
+    const owned = new Set(save.ownedSkins || []);
+    const next = shopSkins()
+      .filter((s) => !owned.has(s.id) && s.price > 0 && canUnlockSkin(save, s))
+      .sort((a, b) => (a.currency === b.currency ? a.price - b.price : a.currency === 'coins' ? -1 : 1))[0];
+    if (!next) return '';
+    const have = next.currency === 'gems' ? save.gems : save.coins;
+    const pct = Math.round(Math.min(1, have / next.price) * 100);
+    const left = Math.max(0, next.price - have);
+    const ico = next.currency === 'gems' ? I.gem() : I.coin();
+    const msg = left ? `${fmt(left)} more for ${esc(next.name)}` : `${esc(next.name)} is ready in Skins!`;
+    return `<div class="next-goal${left ? '' : ' is-ready'}"><span class="ng-ico">${ico}</span><span class="ng-text">${msg}</span><div class="ng-bar"><i style="width:${pct}%"></i></div></div>`;
+  }
+
   _currencyBar(save) {
     return `<div class="cur-bar">
       <div class="chip chip-coin"><span class="chip-ico">${I.coin()}</span><b data-k="coins">${fmt(save.coins)}</b></div>
@@ -80,6 +95,7 @@ export class UI {
         <div class="level-tag">Level ${save.level}</div>
       </div>
       <div class="menu-bottom">
+        ${this._nextGoal(save)}
         <button class="btn btn-play">PLAY</button>
         <div class="menu-secondary">
           <button class="btn btn-tile btn-shop"><span class="tile-ico">${I.skin()}</span><span class="tile-label">Skins</span></button>
