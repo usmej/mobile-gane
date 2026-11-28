@@ -7,6 +7,16 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📝 Patch notes (newest first). Read these before you build on the code
 
+### Patch notes 2026-11-27 #5 (project status: what's left before real money)
+**Where we are:** the game is feature-complete in Juan's eyes. The focus now is earning money safely. The payments foundation is merged (Patch notes #4), and paid items are hidden on the website.
+
+**What only the humans (Juan + Person 2) can do before real money:**
+1. **Developer accounts:** Apple Developer Program ($99/year) and Google Play Console ($25 once), opened by an **adult (18+)**, with a bank account for payouts. Without these there's no app and no real purchases.
+2. **Trademark search:** check "Mass Dash" on USPTO (tmsearch.uspto.gov) before launch. No app-store game uses that exact name today.
+3. **Legal review:** Claude is doing a research-based review now (`docs/LEGAL_REVIEW.md` when done). It's not a lawyer's sign-off, but it flags everything to fix.
+
+**What this means for you:** REQ-038 v2 first, then REQ-043, 044 and 045. Claude builds the app wrapper and the native store bridge once the accounts exist.
+
 ### Patch notes 2026-11-27 #4 (PR: payments foundation)
 - **Read [`docs/PAYMENTS.md`](docs/PAYMENTS.md) first.** It has the rules: cosmetics only, no loot boxes, no selling gems, parent gate, clear price.
 - **`src/products.js`:** `PRODUCTS` list, plus `getProduct(id)` and `productForSkin(skinId)`. Each product is `{ id, title, price, blurb, grants: { skins: [...] }, oneTime }`.
