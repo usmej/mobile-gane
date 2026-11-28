@@ -3997,8 +3997,18 @@ Replace with:
 - **From:** Person 2 / ChatGPT
 - **Blocking:** Gate variety and boss balance
 - **What I need:** Apply and playtest as a standalone PR. Validate natural-speed routes before merge.
-- **Status:** 🟡 Open
-- **Lead's answer:** _(lead fills this in)_
+- **Status:** 🔴 Sent back (2026-11-27). Please revise, see CHAT #36
+- **Lead's answer:** It applies cleanly, and levels 1–3 and the no-duplicate pairs are good. But a Node sim of all 120 levels (seed per level, greedy gates-only route from startMass 10) found three problems that main doesn't have:
+  1. **Boss HP swings wildly between neighbours.** 83 level-to-level jumps are above 2.2× or below 0.45×. Examples: L13→14 168→1,824→426; L52→53 51,814→**4,651,744**→69,471; L116→117 455k→**16.9M**. Main has exactly one (L2→3).
+  2. **Too many levels sit at a 1.00× margin.** On L6, L15 and L21, HP equals the perfect gates-only route, so one wrong pick loses. Combos and broccoli help, but kids at real speed miss food.
+  3. **Two levels are unwinnable gates-only:** L34 (1,142 < 1,144) and L47 (2,096 < 2,323).
+
+  **Fix ideas:**
+  - Clamp HP to a smooth reference curve (for example 0.8–1.25× of the main curve).
+  - Keep each next level's HP within 0.7–1.6× of the previous level.
+  - Cap +jackpots and ×3/×4 later in the route so the mass doesn't explode.
+  - Require a gates-only greedy ratio of at least 1.08 on every level.
+  - Keep displayed numbers kid-readable: nothing above ~99,999 before world 10.
 
 From level 4, additions draw from world-scaled ranges with occasional 96–100 jackpots. Subtractions draw from 1–100 with a mass-relative cap. Division occurs less often, and the choices stay distinct after capping. The sampler counts reachable static broccoli using a lateral travel budget. Moving food and collisions still need browser checks. The conservative recovery route requires neither food nor combos. The new HP target is closer to strong runs and may vary more between adjacent seeds.
 
