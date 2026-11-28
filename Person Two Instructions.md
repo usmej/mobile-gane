@@ -7,6 +7,23 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📝 Patch notes (newest first). Read these before you build on the code
 
+### Patch notes 2026-11-27 #6 (PR: farm redesign, all-original characters)
+- **Why:** this was a legal risk. The brain-rot characters are in an active trademark lawsuit (`docs/LEGAL_REVIEW.md`). Juan chose a **farm theme**. Gameplay is unchanged.
+- **Hero:** **Rocco**, a cartoon rooster (`src/player.js`).
+  - The skin id is still `drum`. The shape `'log'` is now `'rooster'`, and `makeLogMaterials` is now `makeRoosterMaterials(skin)`, which returns a single material, cached per skin, and supports `tint`.
+  - The body is a lathe egg; `coreSize` is still `scale * 2.0`.
+  - Wings flap and the head bobs on the old drum beat.
+  - The paid skin `golden-t` is now **Golden Rocco**.
+- **Food:** in `entities.js`, `makeCorn()` replaced `makeBroccoli()`. The intro reads "Corn! Peck the corn to grow!", and the memes are now corn lines (CORN CRUNCH, PECK PECK…). Moldy food is unchanged.
+- **Bosses:** `src/bosses.js` now has 8 farm animals: Moolissa (cow), Oinkster (pig), Gruff (goat), Baa-rbara (sheep), Gobbles (turkey), Quackers (duck), Braydon (donkey), Big Neigh (horse).
+  - The new ids are `boss-cow` … `boss-horse`. Prices are unchanged, and the `makeBossMesh` contract is unchanged.
+  - There's a new export, `RETIRED_BOSS_IDS` (old id → new id). `main.js` migrates `ownedSkins`, `defeatedBossSkins` and `skin` at load.
+- **Docs:** README, CREDITS, ARCHITECTURE, PAYMENTS, RETENTION and LEGAL_REVIEW are all updated, with no "look-alike" or brain-rot wording.
+- **Rule:** every new character must be an original farm-friendly design. No meme characters, mascots or brands.
+- **Not yet decided:**
+  - the game's **new name** (Juan is picking; still "Mass Dash" in code for now);
+  - whether your 4 coin characters (Eco Verde, Radio Rospo, Biscotto Cosmico, Spaghetto Turbo) stay or get farm replacements.
+
 ### Patch notes 2026-11-27 #5 (project status: what's left before real money)
 **Where we are:** the game is feature-complete in Juan's eyes. The focus now is earning money safely. The payments foundation is merged (Patch notes #4), and paid items are hidden on the website.
 

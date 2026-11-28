@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { BOSS_SKINS } from './bosses.js';
 
 // pattern: 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'
-// shape (optional, default 'blob'): 'blob' | 'log' | 'boss' | 'character'
+// shape (optional, default 'blob'): 'blob' | 'rooster' | 'boss' | 'character'
 const ALL_SKINS = [
   { id: 'classic',  name: 'Gloop', price: 0,   currency: 'coins', color: '#5be37a', color2: '#2fae4f', pattern: 'solid' },
   { id: 'bubble',   name: 'Bubblegum', price: 50,  currency: 'coins', color: '#ff8ad8', color2: '#ff4fb8', pattern: 'solid' },
@@ -25,8 +25,8 @@ const ALL_SKINS = [
   { id: 'crumbclout', name: 'Crumb Clout', price: 1950, currency: 'coins', color: '#ffc67d', color2: '#632c13', pattern: 'dots' },
   { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
   { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
-  { id: 'golden-t', name: 'Golden Triple T', price: 0, currency: 'iap', color: '#FFD23F', color2: '#B8860B', pattern: 'glow', shape: 'log', tint: '#FFB300' },
-  { id: 'drum', name: 'Triple T', price: 0, currency: 'coins', color: '#A0662E', color2: '#6E4220', pattern: 'solid', shape: 'log' },
+  { id: 'golden-t', name: 'Golden Rocco', price: 0, currency: 'iap', color: '#FFD23F', color2: '#B8860B', pattern: 'glow', shape: 'rooster', tint: '#FFB300' },
+  { id: 'drum', name: 'Rocco', price: 0, currency: 'coins', color: '#FFF4E0', color2: '#E8CFA6', pattern: 'solid', shape: 'rooster' },
   { id: 'echo-verdoso', name: 'Eco Verde, El Saltarín', price: 480, currency: 'coins', color: '#48C874', color2: '#274562', pattern: 'glow', shape: 'character' },
   { id: 'radio-rospo', name: 'Radio Rospo', price: 720, currency: 'coins', color: '#F4BD47', color2: '#7E3161', pattern: 'checker', shape: 'character' },
   { id: 'biscotto-cosmico', name: 'Biscotto Cosmico', price: 950, currency: 'coins', color: '#BE82E9', color2: '#FFF1A8', pattern: 'dots', shape: 'character' },
@@ -136,7 +136,7 @@ export function skinSwatchCSS(skin) {
   if (swatchCache.has(skin.id)) return swatchCache.get(skin.id);
   let css = skin.color;
   try {
-    const c = skin.shape === 'log' ? drawLogSide(skin) : drawPattern(skin);
+    const c = skin.shape === 'rooster' ? drawRoosterSide(skin) : drawPattern(skin);
     if (skin.pattern === 'glow') {
       const g = c.getContext('2d');
       g.strokeStyle = skin.color2;
@@ -149,78 +149,43 @@ export function skinSwatchCSS(skin) {
   return css;
 }
 
-// ---------- Triple T (original living-log hero) ----------
+// ---------- Rocco (original cartoon rooster hero) ----------
 const INK = '#1B1420';
 
-// Deterministic pseudo-random so the bark looks the same every time.
-function rng(seed) { let a = seed; return () => { a = (a * 1664525 + 1013904223) % 4294967296; return a / 4294967296; }; }
-
-// Bark side texture: warm base, darker vertical streaks, a couple of knots.
-export function drawLogSide(skin) {
+// Feather side texture: cream base with a few soft, faint scallops low on the belly.
+export function drawRoosterSide(skin) {
   skin = skin || getSkin('drum');
   const W = 512, H = 256;
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
   g.fillStyle = skin.color; g.fillRect(0, 0, W, H);
-  const r = rng(7);
-  g.fillStyle = skin.color2;
-  for (let i = 0; i < 34; i++) {
-    const x = r() * W, w = 4 + r() * 8, y = r() * H * 0.7, h = 50 + r() * 140;
-    g.fillRect(x, y, w, h);
-  }
-  g.strokeStyle = INK; g.lineWidth = 3; g.globalAlpha = 0.5;
-  for (let i = 0; i < 14; i++) {
-    const x = r() * W, y = r() * H * 0.6, h = 30 + r() * 80;
-    g.beginPath(); g.moveTo(x, y); g.lineTo(x + 3, y + h); g.stroke();
-  }
-  g.globalAlpha = 1;
-  for (const [kx, ky] of [[90, 170], [400, 200], [250, 225]]) {
-    g.fillStyle = skin.color2; g.beginPath(); g.ellipse(kx, ky, 16, 11, 0, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = INK; g.lineWidth = 3; g.stroke();
-    g.fillStyle = INK; g.beginPath(); g.ellipse(kx, ky, 6, 4, 0, 0, Math.PI * 2); g.fill();
-  }
+  g.strokeStyle = skin.color2; g.lineWidth = 5; g.lineCap = 'round'; g.globalAlpha = 0.55;
+  [200, 238].forEach((y, r) => {
+    for (let x = r * 32; x < W + 64; x += 64) {
+      g.beginPath(); g.arc(x, y, 30, 0.2 * Math.PI, 0.8 * Math.PI); g.stroke();
+    }
+  });
   return c;
 }
 
-// Top cap: tree growth rings, tan and cream with ink outline.
-export function drawLogTop() {
-  const S = 128;
-  const c = document.createElement('canvas');
-  c.width = c.height = S;
-  const g = c.getContext('2d');
-  g.fillStyle = '#E8C98F'; g.fillRect(0, 0, S, S);
-  const rings = [[0.47, '#FFF4E0'], [0.37, '#E8C98F'], [0.27, '#FFF4E0'], [0.17, '#E8C98F'], [0.07, '#A0662E']];
-  for (const [rad, col] of rings) {
-    g.fillStyle = col; g.beginPath(); g.arc(S / 2, S / 2, S * rad, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = INK; g.lineWidth = rad > 0.4 ? 7 : 3; g.stroke();
-  }
-  return c;
-}
-
-const logMats = new Map();   // per skin id (tinted logs) + '_default'
-// Returns [side, top, bottom] materials for a CylinderGeometry (flat, no emissive).
-export function makeLogMaterials(skin) {
+const roosterMats = new Map();   // per skin id (tinted roosters) + '_default'
+// Returns ONE material for the egg LatheGeometry (flat, no emissive unless tinted).
+export function makeRoosterMaterials(skin) {
   const key = skin?.tint ? skin.id : '_default';
-  if (logMats.has(key)) return logMats.get(key);
-  const mk = (canvas, fallback) => {
-    const o = { color: new THREE.Color(fallback), roughness: 0.85, metalness: 0 };
-    try {
-      const t = new THREE.CanvasTexture(canvas());
-      t.colorSpace = THREE.SRGBColorSpace;
-      o.map = t; o.color = new THREE.Color('#ffffff');
-    } catch (e) { /* flat color fallback */ }
-    return new THREE.MeshStandardMaterial(o);
-  };
-  const side = mk(() => drawLogSide(skin), '#A0662E');
-  const top = mk(drawLogTop, '#E8C98F');
-  const bottom = new THREE.MeshStandardMaterial({ color: new THREE.Color('#6E4220'), roughness: 0.85, metalness: 0 });
+  if (roosterMats.has(key)) return roosterMats.get(key);
+  const o = { color: new THREE.Color('#FFF4E0'), roughness: 0.8, metalness: 0 };
+  try {
+    const t = new THREE.CanvasTexture(drawRoosterSide(skin));
+    t.colorSpace = THREE.SRGBColorSpace;
+    o.map = t; o.color = new THREE.Color('#ffffff');
+  } catch (e) { /* flat color fallback */ }
+  const mat = new THREE.MeshStandardMaterial(o);
   if (skin?.tint) {
-    // shiny painted log (paid cosmetic): tint the wood texture and add a little sheen
-    for (const m of [side, top, bottom]) { m.color = new THREE.Color(skin.tint); m.metalness = 0.55; m.roughness = 0.3; m.emissive = new THREE.Color(skin.tint); m.emissiveIntensity = 0.18; }
-    bottom.color = new THREE.Color(skin.color2 || skin.tint);
+    // shiny golden rooster (paid cosmetic): tint the feather texture and add a little sheen
+    mat.color = new THREE.Color(skin.tint); mat.metalness = 0.55; mat.roughness = 0.3;
+    mat.emissive = new THREE.Color(skin.tint); mat.emissiveIntensity = 0.18;
   }
-  const mats = [side, top, bottom];
-  logMats.set(key, mats);
-  return mats;
+  roosterMats.set(key, mat);
+  return mat;
 }

@@ -36,7 +36,7 @@ function render(skin) {
   player.setSkin(skin, baseMat);
   player.label.removeFromParent();
   player.eyes.removeFromParent();
-  const shared = skin.shape === 'log' ? player.body.material : null;   // cached log materials: keep
+  const shared = skin.shape === 'rooster' ? player.body.material : null;   // cached rooster materials: keep
   const subject = player.currentCharacterSkin || player.body;
   scene.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(subject);

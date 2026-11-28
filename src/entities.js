@@ -21,6 +21,13 @@ function shared() {
   G.brocMat = new THREE.MeshStandardMaterial({ color: 0x3fd64f, roughness: 0.6, flatShading: true });
   G.stem = new THREE.CylinderGeometry(0.12, 0.16, 0.5, 8);
   G.stemMat = new THREE.MeshStandardMaterial({ color: 0x9be37a });
+  // corn cob (healthy food for the rooster)
+  G.cob = new THREE.CapsuleGeometry(0.24, 0.62, 4, 10);
+  G.cobMat = new THREE.MeshStandardMaterial({ color: 0xffd23f, roughness: 0.55 });
+  G.kernel = new THREE.SphereGeometry(0.075, 6, 4);
+  G.kernelMat = new THREE.MeshStandardMaterial({ color: 0xffe066, roughness: 0.4 });
+  G.husk = new THREE.ConeGeometry(0.16, 0.75, 5);
+  G.huskMat = new THREE.MeshStandardMaterial({ color: 0x4ee06a, roughness: 0.7, flatShading: true });
   G.apple = new THREE.IcosahedronGeometry(0.42, 1);
   G.appleMat = new THREE.MeshStandardMaterial({ color: 0x7A6A2E, roughness: 0.9, flatShading: true });
   G.moldGeo = new THREE.IcosahedronGeometry(0.11, 0);
@@ -88,7 +95,7 @@ export class Entities {
           m.position.set(it.x, 1.1, z);
           e.obj = m; break;
         }
-        case 'food': e.obj = it.good ? this.makeBroccoli() : this.makeMoldyApple(); e.obj.position.set(it.x, 0, z); break;
+        case 'food': e.obj = it.good ? this.makeCorn() : this.makeMoldyApple(); e.obj.position.set(it.x, 0, z); break;
         case 'hammer':
           e.obj = this.makeHammer(z, W);
           break;
@@ -224,16 +231,26 @@ export class Entities {
     return g;
   }
 
-  makeBroccoli() {
+  // Standing corn cob: yellow cob with kernel bumps and green husk leaves at the base.
+  makeCorn() {
     const g = new THREE.Group();
-    const stem = new THREE.Mesh(G.stem, G.stemMat);
-    stem.position.y = 0.35;
-    g.add(stem);
-    for (const [x, y, zz] of [[0, 0.8, 0], [-0.25, 0.65, 0.1], [0.25, 0.65, -0.1]]) {
-      const b = new THREE.Mesh(G.broc, G.brocMat);
-      b.position.set(x, y, zz);
-      b.castShadow = true;
-      g.add(b);
+    const cob = new THREE.Mesh(G.cob, G.cobMat);
+    cob.position.y = 0.62;
+    cob.castShadow = true;
+    g.add(cob);
+    for (let row = 0; row < 5; row++) {
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * Math.PI * 2 + (row % 2) * 0.5;
+        const kern = new THREE.Mesh(G.kernel, G.kernelMat);
+        kern.position.set(Math.cos(a) * 0.23, 0.38 + row * 0.13, Math.sin(a) * 0.23);
+        g.add(kern);
+      }
+    }
+    for (const [a, tilt] of [[0, 0.45], [2.1, 0.5], [4.2, 0.4]]) {
+      const leaf = new THREE.Mesh(G.husk, G.huskMat);
+      leaf.position.set(Math.cos(a) * 0.17, 0.36, Math.sin(a) * 0.17);
+      leaf.rotation.set(Math.sin(a) * tilt, 0, -Math.cos(a) * tilt);
+      g.add(leaf);
     }
     return g;
   }

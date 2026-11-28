@@ -6,10 +6,10 @@
 
 ## Characters & names
 
-All characters are original fan-parody designs made for this project, inspired by the general "Italian brain-rot" meme genre. They are not the original meme characters, use no copied art or names, and the project is not affiliated with, endorsed by, or sponsored by any meme creator, trademark holder, or game studio.
+All characters are original cartoon farm animals designed for this project. No art, names or characters from any other game, show, brand, mascot or meme are used, and the project is not affiliated with, endorsed by, or sponsored by any other company.
 
-- Hero: "Triple T", a living wooden log with a bat.
-- Bosses: Squalo Scarpettone, Coccodrillo Bombardone, Tazzina Ballerina, Scimmia Bananosa, Cactofante, Frigocammello, Ochetta Esplosiva, Alberello Scarpato.
+- Hero: Rocco, a cartoon rooster.
+- Bosses: Moolissa (cow), Oinkster (pig), Gruff (goat), Baa-rbara (sheep), Gobbles (turkey), Quackers (duck), Braydon (donkey), Big Neigh (horse).
 
 ## Inspiration
 
