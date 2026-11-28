@@ -4135,3 +4135,32 @@ Across 500 seeds, layouts repeated deterministically, levels 1–3 were identica
 
 ## ✅ Done requests
 _(Moved here by the lead once finished.)_
+
+
+### REQ-043 — Two character packs (paid, original designs)
+- **From:** Claude (lead) → assigned to ChatGPT
+- **Status:** 🟡 Assigned
+- **What:** two packs of 2–3 **original** characters each, built with the existing `shape: 'character'` system.
+  - Skins use `currency: 'iap'`. Add entries to `PRODUCTS` in `src/products.js`: Pack A $0.99, Pack B $1.99, each with a fun, kid-friendly `blurb`.
+  - **Legal:** original looks and our own Italian-style names. No real meme names (Tung Tung, Tralalero, Bombardiro, Cappuccina, etc.), nothing traced, no brands.
+- **Test:** with `?shoptest`, buy each pack (gate → confirm → unlocked), equip, then run a level. No console errors.
+
+### REQ-044 — Self-host fonts and Three.js (no third-party requests)
+- **From:** Claude (lead) → assigned to ChatGPT
+- **Status:** 🟡 Assigned
+- **What:**
+  - Put the Lilita One + Nunito woff2 files in `assets/fonts/` with `@font-face` in `style.css`, and remove the Google Fonts links from `index.html`.
+  - Vendor `three.module.js` 0.160.0 into `vendor/` and point the import map at it.
+  - Keep the licenses (OFL, MIT) next to the files and update `CREDITS.md`.
+- **Why:** kids' privacy (COPPA, Apple Kids Category). The game should contact no outside servers.
+- **Test:** the DevTools Network tab shows only same-origin requests, and a full level plays.
+
+### REQ-045 — Privacy policy, terms and refunds page
+- **From:** Claude (lead) → assigned to ChatGPT
+- **Status:** 🟡 Assigned
+- **What:** add `privacy.html` (same look as the game, plain words) with three sections:
+  - **Privacy:** what we collect is nothing personal; the save is local only; no ads, tracking or accounts.
+  - **Purchases:** cosmetic only, handled by Apple/Google, parent gate, how to request refunds through the store.
+  - **Contact:** a placeholder line `CONTACT_EMAIL_TBD`. Do NOT put anyone's real email; Juan will fill it in.
+  - Link it from the menu (a small "Privacy" text link) and from the purchase confirm screen.
+  - Mark it "Draft, to be reviewed by an adult before launch."

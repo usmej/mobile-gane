@@ -25,6 +25,7 @@ const ALL_SKINS = [
   { id: 'crumbclout', name: 'Crumb Clout', price: 1950, currency: 'coins', color: '#ffc67d', color2: '#632c13', pattern: 'dots' },
   { id: 'moonnoodle', name: 'Moon Noodle', price: 45, currency: 'gems', color: '#e2dcff', color2: '#4720a3', pattern: 'stripes' },
   { id: 'glowsnack', name: 'Glow Snack', price: 60, currency: 'gems', color: '#66f7ed', color2: '#213c94', pattern: 'glow' },
+  { id: 'golden-t', name: 'Golden Triple T', price: 0, currency: 'iap', color: '#FFD23F', color2: '#B8860B', pattern: 'glow', shape: 'log', tint: '#FFB300' },
   { id: 'drum', name: 'Triple T', price: 0, currency: 'coins', color: '#A0662E', color2: '#6E4220', pattern: 'solid', shape: 'log' },
   { id: 'echo-verdoso', name: 'Eco Verde, El Saltarín', price: 480, currency: 'coins', color: '#48C874', color2: '#274562', pattern: 'glow', shape: 'character' },
   { id: 'radio-rospo', name: 'Radio Rospo', price: 720, currency: 'coins', color: '#F4BD47', color2: '#7E3161', pattern: 'checker', shape: 'character' },
@@ -41,6 +42,7 @@ export function shopSkins() {
 }
 
 export function canUnlockSkin(save, skin) {
+  if (skin.currency === 'iap') return false;   // only a real purchase (store.js) grants these
   return skin.shape !== 'boss' || save.defeatedBossSkins?.includes(skin.id) === true;
 }
 
@@ -196,10 +198,11 @@ export function drawLogTop() {
   return c;
 }
 
-let logMats = null;
+const logMats = new Map();   // per skin id (tinted logs) + '_default'
 // Returns [side, top, bottom] materials for a CylinderGeometry (flat, no emissive).
 export function makeLogMaterials(skin) {
-  if (logMats) return logMats;
+  const key = skin?.tint ? skin.id : '_default';
+  if (logMats.has(key)) return logMats.get(key);
   const mk = (canvas, fallback) => {
     const o = { color: new THREE.Color(fallback), roughness: 0.85, metalness: 0 };
     try {
@@ -212,6 +215,12 @@ export function makeLogMaterials(skin) {
   const side = mk(() => drawLogSide(skin), '#A0662E');
   const top = mk(drawLogTop, '#E8C98F');
   const bottom = new THREE.MeshStandardMaterial({ color: new THREE.Color('#6E4220'), roughness: 0.85, metalness: 0 });
-  logMats = [side, top, bottom];
-  return logMats;
+  if (skin?.tint) {
+    // shiny painted log (paid cosmetic): tint the wood texture and add a little sheen
+    for (const m of [side, top, bottom]) { m.color = new THREE.Color(skin.tint); m.metalness = 0.55; m.roughness = 0.3; m.emissive = new THREE.Color(skin.tint); m.emissiveIntensity = 0.18; }
+    bottom.color = new THREE.Color(skin.color2 || skin.tint);
+  }
+  const mats = [side, top, bottom];
+  logMats.set(key, mats);
+  return mats;
 }

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { CONFIG, speedForLevel, paceForLevel } from './config.js';
+import { getProduct } from './products.js';
+import { storeAvailable, storeKind, purchase as storePurchase, restore as storeRestore } from './store.js';
 import { generateLevel, applyOp, isGoodOp, worldLabel } from './levels.js';
 import { World } from './world.js';
 import { Player } from './player.js';
@@ -175,6 +177,8 @@ const ui = new UI(document.getElementById('ui'), {
     showMenu();
   },
   onBuySkin: (id) => buySkin(id),
+  onBuyProduct: (id) => buyProduct(id),
+  onRestore: () => restorePurchases(),
   onEquipSkin: (id) => equipSkin(id),
   onToggleSound: (on) => {
     audio.unlock();
@@ -463,6 +467,39 @@ function buySkin(id) {
   audio.play('buy');
   recordBadgeEvent({ type: 'skin' }, `${skin.name} unlocked`);
   equipSkin(id);
+}
+
+// Real-money purchase: parent gate -> confirm screen with the price -> store -> grant cosmetics.
+function buyProduct(productId) {
+  const product = getProduct(productId);
+  if (!product || !storeAvailable()) { ui.toast('Coming soon!'); return; }
+  if (product.oneTime && save.purchases.includes(product.id)) { ui.toast('You already have this'); return; }
+  audio.play('click');
+  ui.showParentGate(() => {
+    ui.showPurchaseConfirm(product, { test: storeKind() === 'test' }, async () => {
+      const res = await storePurchase(product.id);
+      ui.hideModal();
+      if (!res.ok) { ui.toast('Purchase cancelled'); return; }
+      grantProduct(product);
+      ui.toast(`Thank you! ${product.title} unlocked`);
+      ui.showShop(save, shopSkins());
+    });
+  });
+}
+
+function grantProduct(product) {
+  if (!save.purchases.includes(product.id)) save.purchases.push(product.id);
+  for (const id of product.grants?.skins || []) if (!save.ownedSkins.includes(id)) save.ownedSkins.push(id);
+  audio.play('buy');
+  writeSave(save);
+}
+
+async function restorePurchases() {
+  const ids = await storeRestore();
+  let n = 0;
+  for (const id of ids) { const p = getProduct(id); if (p) { grantProduct(p); n++; } }
+  ui.toast(n ? `Restored ${n} purchase${n > 1 ? 's' : ''}` : 'Nothing to restore');
+  ui.showShop(save, shopSkins());
 }
 
 function equipSkin(id) {

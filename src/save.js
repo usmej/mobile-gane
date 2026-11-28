@@ -18,6 +18,7 @@ export const DEFAULT_SAVE = {
   tutorialDone: false,
   seenIntros: [],            // first-encounter explainers already shown (keys from intros.js)
   records: [],
+  purchases: [],             // real-money product ids owned (entitlements; see store.js)
 };
 
 function freshDefaults() {

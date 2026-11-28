@@ -5,6 +5,8 @@ import { pickMeme } from './memes.js';
 import * as I from './icons.js';
 import { canClaim } from './daily.js';
 import { shareRunCard } from './runcard.js';
+import { productForSkin } from './products.js';
+import { storeAvailable, storeKind } from './store.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
@@ -240,7 +242,9 @@ export class UI {
 
   // ---------- shop ----------
   showShop(save, skins = []) {
-    skins = skins.filter((s) => !s.retired);
+    const canPay = storeAvailable();
+    // Paid characters only appear where a store exists (app build or ?shoptest), unless already owned.
+    skins = skins.filter((s) => !s.retired && (s.currency !== 'iap' || canPay || (save.ownedSkins || []).includes(s.id)));
     const owned = new Set(save.ownedSkins || []);
     const cards = skins.map((s) => {
       const isOwned = owned.has(s.id);
@@ -251,7 +255,10 @@ export class UI {
       const can = eligible && have >= s.price;
       const ico = gem ? I.gem() : I.coin();
       let btn;
-      if (equipped) btn = `<button class="btn btn-sm btn-equipped" disabled>Equipped</button>`;
+      const product = s.currency === 'iap' ? productForSkin(s.id) : null;
+      if (product && !isOwned) {
+        btn = `<button class="btn btn-sm btn-paid" data-act="product" data-id="${esc(product.id)}">${esc(product.price)}</button>`;
+      } else if (equipped) btn = `<button class="btn btn-sm btn-equipped" disabled>Equipped</button>`;
       else if (isOwned) btn = `<button class="btn btn-sm btn-equip" data-act="equip" data-id="${esc(s.id)}">Equip</button>`;
       else if (!eligible) btn = `<button class="btn btn-sm btn-locked" disabled>${I.lock()}<span>Beat level ${s.unlockLevel}</span></button>`;
       else if (can) btn = `<button class="btn btn-sm btn-buy" data-act="buy" data-id="${esc(s.id)}">${ico}<span>${fmt(s.price)}</span></button>`;
@@ -272,14 +279,16 @@ export class UI {
         <h2 class="panel-title">Characters <span class="collect-count">${skins.filter((s) => owned.has(s.id)).length}/${skins.length}</span></h2>
         ${this._currencyBar(save)}
         <div class="skin-grid">${cards}</div>
-        
+        ${canPay ? `<div class="shop-foot">${storeKind() === 'test' ? '<span class="test-tag">TEST STORE: no real money</span>' : ''}<button class="btn-link btn-restore">Restore purchases</button></div>` : ''}
       </div>`);
+    this._on(el, '.btn-restore', () => this._call('onRestore'));
     if (prevScroll) { el.querySelector('.skin-grid').scrollTop = prevScroll; el.classList.add('no-anim'); }
     this._on(el, '.btn-close', () => this._call('onCloseShop'));
     el.querySelectorAll('button[data-act]').forEach((b) => {
       b.addEventListener('click', () => {
         const id = b.getAttribute('data-id');
-        this._call(b.getAttribute('data-act') === 'buy' ? 'onBuySkin' : 'onEquipSkin', id);
+        const act = b.getAttribute('data-act');
+        this._call(act === 'buy' ? 'onBuySkin' : act === 'product' ? 'onBuyProduct' : 'onEquipSkin', id);
       });
     });
   }
@@ -333,6 +342,74 @@ export class UI {
   }
 
   // First-encounter explainer: dimmed backdrop + centered card. Doesn't touch the HUD.
+  // ---------- purchases ----------
+  // Parent gate (Apple Kids Category 1.3 / FTC): an adult-level question before any purchase screen.
+  showParentGate(onPass, onCancel) {
+    this.hideModal();
+    const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const say = (n) => (n < 20 ? words[n] : tens[Math.floor(n / 10)] + (n % 10 ? '-' + words[n % 10] : ''));
+    const a = 31 + Math.floor(Math.random() * 60);
+    const b = 12 + Math.floor(Math.random() * 18);
+    const answer = a - b;
+    const back = document.createElement('div');
+    back.className = 'modal-back';
+    back.innerHTML = `
+      <div class="card modal-card" role="dialog" aria-modal="true" aria-labelledby="pg-title">
+        <div class="intro-new">GROWN-UPS ONLY</div>
+        <h2 class="panel-title" id="pg-title">Ask a grown-up</h2>
+        <p class="modal-text">To continue, type the answer to: <b>${say(a)} minus ${say(b)}</b></p>
+        <input class="pg-input" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Answer">
+        <p class="pg-err" hidden>That's not right. Ask a grown-up for help!</p>
+        <button class="btn btn-next pg-ok">Continue</button>
+        <button class="btn-link pg-cancel">Cancel</button>
+      </div>`;
+    this.root.appendChild(back);
+    this.modalEl = back;
+    const input = back.querySelector('.pg-input');
+    const err = back.querySelector('.pg-err');
+    let tries = 0;
+    const submit = () => {
+      if (Number(input.value.trim()) === answer) { this.hideModal(); onPass && onPass(); return; }
+      tries += 1;
+      err.hidden = false;
+      input.value = '';
+      if (tries >= 3) { this.hideModal(); onCancel && onCancel(); }
+    };
+    back.querySelector('.pg-ok').addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+    back.querySelector('.pg-cancel').addEventListener('click', () => { this.hideModal(); onCancel && onCancel(); });
+    back.addEventListener('pointerdown', (e) => e.stopPropagation());
+    try { input.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+  }
+
+  // Clear confirm screen: what you get and the real price. Never a one-tap purchase.
+  showPurchaseConfirm(product, { test = false } = {}, onBuy, onCancel) {
+    this.hideModal();
+    const back = document.createElement('div');
+    back.className = 'modal-back';
+    back.innerHTML = `
+      <div class="card modal-card" role="dialog" aria-modal="true" aria-labelledby="pc-title">
+        ${test ? '<div class="intro-new">TEST STORE: NO REAL MONEY</div>' : ''}
+        <h2 class="panel-title" id="pc-title">${esc(product.title)}</h2>
+        <p class="modal-text">${esc(product.blurb)}</p>
+        <p class="modal-price">${esc(product.price)} <span>one-time purchase</span></p>
+        <button class="btn btn-next pc-buy">Buy for ${esc(product.price)}</button>
+        <button class="btn-link pc-cancel">No thanks</button>
+      </div>`;
+    this.root.appendChild(back);
+    this.modalEl = back;
+    const buy = back.querySelector('.pc-buy');
+    buy.addEventListener('click', () => { buy.disabled = true; buy.textContent = 'Working...'; onBuy && onBuy(); });
+    back.querySelector('.pc-cancel').addEventListener('click', () => { this.hideModal(); onCancel && onCancel(); });
+    back.addEventListener('pointerdown', (e) => e.stopPropagation());
+  }
+
+  hideModal() {
+    if (this.modalEl) this.modalEl.remove();
+    this.modalEl = null;
+  }
+
   showIntro(intro, onDone) {
     this.hideIntro();
     if (!intro) return;
