@@ -1,4 +1,4 @@
-# Mass Dash: retention plan (kid-safe)
+# Rooster Rush: retention plan (kid-safe)
 
 Juan's goal: make kids **want to come back and keep playing**. This plan does that with **healthy engagement**: the reasons kids return to great games (mastery, progress, collecting, surprise). It avoids manipulative "addiction" tricks, which are both harmful and a **legal risk** for a kids' game, especially once payments arrive.
 
@@ -43,7 +43,7 @@ Juan's goal: make kids **want to come back and keep playing**. This plan does th
 
 ## 🔬 More research to use (round 2)
 
-| Finding | What it means for Mass Dash |
+| Finding | What it means for Rooster Rush |
 |---|---|
 | **Goal-gradient effect:** people speed up as a goal gets close ([Kivetz, Urminsky & Zheng 2006](https://doi.org/10.1509/jmkr.43.1.39)) | Show progress toward the **next character unlock** and the **world's boss** on the menu ("2 levels to the boss!"). |
 | **Endowed progress:** a goal that already looks partly done gets finished more often ([Nunes & Drèze 2006](https://doi.org/10.1086/500480)) | Start each world's challenge card with the first box already ticked for reaching the world. |

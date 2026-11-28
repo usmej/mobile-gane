@@ -1,6 +1,6 @@
 # Architecture & Module Contracts
 
-**Game:** *Mass Dash* — an original farm-themed 3D runner (hero: Rocco the rooster) (genre: "jelly run / tall man run").
+**Game:** *Rooster Rush* — an original farm-themed 3D runner (hero: Rocco the rooster) (genre: "jelly run / tall man run").
 **Stack:** plain HTML + JavaScript ES modules + [Three.js](https://threejs.org) `0.160.0` loaded from a CDN via an import map.
 No build step, no npm, no bundler. Open `index.html` through any static server.
 

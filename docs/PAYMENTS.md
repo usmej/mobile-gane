@@ -1,4 +1,4 @@
-# Mass Dash: payments plan (kid-safe, low legal risk)
+# Rooster Rush: payments plan (kid-safe, low legal risk)
 
 Goal: make money with in-app purchases like other games do, while staying clear of the **FTC** (the US agency that polices kids' purchases and privacy), Apple's and Google's rules, and copyright problems.
 
@@ -56,7 +56,7 @@ Research on kids and skins says they mainly buy to **look cool and express thems
 - [x] Fonts (Lilita One, Nunito) are SIL OFL and Three.js is MIT. Both are credited in `CREDITS.md`.
 - [ ] **Self-host the fonts and Three.js** so the app makes no third-party requests, since Google Fonts and jsDelivr can see visitor IPs (REQ-044).
 - [ ] **Privacy policy, terms and refund page** (REQ-045). Both stores require a privacy policy.
-- [ ] **Trademark search for "Mass Dash"** on USPTO before launch. No app-store game uses that exact name today.
+- [ ] **Trademark search for "Rooster Rush"** on USPTO before launch. No app-store game uses that exact name today (one small itch.io web game does).
 - [ ] Developer accounts in an adult's name (Apple $99/yr, Google $25), with a bank account for payouts.
 - [ ] Optional: a quick review by someone who knows kids' app law.
 

@@ -90,9 +90,9 @@ export class UI {
         </div>
       </div>
       <div class="menu-mid">
-        <h1 class="title" aria-label="Mass Dash">
-          <span class="t-line t1">${[...'MASS'].map((c) => `<i>${c}</i>`).join('')}</span>
-          <span class="t-line t2"><span class="speed-wrap"><svg class="speed" viewBox="0 0 40 30" width="40" height="30" aria-hidden="true" stroke="#1B1420" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5h24" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M12 5h24" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M4 15h28" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M4 15h28" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M14 25h20" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M14 25h20" fill="none" stroke-width="3" stroke="#FFF4E0"/></svg></span>${[...'DASH'].map((c) => `<i>${c}</i>`).join('')}</span>
+        <h1 class="title" aria-label="Rooster Rush">
+          <span class="t-line t1">${[...'ROOSTER'].map((c) => `<i>${c}</i>`).join('')}</span>
+          <span class="t-line t2"><span class="speed-wrap"><svg class="speed" viewBox="0 0 40 30" width="40" height="30" aria-hidden="true" stroke="#1B1420" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5h24" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M12 5h24" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M4 15h28" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M4 15h28" fill="none" stroke-width="3" stroke="#FFF4E0"/><path d="M14 25h20" fill="none" stroke-width="7" stroke="#1B1420"/><path d="M14 25h20" fill="none" stroke-width="3" stroke="#FFF4E0"/></svg></span>${[...'RUSH'].map((c) => `<i>${c}</i>`).join('')}</span>
         </h1>
         <div class="level-tag">Level ${save.level}</div>
       </div>

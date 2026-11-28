@@ -62,13 +62,13 @@ async function buildCard({ winner, level, coinsEarned, multiplier, skinId }) {
   const FREDOKA = "Nunito, 'Arial Rounded MT Bold', system-ui, sans-serif";
 
   // Title
-  ctx.font = `140px ${BUNGEE}`;
-  const wMass = ctx.measureText('MASS ').width;
-  const wDash = ctx.measureText('DASH').width;
+  ctx.font = `120px ${BUNGEE}`;
+  const wMass = ctx.measureText('ROOSTER ').width;
+  const wDash = ctx.measureText('RUSH').width;
   const x0 = W / 2 - (wMass + wDash) / 2;
   ctx.textAlign = 'left';
-  strokeFill(ctx, 'MASS', x0, 200, GREEN, 18);
-  strokeFill(ctx, 'DASH', x0 + wMass, 200, YELLOW, 18);
+  strokeFill(ctx, 'ROOSTER', x0, 200, GREEN, 18);
+  strokeFill(ctx, 'RUSH', x0 + wMass, 200, YELLOW, 18);
   ctx.textAlign = 'center';
 
   // Portrait
@@ -115,15 +115,15 @@ export async function shareRunCard(opts = {}) {
   try {
     const blob = await buildCard(opts);
     if (!blob) return;
-    const file = new File([blob], 'mass-dash-run.png', { type: 'image/png' });
+    const file = new File([blob], 'rooster-rush-run.png', { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Mass Dash' });
+      await navigator.share({ files: [file], title: 'Rooster Rush' });
       return;
     }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mass-dash-run.png';
+    a.download = 'rooster-rush-run.png';
     document.body.appendChild(a);
     a.click();
     a.remove();

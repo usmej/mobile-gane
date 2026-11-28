@@ -7,6 +7,18 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📝 Patch notes (newest first). Read these before you build on the code
 
+### Patch notes 2026-11-28 #7 (PR: game renamed to Rooster Rush)
+- **The game is now called "Rooster Rush"** (Juan's pick). Kids get "rooster" more easily than "cluck".
+- **Changed:**
+  - `index.html` `<title>`;
+  - the menu title (`ui.js`: ROOSTER / RUSH);
+  - the run-card title and file name (`rooster-rush-run.png`);
+  - the Supporter Pack blurb;
+  - README, AGENTS, ARCHITECTURE, RETENTION, PAYMENTS and LEGAL_REVIEW.
+- **Unchanged on purpose:** the localStorage key `gloop-rush-save-v1` (it keeps everyone's progress), and the repo name `mobile-gane`.
+- **Name check:** no App Store or Google Play game uses "Rooster Rush", but one small free itch.io web game does. A USPTO search is still on the humans' launch list.
+- **Please use "Rooster Rush"** in anything new you write, including the REQ-045 privacy page.
+
 ### Patch notes 2026-11-27 #6 (PR: farm redesign, all-original characters)
 - **Why:** this was a legal risk. The brain-rot characters are in an active trademark lawsuit (`docs/LEGAL_REVIEW.md`). Juan chose a **farm theme**. Gameplay is unchanged.
 - **Hero:** **Rocco**, a cartoon rooster (`src/player.js`).
