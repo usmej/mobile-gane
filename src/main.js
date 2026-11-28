@@ -22,6 +22,7 @@ import { Trail } from './trail.js';
 import { Tutorial } from './tutorial.js';
 import { BossFight } from './bossfight.js';
 import { getIntro, introKeyFor } from './intros.js';
+import { RETIRED_BOSS_IDS } from './bosses.js';
 
 // ---------- setup ----------
 // Test links for human playtesters (no console needed on a phone):
@@ -32,6 +33,16 @@ if (params.has('reset')) resetSave();
 const save = loadSave();
 // FB-002: everyone owns the drum mascot. Existing saves keep the skin they already had equipped.
 if (!save.ownedSkins.includes('drum')) { save.ownedSkins.unshift('drum'); writeSave(save); }
+// Farm redesign: old boss skin ids map to the new farm-animal bosses (same slot, same price).
+{
+  const mapId = (id) => RETIRED_BOSS_IDS[id] || id;
+  const uniq = (arr) => [...new Set(arr.map(mapId))];
+  const before = JSON.stringify([save.ownedSkins, save.defeatedBossSkins, save.skin]);
+  save.ownedSkins = uniq(save.ownedSkins);
+  save.defeatedBossSkins = uniq(save.defeatedBossSkins);
+  save.skin = mapId(save.skin);
+  if (JSON.stringify([save.ownedSkins, save.defeatedBossSkins, save.skin]) !== before) writeSave(save);
+}
 // Gloops retired: refund owned retired skins once (ids are removed, so this is idempotent) and move off a retired equip.
 const skinRefund = { coins: 0, gems: 0 };
 {
@@ -380,7 +391,7 @@ function finishRun(won) {
       tip = 'You were big enough! Tap the yellow weak spots faster to empty the boss bar.';
     } else if (b && player.d >= level.length - 1) {
       const short = Math.max(1, b.hp - player.mass);
-      tip = short <= b.hp * 0.25 ? `So close! Only ${short} short. Pick one more blue gate next time.` : `You need ${short} more. Grab healthy food and the bigger gates.`;
+      tip = short <= b.hp * 0.25 ? `So close! Only ${short} short. Pick one more blue gate next time.` : `You need ${short} more. Peck more corn and pick the bigger gates.`;
     } else if (progress >= 0.6) {
       tip = `So close! You made it ${Math.round(progress * 100)}% of the way.`;
     }

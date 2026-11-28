@@ -29,7 +29,7 @@ Juan's goal: make kids **want to come back and keep playing**. This plan does th
 | Relatedness | **Ghost race:** race a faint ghost of your own best run | Self-competition with no strangers. |
 | Feel | More **juice**: sounds, haptics, combo meter, boss reactions | Moment-to-moment fun. |
 | Competence | **Keep going (gems):** after a loss, pay gems to continue from where you fell. The price grows with level and character size, and doubles each time in the same run. TRY AGAIN restarts for free. | A loss near the end isn't a full reset. Gems get a real use. |
-| Returning | **Daily mission** (e.g. "eat 30 broccoli") with a small reward, which **never punishes missed days** | Return motivation without anxiety. |
+| Returning | **Daily mission** (e.g. "peck 30 corn") with a small reward, which **never punishes missed days** | Return motivation without anxiety. |
 
 ## ❌ Don't (harmful and/or legal risk)
 
@@ -38,7 +38,7 @@ Juan's goal: make kids **want to come back and keep playing**. This plan does th
 - **Loot boxes / paid random rewards.**
 - **Pay-to-win or paywalled progress.** Never sell mass, gates or boss wins.
 - **Confusing purchase buttons, purchases without a parent, saved payment by default** (the exact Epic violations).
-- **Notifications that guilt kids** ("Triple T misses you 😢"), and endless play with no natural stopping points.
+- **Notifications that guilt kids** ("Rocco misses you 😢"), and endless play with no natural stopping points.
 - **Collecting personal data** from kids. COPPA applies to under-13s, so keep everything local.
 
 ## 🔬 More research to use (round 2)

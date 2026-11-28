@@ -2,8 +2,8 @@
 
 (formerly Gloop Rush)
 
-An original **brain-rot 3D mobile runner**, made for the phone and played in the browser.
-You run down a candy-colored track as **Triple T**, a living wooden log with a bat (the classic gloop blob is an optional skin).
+An original **farm-themed 3D mobile runner**, made for the phone and played in the browser.
+You run down a candy-colored track as **Rocco**, a cartoon rooster.
 Pick the right gates (`+7`, `x2`, `-8`, `÷2`), eat healthy food to grow, avoid rotten moldy food, dodge saws and swinging hammers,
 smash walls, and beat the boss at the end if you're **big enough**.
 Coins, gems, 21 skins, 12 rotating themes, 12 badges and endless levels.
@@ -42,7 +42,7 @@ Controls: **drag left and right** (or use the ← → keys on a computer).
 5. **Bugs go back to whoever owns the task.** If a merged PR causes a bug, the lead adds a `BUG-xxx` entry to Person 2's file, and the fix comes back through a PR.
 6. **The lead delegates by difficulty.** Hard design and core logic stay with Opus; medium, self-contained modules go to Sonnet; simple, repetitive work goes to Haiku.
 7. **No real money.** Coins and gems are only earned by playing. Payments are out of scope until we decide how to process them safely.
-8. **Make it fun.** Loud colors, juicy effects, meme pop-ups, unlockable skins, levels that feel different, and a reason to play "just one more".
+8. **Make it fun.** Loud colors, juicy effects, funny pop-ups, unlockable skins, levels that feel different, and a reason to play "just one more".
 
 ---
 
@@ -50,11 +50,11 @@ Controls: **drag left and right** (or use the ← → keys on a computer).
 
 - **Mass** is your number. It floats over your character, and you grow as it goes up.
 - **Gates:** blue is good (`+N`, `xN`) and red is bad (`-N`, `÷N`). Choose your side. From **level 2**, some gate pairs are **DOUBLE RED**: both choices hurt, so pick the smaller loss.
-- **Food:** 🥦 healthy broccoli grows you. ROTTEN MOLDY FOOD shrinks you.
+- **Food:** 🌽 corn grows you. ROTTEN MOLDY FOOD shrinks you.
 - **Coins** 🪙 and **gems** 💎 pay for skins in the shop. From **level 5**, coin magnet pickups pull nearby coins to you for a few seconds.
 - **Jump pads** (from level 4) launch you over hazards. **Swinging hammers** (from level 3) cut your mass if you get hit.
 - **Saws** slide side to side and cut your mass. **Walls** show a number: if you're bigger, you smash through and lose that much mass. If you're smaller, it's game over.
-- **Bosses:** 8 brain-rot-style bosses rotate by level, each with a name banner. A boss's size shows the fight: if it's bigger than you, you'd lose. If your mass is at least its HP, you win.
+- **Bosses:** 8 farm-animal bosses rotate by level, each with a name banner. A boss's size shows the fight: if it's bigger than you, you'd lose. If your mass is at least its HP, you win.
 - **Bonus stairs:** after the boss, leftover mass climbs a staircase of **x1 to x10** coin multipliers.
 - **Daily reward:** claim a coin reward (plus gems on some days) once per day, with a streak bonus.
 - **Badges:** achievements (BADGES) unlock as you play, from your first win to big combos and finishes.

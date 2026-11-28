@@ -1,6 +1,6 @@
 # Architecture & Module Contracts
 
-**Game:** *Mass Dash* — an original brain-rot 3D runner (genre: "jelly run / tall man run").
+**Game:** *Mass Dash* — an original farm-themed 3D runner (hero: Rocco the rooster) (genre: "jelly run / tall man run").
 **Stack:** plain HTML + JavaScript ES modules + [Three.js](https://threejs.org) `0.160.0` loaded from a CDN via an import map.
 No build step, no npm, no bundler. Open `index.html` through any static server.
 
@@ -24,7 +24,7 @@ python3 -m http.server 8080   # then open http://localhost:8080
 | `src/entities.js` | Lead | Gates, food, coins, gems, saws, walls, boss + collisions |
 | `src/labels.js` | Lead | Canvas-texture number/text sprites |
 | `src/save.js` | helper | localStorage save/load |
-| `src/memes.js` | helper | Brain-rot pop-up text pack |
+| `src/memes.js` | helper | Funny pop-up text pack |
 | `src/themes.js` | helper | Level color themes (data) |
 | `src/skins.js` | helper | Skin data + material factory |
 | `src/audio.js` | helper | Synthesized sound effects (WebAudio, no files) |
@@ -61,7 +61,7 @@ localStorage key: `gloop-rush-save-v1`. Wrap every access in try/catch.
 export const MEMES = { gateGood:[], gateBad:[], foodGood:[], foodBad:[], coin:[], hit:[], win:[], lose:[], boss:[], start:[] };
 export function pickMeme(category) // -> random string from that category ('' if unknown)
 ```
-Original brain-rot slang only (e.g. "W", "L", "SHEESH", "NO CAP", "BUSSIN", "RIZZ +1"). No real people, no copyrighted characters, nothing offensive.
+Original kid slang only (e.g. "W", "L", "SHEESH", "NO CAP", "BUSSIN", "RIZZ +1"). No real people, no copyrighted characters, nothing offensive.
 
 ### `src/themes.js`
 ```js
@@ -74,11 +74,11 @@ export function themeForLevel(level) // -> THEMES[(level - 1) % THEMES.length]
 ```js
 export const SKINS = [ { id, name, price, currency: 'coins'|'gems', color, color2, pattern, shape? } , ... ]
 // pattern ∈ 'solid' | 'stripes' | 'dots' | 'checker' | 'rainbow' | 'glow'
-// shape (optional, default 'blob'): 'blob' | 'log'. 'log' is the Triple T hero (id 'drum', default skin).
+// shape (optional, default 'blob'): 'blob' | 'rooster'. 'rooster' is the Rocco hero (id 'drum', default skin).
 export function getSkin(id)            // -> skin (falls back to SKINS[0])
 export function makeSkinMaterial(skin) // -> THREE.MeshStandardMaterial (CanvasTexture for patterns)
 ```
-First skin must be `{ id: 'classic', price: 0 }` (the classic gloop blob). `drum` (Triple T) is the default equipped skin and is owned by everyone.
+First skin must be `{ id: 'classic', price: 0 }` (the classic gloop blob). `drum` (Rocco the rooster) is the default equipped skin and is owned by everyone.
 
 ### `src/bosses.js`
 ```js
@@ -87,7 +87,7 @@ export function makeBossMesh(level, size) // -> { group, body, height, name }
 // body:  the core mesh used for fair sizing (boss vs. player core size) and squash animation
 // height: total height in world units; name: boss name shown on the banner
 ```
-Eight designs rotate by level: `((level - 1) % 8)`. Names: Squalo Scarpettone, Coccodrillo Bombardone, Tazzina Ballerina, Scimmia Bananosa, Cactofante, Frigocammello, Ochetta Esplosiva, Alberello Scarpato.
+Eight designs rotate by level: `((level - 1) % 8)`. Names: Moolissa (cow), Oinkster (pig), Gruff (goat), Baa-rbara (sheep), Gobbles (turkey), Quackers (duck), Braydon (donkey), Big Neigh (horse). Old boss skin ids are migrated via `RETIRED_BOSS_IDS`.
 
 ### `src/audio.js`
 ```js
@@ -127,7 +127,7 @@ export class UI {
 
 ```js
 { type:'gate',   d, left:{op,value}, right:{op,value}, doubleBad?: true }  // doubleBad: both sides are red (pick the smaller loss); from level CONFIG.doubleBad.minLevel (2)
-{ type:'food',   d, x, good:bool, value }   // good = healthy broccoli (grows); !good = ROTTEN MOLDY food (shrinks)
+{ type:'food',   d, x, good:bool, value }   // good = corn (grows); !good = ROTTEN MOLDY food (shrinks)
 { type:'coin',   d, x }
 { type:'gem',    d, x }
 { type:'saw',    d, x, amp, speed, damage }
@@ -141,7 +141,7 @@ export class UI {
 
 - Blob starts with `mass = CONFIG.startMass`. Its size grows with mass. The number floats above it.
 - **Gates** come in pairs (left/right). Ops: `+N`, `-N`, `xN`, `÷N`. Blue = good, red = bad. From level 2 some pairs are flagged `doubleBad: true` (both choices red; a `-N` there is capped at 40% of expected mass).
-- **Food:** healthy broccoli (`good: true`) adds mass; rotten moldy food (`good: false`) removes mass. "Eat healthy" = grow.
+- **Food:** corn (`good: true`) adds mass; rotten moldy food (`good: false`) removes mass. "Eat healthy" = grow.
 - **Coins** (yellow) give run coins; **gems** (purple, rare) give gems.
 - **Saws** slide side to side and cut mass. **Walls** carry a number: if mass > number you smash through and lose that number; otherwise you are stopped (lose).
 - **Boss** waits at the finish with HP and a name banner. Its size is set from the fight (`makeBossMesh(level, size)`), and it is kept fair versus the player's core size (`CONFIG.bossMinSizeGap`, `CONFIG.bossMaxRatio`). If mass ≥ HP → win, then bonus stairs (`finale.js`) pay a x1–x10 multiplier from leftover mass.

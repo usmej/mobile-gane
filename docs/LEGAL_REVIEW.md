@@ -2,25 +2,13 @@
 
 _Done by Claude from public sources. It is a careful checklist, **not** a lawyer's opinion, and it can't replace one for the final sign-off on real money._
 
-## 🔴 High risk: fix before selling anything
+## ✅ Was high risk, now fixed: characters
 
-**1. Our characters copy the real brain-rot characters too closely.**
-- **The lawsuit:** there is an **active lawsuit** over these exact characters ([NPR, Aug 2026](https://npr.org/2026/08/19/nx-s1-5867638/artificial-intelligence-brainrot-memes-copyright-spyder-tung-tung-sahur)). Mementum Lab, which represents the creators, sent a cease-and-desist to the Roblox game *Steal a Brainrot*, forced Tung Tung Sahur out of it, and is suing for **trademark infringement** over dozens of characters. It is also claiming copyright in the EU. There's no ruling yet.
-- **Why we're exposed:** our roster is a one-to-one look-alike set, and several names echo the originals:
-
-| Ours | Looks like |
-|---|---|
-| Triple T (log with a bat; our hero and the paid Golden Triple T) | Tung Tung Tung Sahur |
-| Squalo Scarpettone (shark in sneakers) | Tralalero Tralala |
-| Coccodrillo Bombardone | Bombardiro Crocodilo |
-| Tazzina Ballerina | Ballerina Cappuccina |
-| Frigocammello | Frigo Camelo |
-| Scimmia Bananosa | Chimpanzini Bananini |
-| Cactofante | Lirilì Larilà |
-| Ochetta Esplosiva | Bombombini Gusini |
-
-- **Why our own names aren't enough:** trademark law looks at whether players would be **confused** about who made the character. The same concept plus similar-sounding Italian names invites a cease-and-desist, especially once we **charge money** for them. Apple can also reject the app under its rules on copycats and others' IP (guidelines 4.1 and 5.2).
-- **Fix:** redesign to **original** absurd mash-ups that aren't in the meme canon. We keep the *vibe* (silly object-and-animal hybrids, Italian-sounding names, loud colors), but every character must be our own invention. Do the hero and the paid characters first.
+- **The risk:** the brain-rot meme characters are in an **active trademark and copyright fight** ([NPR, Aug 2026](https://npr.org/2026/08/19/nx-s1-5867638/artificial-intelligence-brainrot-memes-copyright-spyder-tung-tung-sahur)). Our first character set was too close to that meme style.
+- **The fix (Juan, 2026-11-27):** the game is now **farm-themed**, with all-original characters:
+  - **Hero:** Rocco, a cartoon rooster that eats corn.
+  - **Bosses:** 8 ordinary cartoon farm animals with our own names.
+- **The rule going forward:** every character is our own invention. No meme characters, mascots or brands. Apple's copycat and IP rules (guidelines 4.1 and 5.2) also stay satisfied.
 
 ## 🟡 Medium: needed before launch (mostly already planned)
 
@@ -45,7 +33,7 @@ _Done by Claude from public sources. It is a careful checklist, **not** a lawyer
 - **Gems stay earn-only,** so Keep going is never pay-to-win.
 - **Assets:** sounds are made in code; fonts are SIL OFL and Three.js is MIT, both credited; there's no copied art, audio or music.
 - **Joke text:** meme slang like "+AURA" is generic words, not anyone's mark.
-- **Supporter Pack wording:** now neutral ("a big thank-you for supporting Mass Dash").
+- **Supporter Pack wording:** now neutral ("a big thank-you for supporting Mass Dash"). It's now Golden Rocco.
 
 ## Sources
 

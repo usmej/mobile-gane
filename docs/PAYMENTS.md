@@ -18,7 +18,7 @@ _This is a practical plan, not legal advice. Before real money is switched on, h
 
 | Product | Price | Gives |
 |---|---|---|
-| Supporter Pack (`massdash.supporter`) | $2.99, one-time | Golden Triple T |
+| Supporter Pack (`massdash.supporter`) | $2.99, one-time | Golden Rocco |
 | Character packs (ChatGPT, REQ-043) | $0.99–$1.99 | 2–3 exclusive original characters each |
 
 **We never sell:**
@@ -51,7 +51,7 @@ Research on kids and skins says they mainly buy to **look cool and express thems
 ## Privacy and copyright checklist
 
 - [x] No accounts, no names, no emails, no tracking. The save stays on the device. Keep it that way, because the updated COPPA rule has been in full force since April 22, 2026.
-- [x] All characters are original designs with our own names (fan parody of a meme *style*, never meme names or traced art).
+- [x] All characters are original designs with our own names (original farm animals; no meme characters, mascots or brands).
 - [x] Sounds are generated in code, with no audio files to license.
 - [x] Fonts (Lilita One, Nunito) are SIL OFL and Three.js is MIT. Both are credited in `CREDITS.md`.
 - [ ] **Self-host the fonts and Three.js** so the app makes no third-party requests, since Google Fonts and jsDelivr can see visitor IPs (REQ-044).

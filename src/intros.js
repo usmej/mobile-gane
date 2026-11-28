@@ -29,7 +29,7 @@ const T = (x, y, s, fill) => `<text x="${x}" y="${y}" text-anchor="middle" font-
 const ICON = {
   gate: svg(`<rect x="2.5" y="4" width="8.5" height="16" rx="2" fill="#1FA2FF"/><rect x="13" y="4" width="8.5" height="16" rx="2" fill="#FF3B5C"/>${T(6.7, 15, 9, '#fff')}+</text>${T(17.3, 15, 9, '#fff')}-</text>`),
   doubleBad: svg(`<rect x="2.5" y="4" width="8.5" height="16" rx="2" fill="#FF3B5C"/><rect x="13" y="4" width="8.5" height="16" rx="2" fill="#FF3B5C"/>${T(6.7, 15, 9, '#fff')}-</text>${T(17.3, 15, 9, '#fff')}-</text>`),
-  food: svg(`<circle cx="9" cy="9" r="4.5" fill="#4EE06A"/><circle cx="15" cy="10" r="4.5" fill="#4EE06A"/><circle cx="12" cy="6.5" r="4.5" fill="#4EE06A"/><path d="M12 12v8" stroke="#2FAE4F" stroke-width="4" fill="none"/>`),
+  food: svg(`<path d="M12 2c3 0 4.5 3 4.5 8s-1.5 9-4.5 9-4.5-4-4.5-9S9 2 12 2z" fill="#FFD23F"/><path d="M10 7h4M9.5 11h5M10 15h4" fill="none"/><path d="M12 22c-4-1-6-4-7-8 3 1 5 3 7 8zM12 22c4-1 6-4 7-8-3 1-5 3-7 8z" fill="#4EE06A"/>`),
   mold: svg(`<circle cx="12" cy="13" r="8" fill="#A8D46F"/><circle cx="9" cy="11" r="1.8" fill="#6E8B4E" stroke="none"/><circle cx="14.5" cy="15" r="2" fill="#6E8B4E" stroke="none"/><path d="M12 5c0-2 1-3 3-3" fill="none"/>`),
   movingFood: svg(`<circle cx="12" cy="12" r="6" fill="#4EE06A"/><path d="M2 20h4M18 4h4M3 4h3M18 20h3" fill="none"/>`),
   coin: I.coin(),
@@ -57,8 +57,8 @@ registerIntro('doubleBad', {
   icon: ICON.doubleBad,
 });
 registerIntro('food', {
-  title: 'Healthy Food',
-  how: 'Eat healthy food to grow!',
+  title: 'Corn!',
+  how: 'Peck the corn to grow!',
   icon: ICON.food,
 });
 registerIntro('mold', {
@@ -68,7 +68,7 @@ registerIntro('mold', {
 });
 registerIntro('movingFood', {
   title: 'Sliding Food',
-  how: 'This food slides. Line up and catch it!',
+  how: 'This corn slides. Line up and catch it!',
   icon: ICON.movingFood,
 });
 registerIntro('coin', {
