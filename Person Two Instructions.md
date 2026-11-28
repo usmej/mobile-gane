@@ -7,6 +7,16 @@ The project lead (Person 1 + Claude Opus) assigns your work here. Paste this who
 
 ## 📝 Patch notes (newest first). Read these before you build on the code
 
+### Patch notes 2026-11-27 #2 (PR: level pace + short intros)
+- **Level pace (Juan: "so it's not so repetitive")** lives in `src/config.js`.
+  - **`speedForLevel(level, progress = 0)`** now takes the run progress (0..1).
+  - **New export `paceForLevel(level)`** returns `{ kind: 'normal'|'turbo'|'chill'|'ramp', label }`.
+  - **Base speed:** unchanged up to `maxSpeed` 21 (L24). After that it creeps +0.05/level up to `pace.lateMaxSpeed` 23.5. `pace.hardCap` 25.5 is the absolute max.
+  - **Pace roll:** from `pace.firstLevel` 4, each level rolls a pace with a stable hash per level: normal 52%, turbo ×1.15, chill ×0.86, ramp 0.9→1.22 across the level. The same special pace never repeats on back-to-back levels.
+  - **`main.js`:** the new `runSpeedNow()` is used for movement, intro lead and the jump coach. At run start, the GO pop shows the pace label ("TURBO LEVEL!") and the first time each pace appears it shows an intro (`paceTurbo` / `paceChill` / `paceRamp` in `intros.js`).
+  - **Your W6 speed zones:** multiply on top of `runSpeedNow()` (don't replace it), and clamp to `CONFIG.pace.hardCap`.
+- **Intro cards:** every card is now one short sentence (PR #37). Juan decided to **keep a card for every new mechanic**.
+
 ### Patch notes 2026-11-27 (PR: retention UI, Keep going, boss rules, new font)
 - **Boss rules changed (Juan):**
   - **Mass < boss HP:** no fight. `beginBossFight` calls `lose()` right away ("Boss had X. You had Y.").

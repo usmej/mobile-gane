@@ -41,6 +41,9 @@ const ICON = {
   barrier: svg(`<path d="M3 10h18v6H3z" fill="#FFD23F"/><path d="M7 10l-3 6M12 10l-3 6M17 10l-3 6M21 11l-2 5" fill="none"/><path d="M5 16v5M19 16v5" fill="none"/>`),
   magnet: svg(`<path d="M5 20v-9a7 7 0 0 1 14 0v9h-5v-9a2 2 0 0 0-4 0v9z" fill="#FF3B5C"/><path d="M5 20h5M14 20h5" stroke="#fff" fill="none"/>`),
   bossFight: I.bossFace(),
+  paceTurbo: svg(`<path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#FFD23F"/>`),
+  paceChill: svg(`<path d="M3 15a9 9 0 0 1 18 0z" fill="#1FA2FF"/><path d="M12 15l-4-4" fill="none"/>`),
+  paceRamp: svg(`<path d="M3 20 20 5" fill="none"/><path d="M13 5h7v7" fill="none"/><path d="M3 20h18" stroke="#FF3B5C" fill="none"/>`),
 };
 
 registerIntro('gate', {
@@ -112,4 +115,20 @@ registerIntro('bossFight', {
   title: 'Boss Fight!',
   how: "Tap the yellow spots fast to empty the boss's bar before time runs out!",
   icon: ICON.bossFight,
+});
+
+registerIntro('paceTurbo', {
+  title: 'Turbo Level!',
+  how: 'This level runs extra fast. Steer early!',
+  icon: ICON.paceTurbo,
+});
+registerIntro('paceChill', {
+  title: 'Chill Level',
+  how: 'This level runs slower. Grab everything you can!',
+  icon: ICON.paceChill,
+});
+registerIntro('paceRamp', {
+  title: 'It Gets Faster!',
+  how: 'You speed up the farther you go. Stay sharp!',
+  icon: ICON.paceRamp,
 });

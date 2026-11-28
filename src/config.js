@@ -8,6 +8,21 @@ export const CONFIG = {
   runSpeed: 13,             // units / second at level 1
   speedPerLevel: 0.35,
   maxSpeed: 21,
+  // Level pace: after maxSpeed, speed keeps creeping up slowly, and from level 4 each level
+  // rolls a pace so runs don't feel the same. Seeded by level, so a level always plays the same.
+  pace: {
+    firstLevel: 4,
+    lateSpeedPerLevel: 0.05,   // extra speed per level once maxSpeed is reached
+    lateMaxSpeed: 23.5,
+    hardCap: 25.5,             // never faster than this, whatever the pace
+    // kind: share of levels, speed multiplier (ramp goes from `from` to `to` across the level)
+    kinds: {
+      normal: { weight: 0.52, mult: 1 },
+      turbo:  { weight: 0.18, mult: 1.15, label: 'TURBO LEVEL!' },
+      chill:  { weight: 0.14, mult: 0.86, label: 'CHILL LEVEL' },
+      ramp:   { weight: 0.16, from: 0.9, to: 1.22, label: 'IT GETS FASTER!' },
+    },
+  },
   steerPerPixel: 0.022,     // world units per dragged pixel
   steerSmoothing: 14,       // higher = snappier
 
@@ -149,6 +164,40 @@ export function massToScale(mass) {
   return Math.min(CONFIG.maxScale, s);
 }
 
-export function speedForLevel(level) {
-  return Math.min(CONFIG.maxSpeed, CONFIG.runSpeed + (level - 1) * CONFIG.speedPerLevel);
+function baseSpeed(level) {
+  const P = CONFIG.pace;
+  const early = CONFIG.runSpeed + (level - 1) * CONFIG.speedPerLevel;
+  if (early <= CONFIG.maxSpeed) return early;
+  const capLevel = 1 + (CONFIG.maxSpeed - CONFIG.runSpeed) / CONFIG.speedPerLevel;
+  return Math.min(P.lateMaxSpeed, CONFIG.maxSpeed + (level - capLevel) * P.lateSpeedPerLevel);
+}
+
+function rollPace(level) {
+  if (level < CONFIG.pace.firstLevel) return 'normal';
+  // small integer hash -> [0,1), stable per level
+  let h = Math.imul(level ^ 0x9e3779b9, 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  const r = ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  let acc = 0;
+  for (const [kind, k] of Object.entries(CONFIG.pace.kinds)) {
+    acc += k.weight;
+    if (r < acc) return kind;
+  }
+  return 'normal';
+}
+
+// Pace for a level: { kind: 'normal'|'turbo'|'chill'|'ramp', label }. The same special pace never
+// shows up two levels in a row.
+export function paceForLevel(level) {
+  let kind = rollPace(level);
+  if (kind !== 'normal' && rollPace(level - 1) === kind) kind = 'normal';
+  return { kind, label: CONFIG.pace.kinds[kind].label || '' };
+}
+
+// Run speed at `progress` (0..1 along the track) on `level`.
+export function speedForLevel(level, progress = 0) {
+  const k = CONFIG.pace.kinds[paceForLevel(level).kind];
+  const t = Math.max(0, Math.min(1, progress));
+  const mult = k.from !== undefined ? k.from + (k.to - k.from) * t : k.mult;
+  return Math.min(CONFIG.pace.hardCap, baseSpeed(level) * mult);
 }
