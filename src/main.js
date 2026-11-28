@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CONFIG, speedForLevel } from './config.js';
+import { CONFIG, speedForLevel, paceForLevel } from './config.js';
 import { generateLevel, applyOp, isGoodOp, worldLabel } from './levels.js';
 import { World } from './world.js';
 import { Player } from './player.js';
@@ -243,7 +243,15 @@ function startRun() {
     tutorial.stop();
   }
   audio.startMusic(save.level);
-  fx.popText(pickMeme('start') || 'GO', player.position.clone().setY(5), '#FFF4E0', 1.2);
+  const pace = paceForLevel(save.level);
+  fx.popText(pace.label || pickMeme('start') || 'GO', player.position.clone().setY(5), pace.label ? '#FFD23F' : '#FFF4E0', 1.2);
+  const paceKey = { turbo: 'paceTurbo', chill: 'paceChill', ramp: 'paceRamp' }[pace.kind];
+  if (paceKey && !save.seenIntros.includes(paceKey)) openIntro(paceKey, 'playing');
+}
+
+// Current run speed: level base speed shaped by the level's pace (turbo / chill / speeds-up).
+function runSpeedNow() {
+  return speedForLevel(save.level, level ? player.d / Math.max(1, level.length) : 0);
 }
 
 // Boss beaten: blow it up, then climb the bonus stairs.
@@ -636,7 +644,7 @@ function frame(now) {
   time += dt;
 
   if (state === 'playing') {
-    const key = findUpcomingIntro(speedForLevel(save.level));
+    const key = findUpcomingIntro(runSpeedNow());
     if (key) {
       // After the barrier card, coach the exact moment on that first barrier.
       if (key === 'barrier') jumpCoach = level.items.find((i) => i.type === 'barrier' && i.d > player.d) || null;
@@ -645,7 +653,7 @@ function frame(now) {
   }
   if (state === 'playing' && jumpCoach) {
     const gap = jumpCoach.d - player.d;
-    const lead = speedForLevel(save.level) * CONFIG.timedJump.coachLeadSeconds;
+    const lead = runSpeedNow() * CONFIG.timedJump.coachLeadSeconds;
     if (gap <= lead && gap > 0 && !jumpCoachShown) {
       jumpCoachShown = true;
       fx.popText('JUMP NOW!', player.position.clone().setY(player.scale * 2 + 2), '#FFD23F', 1.6);
@@ -658,7 +666,7 @@ function frame(now) {
 
   const prevD = player.d;
   if (state === 'playing' || state === 'boss') {
-    const speed = speedForLevel(save.level);
+    const speed = runSpeedNow();
     player.d += speed * dt * (state === 'boss' ? 0.75 : 1);
     if (state === 'playing' && player.d >= level.length) {
       state = 'boss';
