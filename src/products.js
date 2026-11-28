@@ -7,7 +7,7 @@ export const PRODUCTS = [
     id: 'massdash.supporter',
     title: 'Supporter Pack',
     price: '$2.99',
-    blurb: 'Golden Rocco, plus a big thank-you for supporting Mass Dash.',
+    blurb: 'Golden Rocco, plus a big thank-you for supporting Rooster Rush.',
     grants: { skins: ['golden-t'] },
     oneTime: true,
   },

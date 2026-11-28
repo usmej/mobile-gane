@@ -1,4 +1,4 @@
-# 🟢 Mass Dash
+# 🐓 Rooster Rush
 
 (formerly Gloop Rush)
 

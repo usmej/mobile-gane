@@ -1,4 +1,4 @@
-# Mass Dash: legal review (research-based, 2026-11-27)
+# Rooster Rush: legal review (research-based, 2026-11-27)
 
 _Done by Claude from public sources. It is a careful checklist, **not** a lawyer's opinion, and it can't replace one for the final sign-off on real money._
 
@@ -24,7 +24,7 @@ _Done by Claude from public sources. It is a careful checklist, **not** a lawyer
    - **Google Families:** no deceptive or aggressive purchase flows ✅. Notify users when in-app purchases are added.
 5. **Privacy policy, terms and refunds page:** required by both stores (**REQ-045**).
 6. **Accounts and contracts:** Apple and Google developer agreements must be signed by an **adult (18+)**, with an adult's bank account. If a teen co-developer is involved, a parent opens the account.
-7. **"Mass Dash" trademark:** no game uses that name in the app stores. A USPTO search is still worth doing before launch.
+7. **"Rooster Rush" trademark:** no app-store game uses that name; one small free itch.io web game does. A USPTO search is still worth doing before launch.
 
 ## 🟢 Fine as built
 
@@ -33,7 +33,7 @@ _Done by Claude from public sources. It is a careful checklist, **not** a lawyer
 - **Gems stay earn-only,** so Keep going is never pay-to-win.
 - **Assets:** sounds are made in code; fonts are SIL OFL and Three.js is MIT, both credited; there's no copied art, audio or music.
 - **Joke text:** meme slang like "+AURA" is generic words, not anyone's mark.
-- **Supporter Pack wording:** now neutral ("a big thank-you for supporting Mass Dash"). It's now Golden Rocco.
+- **Supporter Pack wording:** now neutral ("a big thank-you for supporting Rooster Rush"). It's now Golden Rocco.
 
 ## Sources
 

@@ -1,4 +1,4 @@
-// Mass Dash pop-up text pack. Short, all caps, original lines only.
+// Rooster Rush pop-up text pack. Short, all caps, original lines only.
 
 export const MEMES = {
   gateGood: [
